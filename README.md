@@ -17,6 +17,28 @@ npm run db:migrate   # the vendored packages' migrations
 npm run start:dev    # http://localhost:3010 — GET /health
 ```
 
+## Signing in (dev)
+
+There's no real identity provider: pick a dev user and get a token for it. A platform admin reads every tenant's
+audit records, a tenant admin only its own tenant's, and the member has no `audit.view` (the audit API answers 403).
+
+```sh
+curl localhost:3010/dev/personas                       # who you can be
+curl -X POST localhost:3010/dev/token -H 'Content-Type: application/json' \
+  -d '{"actorId":"platform.admin@ascendra.test"}'       # → { token, expiresAt, actor }
+curl localhost:3010/audit/events -H "Authorization: Bearer <token>"
+```
+
+| Endpoint | Auth | Does |
+|---|---|---|
+| `GET /health` | public | App up, database reachable (503 if not). |
+| `GET /dev/personas`, `POST /dev/token` | public, not in production | Dev sign-in. |
+| `GET /me` | token | `{ actor, allowedActions }` — for showing or hiding nav. |
+| `GET /audit/*` | `audit.view` | audit-logging's read API (`audit-logging.api`). |
+
+Errors follow api-contract Rule 1 (`{ statusCode, error, message, code, path }`); every response carries an
+`X-Request-Id` (Rule 7). CORS allows the origins in `CORS_ORIGINS`.
+
 ## Commands
 
 | Command | Does |

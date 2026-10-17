@@ -4,7 +4,7 @@ A NestJS host app that runs `ascendra-commons` modules for real, so `ascendra-co
 reviewed against real APIs and real data instead of mocks. Audit logging first; every later module follows the
 same recipe.
 
-Status: **phase 1 (skeleton) built 2026-10-17, awaiting review.** Execution is phase by phase — each phase ends at a checkpoint
+Status: **phase 1 done; phase 2 (audit wiring) built 2026-10-17, awaiting review.** Execution is phase by phase — each phase ends at a checkpoint
 (shown working, reviewed, then committed) before the next one starts.
 
 ## Why
