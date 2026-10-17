@@ -1,0 +1,15 @@
+{
+  "source": "https://github.com/ascendra-dev/ascendra-commons.git",
+  "commit": "eede2b24ad405919139a1ce4c5d7a38fbfeb4645",
+  "uncommittedChanges": false,
+  "syncedAt": "2026-10-17T19:08:29.358Z",
+  "packages": [
+    "domain-events/domain-events.core",
+    "domain-events/domain-events.core.in-process",
+    "authorization/authorization.core",
+    "authorization/authorization.core.static-map",
+    "audit-logging/audit-logging.core",
+    "audit-logging/audit-logging.core.postgres-drizzle",
+    "audit-logging/audit-logging.api"
+  ]
+}

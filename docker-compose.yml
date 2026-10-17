@@ -1,0 +1,21 @@
+# The sandbox's own Postgres — on :5433 so it never clashes with another project's :5432.
+services:
+  postgres:
+    image: postgres:16
+    container_name: ascendra-commons-sandbox-db
+    environment:
+      POSTGRES_USER: sandbox
+      POSTGRES_PASSWORD: sandbox
+      POSTGRES_DB: ascendra_commons_sandbox
+    ports:
+      - '5433:5432'
+    volumes:
+      - sandbox_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U sandbox -d ascendra_commons_sandbox']
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  sandbox_pg_data:
