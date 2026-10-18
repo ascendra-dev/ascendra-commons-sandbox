@@ -1,9 +1,18 @@
 #!/usr/bin/env node
 /**
- * Drops everything in the sandbox database (schema `public`) and migrates from scratch — a clean slate. Sandbox data
- * is always regenerable, so there's no prompt. (The seed step joins this in phase 3.)
+ * A clean slate: drops everything in the sandbox database (schema `public`), migrates from scratch, then seeds.
+ * Sandbox data is always regenerable, so there's no prompt.
+ *
+ *   npm run db:reset [-- --no-seed] [-- --days 90 --seed 42 --volume normal]   (seed options pass through)
  */
+const { spawnSync } = require('child_process');
+const path = require('path');
 const { connect, migrate } = require('./migrations');
+
+const ROOT = path.resolve(__dirname, '..');
+const args = process.argv.slice(2);
+const noSeed = args.includes('--no-seed');
+const seedArgs = args.filter((a) => a !== '--no-seed');
 
 (async () => {
   const client = await connect();
@@ -16,6 +25,13 @@ const { connect, migrate } = require('./migrations');
   } finally {
     await client.end();
   }
+  if (noSeed) return;
+  const run = (cmd, cmdArgs) => {
+    const r = spawnSync(cmd, cmdArgs, { cwd: ROOT, stdio: 'inherit', env: process.env });
+    if (r.status !== 0) process.exit(r.status ?? 1);
+  };
+  run('npx', ['nest', 'build']);
+  run(process.execPath, ['dist/cli/seed.js', ...seedArgs]);
 })().catch((err) => {
   console.error(err.message);
   process.exit(1);
