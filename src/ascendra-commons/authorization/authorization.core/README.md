@@ -52,8 +52,9 @@ no opinion on how.
 
 ## Consuming this module
 
-Copy `authorization/authorization.core/` into
-`src/ascendra-commons/authorization/authorization.core/`, plus one model package.
+`node ascendra-commons.js add` one model package (`authorization.core.static-map`,
+or `authorization.core.permission-table.postgres-drizzle`) — this package comes
+with it, and with any module that depends on authorization.
 A vendored module that depends on authorization (e.g. `file-storage`) depends on
 **this package only**, never on a model or `.api` package.
 

@@ -4,7 +4,7 @@ A NestJS host app that runs `ascendra-commons` modules for real, so `ascendra-co
 reviewed against real APIs and real data instead of mocks. Audit logging first; every later module follows the
 same recipe.
 
-Status: **phases 1–2 done; phase 3 (generator) built 2026-10-18, awaiting review.** Execution is phase by phase — each phase ends at a checkpoint
+Status: **phases 1–3 done, plus 3b (consumer tooling, 2026-10-18); phase 4 (testbed on the real API) is next.** Execution is phase by phase — each phase ends at a checkpoint
 (shown working, reviewed, then committed) before the next one starts.
 
 ## Why
@@ -36,21 +36,22 @@ seen mocks, and the mocks already hide real mismatches:
 | 2 | Dev auth: a dev-signed token `{ id, persona, tenantId }` → `request.actor`; a static-map authorizer grants `audit.view`. A persona switcher in the testbed picks the token. No Supabase. |
 | 3 | Mocks are deleted from both `packages/audit-logging.ui` and the testbed copy — **last**, once the real API can replace every screen (Overview stats and Retention still depend on them). |
 | 4 | The generator runs in-process: a CLI on the same Nest container that emits audit events directly — no sample product. |
-| 5 | `commons:update` re-vendors from GitHub by default, or from a local checkout with `--from ../ascendra-commons`. |
+| 5 | ascendra-commons is vendored exactly as a product vendors it — with ascendra-commons' own `ascendra-commons.js` (`add` / `update` / `status`, `--from ../ascendra-commons` for unpushed work). Decided 2026-10-18, replacing a sandbox-only manifest + update script + migration runner that no real consumer would have. |
 | 6 | API on :3010. Postgres: the sandbox's own `postgres:16` container on :5433 (independent of any other project's database). |
 
 ## Layout
 
 ```
 ascendra-commons-sandbox/
-  commons.manifest.json        which ascendra-commons packages are vendored
-  scripts/commons-update.js    re-vendors the manifest's packages (GitHub or --from <path>)
+  ascendra-commons.js          ascendra-commons' own script (copied in by init, kept current by update)
+  ascendra-commons.json        the packages asked for + where migrations go
+  scripts/                     this project's own small migration runner (db:migrate / db:reset)
   docker-compose.yml           Postgres 16
   src/
-    ascendra-commons/<pattern>/<package>/   vendored, never hand-edited
+    ascendra-commons/<pattern>/<package>/   vendored by the script, never hand-edited (VENDORED.json: commit + checksums)
     auth/                      dev token guard, personas, static-map wiring
     audit/                     AuditLoggingModule + AuditApiModule wiring, the audit catalog
-    db/                        connection, migration runner
+    db/                        connection; migrations/ (commons' arrive here, timestamped)
     cli/                       audit-history.ts (the event script) + seed / simulate (Nest standalone context)
   docs/PLAN.md                 this page
 ```
@@ -76,18 +77,19 @@ NestJS version follows `ascendra-commons` (`@nestjs` ^10).
 | Where | Command | Does |
 |---|---|---|
 | sandbox | `npm run db:up` / `db:down` | Start / stop Postgres. |
-| sandbox | `npm run db:migrate` | Apply each vendored package's `*.migration.sql`, then the domain tables. |
+| sandbox | `npm run db:migrate` | Apply `src/db/migrations/*.sql` not yet applied (commons' included). |
 | sandbox | `npm run db:reset` | Drop, migrate, seed — a clean slate in one step. |
 | sandbox | `npm run seed -- --days 90 --seed 42 [--volume large]` | Generate history. |
 | sandbox | `npm run simulate -- --live --every 5s` | Continuous events. |
 | sandbox | `npm run start:dev` | API on :3010. |
-| sandbox | `npm run commons:update -- --yes [--from ../ascendra-commons]` | Re-vendor the manifest's packages. |
+| sandbox | `node ascendra-commons.js update [--from ../ascendra-commons]` | Newer commons — refuses local edits, shows breaking changes first, delivers new migrations. |
 | commons-ui | `npm run ascendra-ui:update -- --yes` | Re-vendor ascendra-ui (unchanged). |
 | testbed | `.env.local`: `NEXT_PUBLIC_API_URL=http://localhost:3010` | Point the testbed at the sandbox. |
 
 ## Keeping things in sync
 
-1. A backend change is committed in `ascendra-commons` → `commons:update` here → `db:reset` if a schema changed.
+1. A backend change is committed in `ascendra-commons` → `node ascendra-commons.js update` here → `db:migrate` for any
+   new migration it delivered.
 2. A UI change follows the existing ascendra-ui → ascendra-commons-ui flow.
 3. The API contract: `audit-api.types.ts` in the UI stays a hand-written mirror of the backend DTOs; real data
    shows drift immediately. Later: a `contract:check` here that calls every endpoint and validates the shapes.
@@ -98,13 +100,15 @@ NestJS version follows `ascendra-commons` (`@nestjs` ^10).
 
 Each phase ends at a checkpoint: shown working → reviewed → committed.
 
-1. **Skeleton** — Nest app, Postgres, manifest + `commons:update`, `db:migrate` / `db:reset`, health endpoint.
+1. **Skeleton** — Nest app, Postgres, vendored packages, `db:migrate` / `db:reset`, health endpoint.
    *Checkpoint:* the vendored audit migration applied; the app boots.
 2. **Audit wiring** — dev auth + personas, `audit.view`, domain-events + audit-logging + Postgres adapter +
    `AuditApiModule` with the catalog, CORS for the testbed.
    *Checkpoint:* `/audit/events` answers with an empty list for a platform admin, 403 without `audit.view`.
 3. **Generator** — the audit event script, seed, live mode.
    *Checkpoint:* `db:reset` produces a realistic 90-day history; a few raw API calls reviewed.
+   **3b. Consumer tooling (done 2026-10-18)** — built in ascendra-commons: numbered never-edited migrations,
+   `ascendra-commons.js`, `scripts/check.js` + pre-push hook. The sandbox switched to it — no sandbox-only vendoring left.
 4. **Testbed on the real API** — env, dev persona switcher, list + sheets on `auditApi`, mirror copied verbatim.
    *Checkpoint:* the Audit Log and all four sheets reviewed on real data.
 5. **Fix what real data exposes** — verb-only dot colours (UI), stats `kpis` / `actors` (backend or UI reshape),
@@ -114,11 +118,11 @@ Each phase ends at a checkpoint: shown working → reviewed → committed.
    given, so with a plain pool an audit record survives a change that rolled back).
    *Checkpoint:* each fix reviewed on its own.
 6. **Delete the mocks** (both copies) once nothing uses them; module README updated.
-7. **Docs** — this repo's README, and a "new module onboarding" checklist: manifest entry, domain scenario,
+7. **Docs** — this repo's README, and a "new module onboarding" checklist: `node ascendra-commons.js add`, domain scenario,
    seed scenario, catalog, testbed wiring.
 
 ## Later modules
 
-Same recipe per module — one manifest entry and one generator script that drives the module through its own entry
+Same recipe per module — one `node ascendra-commons.js add` and one generator script that drives the module through its own entry
 points, never a product built around it: `background-jobs` enqueues and runs real jobs, `rate-limiting` gets a
 throttled endpoint the generator hits, `notification` sends through a fake channel.

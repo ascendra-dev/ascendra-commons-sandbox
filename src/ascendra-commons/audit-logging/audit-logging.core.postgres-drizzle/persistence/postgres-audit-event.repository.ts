@@ -12,9 +12,8 @@ import { AUDIT_APPLICATION_ID, AUDIT_SQL_EXECUTOR } from '../tokens';
  * this; a consumer on a different stack provides its own `AuditEventRepository`
  * instead (the port is unchanged either way).
  *
- * Corresponding table: `audit-event.schema.ts` / `audit-event.migration.sql`
- * in this folder — the column list below is the third copy of that one table;
- * keep the three in sync.
+ * Corresponding table: `audit-event.schema.ts` (DDL: `../migrations/`) — the
+ * column list below must match it.
  *
  * Write-once by construction: this class exposes `insert()` only, mirroring the
  * port. No `update`/`delete` path exists to call.

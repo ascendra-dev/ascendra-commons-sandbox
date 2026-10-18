@@ -6,7 +6,8 @@ Two library-owned statements over `commons_audit_event`:
 |---|---|---|---|
 | `persistence/` | `AuditEventRepository` — one `INSERT`, `application` stamped | `POSTGRES_AUDIT_EVENT_REPOSITORY` | `AuditLoggingModule.forRoot({ auditEventRepositoryToken })` |
 | `observability/` | `AuditEventReader` — one dynamic `SELECT`, keyset-paginated, `application`-scoped | `AUDIT_EVENT_READER` (core token) | `PostgresAuditObservabilityModule.forRoot(...)` |
-| `persistence/audit-event.schema.ts` + `.migration.sql` | the reference table — **keep in sync** with the `INSERT` | | |
+| `persistence/audit-event.schema.ts` | the table's current shape — change it with the `INSERT` | | |
+| `migrations/` | the DDL, numbered — **never edited once released**; a schema change is the next file | | |
 
 There is no family package — both ports and all DTOs are stack-agnostic and
 live in `audit-logging.core`; the keyset-cursor helper is there too. A project on
@@ -14,11 +15,7 @@ another stack implements those two core ports and ignores this folder.
 
 ## Wiring
 
-```typescript
-export * from 'src/ascendra-commons/audit-logging/audit-logging.core.postgres-drizzle';   // for drizzle-kit
-```
-
-…or copy `persistence/audit-event.migration.sql`. **Requires PostgreSQL 15+.**
+Tables: apply `migrations/` (`ascendra-commons.js` delivers them into your migrations) with your own migration tool — never re-export the schema tables to `drizzle-kit` too, or it generates them a second time (MODULE-STANDARD dimension 7). **Requires PostgreSQL 15+.**
 
 ```typescript
 DomainEventsModule.forRoot({ emitterToken: IN_PROCESS_DOMAIN_EVENT_EMITTER, imports: [InProcessDomainEventEmitterModule.forRoot()] }),

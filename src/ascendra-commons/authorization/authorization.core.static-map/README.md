@@ -43,8 +43,8 @@ once. No call site changes.
 
 ## Consuming this module
 
-Copy `authorization/authorization.core.static-map/` alongside
-`authorization/authorization.core/`.
+`node ascendra-commons.js add authorization.core.static-map` (brings
+`authorization.core` with it).
 
 ## Depends on
 

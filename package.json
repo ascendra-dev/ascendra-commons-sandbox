@@ -12,7 +12,6 @@
     "db:down": "docker compose down",
     "db:migrate": "node --env-file=.env scripts/db-migrate.js",
     "db:reset": "node --env-file=.env scripts/db-reset.js",
-    "commons:update": "node scripts/commons-update.js",
     "seed": "nest build >/dev/null && node --env-file=.env dist/cli/seed.js",
     "simulate": "nest build >/dev/null && node --env-file=.env dist/cli/simulate.js"
   },

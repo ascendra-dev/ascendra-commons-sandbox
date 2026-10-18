@@ -1,15 +1,125 @@
 {
-  "source": "https://github.com/ascendra-dev/ascendra-commons.git",
-  "commit": "eede2b24ad405919139a1ce4c5d7a38fbfeb4645",
+  "$comment": "Written by ascendra-commons.js — never edit by hand. Which ascendra-commons commit each vendored package came from, a sha256 per file, and every migration already delivered.",
+  "packages": {
+    "audit-logging/audit-logging.core.postgres-drizzle": {
+      "files": {
+        "README.md": "e260954c89001cb345060f6881064228bb83d266d64168d9e0d41ac5bf56e557",
+        "index.ts": "287035735686e08a8706815de15efec015132de9d7fc7dfe8c9cac8c7aecd158",
+        "migrations/0001_audit_event.sql": "b8a4bc6a225bb62bf57734595e6c2c1045cc10bec1725ebaf310c53373fdfa2f",
+        "observability/postgres-audit-event-reader.ts": "47641ab3595266e537ef0a8c1a831e9d7bde4fb0ed91fd355233004a9657fa6f",
+        "persistence/audit-event.schema.ts": "2ebb454550f60fe538a6607e8155b2163cc2842450177bd6e0950f338e0cda8d",
+        "persistence/postgres-audit-event.repository.ts": "7853b081d602f3814d5e5442d1dbdbfdc5da67d23ec25acaebd574bf9c1b1b28",
+        "persistence/sql-executor.ts": "7a6cc2072a9baacd5b75970ed90ab51670fb8c28dacbbe2ee2ff2c05c2f04ba1",
+        "postgres-audit-observability.module.ts": "4626a123ebd13337d75a4d4187631739bd9306db132ceccbecded0839d93edb5",
+        "postgres-audit-persistence.module.ts": "481e2122680938d1b65d3a534eec8a6784255c87db2a3a397b6f42fd11ba255b",
+        "tokens.ts": "52137cb6d809b982c9957d6f6c1ac2eb0e14ad45aa1f4cf6ff5df2a94e7ccb4f"
+      }
+    },
+    "audit-logging/audit-logging.api": {
+      "files": {
+        "README.md": "a1d488c32bc00ca1762a4059dec6ff1d3240f5ce6b0b5ce2f6043dc7598caac0",
+        "audit-api.module.ts": "cab7d1de6c4b22621cba7a054b8da24ae51a694cfd84beb183856391f74921ed",
+        "audit-api.options.ts": "877d3bfd7d011c5211fa7b2baf9b33cf569ae7a87f217cd571bb130ae805c0c4",
+        "audit-events-api.service.ts": "8365b2f2be92266922ea2ccb0b165b7d06ab8c63a8bc5aaf96de80f463561382",
+        "audit-events-csv.ts": "2113b1de93c4f7992b23590c141d63edde248262791fbf60bb8df957ea598403",
+        "audit-events.controller.ts": "41379f021d0b4e4ee798403b5c3166fa6b83c1899801ddff13d85c69f3b2794b",
+        "dto/audit-api.dto.ts": "79b6dc0ada80b76574fcb32a980c486b4437b46774feeb443fb211f046f3300f",
+        "index.ts": "7ebce7984e5e0da800bf8d5ed421d9aa5ac8fa3ede4b4622cec827675d8de4aa",
+        "tokens.ts": "9481fe5da945593e93a0b16855d34acd35113d8b86fae92fee060707db6e75b8"
+      }
+    },
+    "domain-events/domain-events.core.in-process": {
+      "files": {
+        "README.md": "058c653df8e6c184abe779be0a00de6b12dfe182c86f3deae8e445095856d0ee",
+        "domain-event-listener-catalog.service.ts": "42742d3be594a5ec59add18523b1741991cea3a29366c183ad96c541a00a1d11",
+        "in-process-domain-event-emitter.module.ts": "f1e012c2180e85d175ffc4c7f374962c0b4ad8ea6eb90185f9c64fd9e82f221c",
+        "in-process-domain-event-emitter.service.ts": "14f56ea52e64325dd15a41fa974386abcfbe2581224658806081e9abcdde8747",
+        "index.ts": "851b0e9b6071fe19d61354e519dc2268e4b9823627e8d60c571c59d43581f6a9",
+        "tokens.ts": "a613dd528b94eae66f339de6a61065f5cbd4d1b0e457850f8921df03d6cf07ff"
+      }
+    },
+    "authorization/authorization.core.static-map": {
+      "files": {
+        "README.md": "c1daa0685b2f789cdb4bf4758a0b931ee3478c24a86dde5adcc43f5bf6714a4e",
+        "index.ts": "346a1c6166142a4acfbf0d267729fc9cc498f26e1dc361ba8fd59eafdc2ea995",
+        "static-map-authorizer.module.ts": "d1c4e1c1dc9fdd1c077a60034833e2323b9cc0374b32ad6813824383c1782e6f",
+        "static-role-map.authorizer.ts": "9d93116627a3884b88ab6b6e46c0d6a2950ffaf08d6651f2f215db9b9820ce96",
+        "tokens.ts": "136e31f1747c61685b3d608f89856fbb4534e24b551bf3545335aa82ed9e8614"
+      }
+    },
+    "audit-logging/audit-logging.core": {
+      "requiredBy": [
+        "audit-logging/audit-logging.core.postgres-drizzle",
+        "audit-logging/audit-logging.api"
+      ],
+      "files": {
+        "README.md": "c8cfdebfd21ace5d30587a7d69a75e30b8b4ee2684061a9f67d6cb9541ce15f5",
+        "audit-event-reader.port.ts": "591d07dfb5786de59dc4fd4ebd546edce37bcda67c2a2de65cc27e57929ad305",
+        "audit-event-repository.port.ts": "747ff6ee451464398b0d48182f219d96fe006b694134fad97e08d794b5dbc29e",
+        "audit-event.interface.ts": "ef9942dea8bd6eb45e14f67fcb7e080545da2c87db2bf5d9125358793290c93a",
+        "audit-listener.ts": "d9d4ef6ba517ed170e5ab2e8ae675828a744e37455b2981c31d968f8d2ed28b4",
+        "audit-logging.module.ts": "1fec0a825f017d0833f5305d990296ca06b67e95d281cfc1448b3b3a772a1a63",
+        "audit-record-raised.ts": "a828f746376ec2c7b86af054e96675aa53067cfc6c5c6d82f7ec790abd1abb4d",
+        "correlation-context.ts": "dca068464586ec5bc2f6f8ce7f91abfcfbe7ed0eb660af1046af749054513438",
+        "correlation-id.middleware.ts": "7137020b547e55205db4bce0c390d8276404bfdaeb496d837d57c26cbb7bd6a9",
+        "field-diff.ts": "5584d54e7197c4450f8eea9bbde0e98c0739122f5529290a9eb6b1aa4e8499da",
+        "index.ts": "f4cbbbef8203c36cbe91bdc3889c818349e5871a550d57a7a6bd76e687632671",
+        "keyset-cursor.ts": "23e1002fb67e1f91541aa5dee0fb8f1ce300571d46ff94f4c4c7671b0e362e3d",
+        "persist-audit-record.ts": "44f07c55e9e0c691037d693ee8c0d5ae55b442063ea6909031e547ed31d38c49",
+        "stats-window.ts": "a302006ba9c6df4c18cc314f778de61200042c22cc73c6798e0d59bacc298105",
+        "tokens.ts": "8c09f16f195e508dbc23703a3155f48c8dde9ec43597d5613106fb4d96d6fd8e"
+      }
+    },
+    "authorization/authorization.core": {
+      "requiredBy": [
+        "audit-logging/audit-logging.api",
+        "authorization/authorization.core.static-map"
+      ],
+      "files": {
+        "README.md": "2998218805e1b515bae73b62283097f0bfc0d1c208732f19d92d2c9fca428cbe",
+        "action-availability.ts": "9a15338d8074e73a9d49f1559d1a22b89e9f87b4417cb416ed0175dcce84525e",
+        "actor.type.ts": "6ecf4600841fae0460760f26ba3ea7d455901f11aae1eca31ffd5fa3b4e8eca5",
+        "authorization.guard.ts": "d836e11c62be2f5985d395bb90eb19777e0c5094990bde53439607ec8ff9bf1e",
+        "authorization.module.ts": "1a90fee949d0dc4c7518726c7fd5735bb229896bf54ded38ba8274c1cbd30a0f",
+        "authorizer.port.ts": "dab91d6385a7617517f546dda1b4bc7338af431fe651f6bda6f4daeb558a878e",
+        "current-actor.decorator.ts": "cea75615fa1f4d975a129dd1a03a87a0761675f773c8dc0d342a64d7815e4132",
+        "index.ts": "6744357a92ed8945677e9fe621d832c295eeabc11de723cd78535a1d7df69d6e",
+        "missing-authorizer.ts": "1ca76f458265f348da3cec6e707b7390cc59393fb201ca58158b167b06f00304",
+        "requires-action.decorator.ts": "395e97f5f2246236f2b215a69de2d1f2d8bcb5295b26b900ad19f82884a65caf",
+        "session-snapshot.ts": "578ecf615a4bc57a728fa3c73c005066e1b68bbe34c0de21f0ceea527b34ef71",
+        "tokens.ts": "0293cb8ab8cb6030dba4ea19c77bd3dc2ebd5bc666fff7ecdeaad078c90a1552"
+      }
+    },
+    "domain-events/domain-events.core": {
+      "requiredBy": [
+        "domain-events/domain-events.core.in-process",
+        "audit-logging/audit-logging.core"
+      ],
+      "files": {
+        "README.md": "08a2983d143accae4dc5a7c3132823840133c8df63c9350217ee7a6a0d4908b0",
+        "assert-domain-event-serializable.ts": "3128217a3445d5a5f381308b15bc6aeccf999f8b7a251dcc0a361997715d561b",
+        "domain-event-emitter.port.ts": "0502bc1388aa2bc4303167202111fde069ed3dcbed8b904363008f1d67e15a84",
+        "domain-event.interface.ts": "70c2820ac5278743c14cc83683e9fcd72b3b944e71f68209e7b4405f17918174",
+        "domain-events.module.ts": "ba92dfd7c3981bc7bd7455be2d1c3296f699e30620d4ff84be0aea4b82ade0d6",
+        "event-delivery-observability.port.ts": "d0094e82a472741b21abc237f9072be61c747961a5f0df28b762c2b82ee95436",
+        "event-delivery-recorder.port.ts": "bc08662a0f6ff6e1bc495bddf560347cf6d2cb5ec8707864320e69248f3fd8ee",
+        "event-listener-catalog.port.ts": "ea0b7c895742a19ba537d48a346514ac6911d224cfc6857bc1886d5e0d23d806",
+        "index.ts": "8f162adf3fd7f59ec698bcee70a57d1ede1bdb6f7e793c70eb0bfeb9cd5eb40c",
+        "keyset-cursor.ts": "fb3171949feb64a75233237dd7e4059625baae67d988b0f61a57bc93bde65938",
+        "noop-event-delivery-recorder.ts": "1733e6e990b8b84854dbaf1ec7687698b55ca3e9e06161ae9c980f2acad642c3",
+        "on-critical-event.decorator.ts": "1c0e5e2852985818c10094d2e16ca9834d81ec1d79c7e1cf4a4a0375d8c0a3a5",
+        "tokens.ts": "c99cf8821cc08091136d7cbb15387001e12bc4c1efc48ff79b4e4b6b0224f47c"
+      }
+    }
+  },
+  "migrations": {
+    "audit-logging/audit-logging.core.postgres-drizzle/0001_audit_event.sql": {
+      "checksum": "b8a4bc6a225bb62bf57734595e6c2c1045cc10bec1725ebaf310c53373fdfa2f",
+      "copiedTo": "src/db/migrations/20261018003934_commons_audit_logging_0001_audit_event.sql"
+    }
+  },
+  "source": "/Users/zakashah/ascendra/ascendra-public/ascendra-commons (local checkout)",
+  "commit": "c1aeb0f65c4756b13e5ba6ec447aa1a49404bf98",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-17T19:08:29.358Z",
-  "packages": [
-    "domain-events/domain-events.core",
-    "domain-events/domain-events.core.in-process",
-    "authorization/authorization.core",
-    "authorization/authorization.core.static-map",
-    "audit-logging/audit-logging.core",
-    "audit-logging/audit-logging.core.postgres-drizzle",
-    "audit-logging/audit-logging.api"
-  ]
+  "syncedAt": "2026-10-18T00:54:24.335Z"
 }

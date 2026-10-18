@@ -30,7 +30,7 @@ const MAX_LIMIT = 200;
  * cross-product compliance view that needs *every* app's rows queries
  * `commons_audit_event` directly.
  *
- * Corresponding table: `../persistence/audit-event.schema.ts` / `.migration.sql`.
+ * Corresponding table: `../persistence/audit-event.schema.ts` (DDL: `../migrations/`).
  */
 @Injectable()
 export class PostgresAuditEventReader implements AuditEventReader {

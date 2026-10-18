@@ -6,13 +6,13 @@ import { index, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-cor
  *
  * Every column maps 1:1 to an `AuditEvent` field, plus `application` (see its
  * own note below). This is the single source of truth for the reference
- * schema: `PostgresAuditEventRepository` writes exactly these columns, and
- * `audit-event.migration.sql` in this folder is the hand-kept DDL form of the
- * same table — keep the three in sync when changing any of them.
+ * schema: `PostgresAuditEventRepository` writes exactly these columns — change
+ * the two together, and ship the change as the next numbered file in
+ * `../migrations/` (never an edit to a released one).
  *
- * A consuming project on Postgres/Drizzle can `export` this table from its own
- * schema barrel so `drizzle-kit` picks it up, instead of pasting the raw
- * migration. A project on a different stack ignores this file entirely and
+ * A consuming project never re-exports this table into the schema files
+ * `drizzle-kit` reads — the DDL comes from `../migrations/`. A project on a
+ * different stack ignores this file entirely and
  * provides its own `AuditEventRepository` (see the adapter README).
  */
 export const auditEventTable = pgTable(

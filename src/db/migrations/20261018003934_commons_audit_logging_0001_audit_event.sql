@@ -1,13 +1,14 @@
--- Reference migration for the audit-logging pattern's Postgres/Drizzle adapter.
+-- From ascendra-commons audit-logging/audit-logging.core.postgres-drizzle/migrations/0001_audit_event.sql @ fd2c92b.
+-- Never edit: src/ascendra-commons/VENDORED.json holds its checksum; a schema change arrives as a new file.
+
+-- audit-logging · Postgres/Drizzle adapter — the audit event table.
 --
--- This library never runs migrations against a consumer's database (see
--- MODULE-STANDARD.md dimension 7 — the DB instance and its migration history are
--- always consumer-owned). Copy this statement into the consuming project's own
--- migration tooling, or export `auditEventTable` from `audit-event.schema.ts`
--- and let `drizzle-kit generate` produce the equivalent.
+-- Released migrations are never edited: a schema change is the next numbered
+-- file in this folder (MODULE-STANDARD.md dimension 7). This library never runs
+-- them — the consuming project's own migration tool does.
 --
--- Keep this in sync with `audit-event.schema.ts` and
--- `postgres-audit-event.repository.ts` — the three describe one table.
+-- The table's current shape: `persistence/audit-event.schema.ts` and the INSERT in
+-- `persistence/postgres-audit-event.repository.ts` — change them together.
 
 CREATE TABLE IF NOT EXISTS "commons_audit_event" (
   "id"             uuid PRIMARY KEY DEFAULT gen_random_uuid(),

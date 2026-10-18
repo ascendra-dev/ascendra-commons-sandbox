@@ -1,0 +1,15 @@
+{
+  "$comment": "ascendra-commons packages this project vendors — managed by ascendra-commons.js (add / remove edit \"packages\").",
+  "source": "https://github.com/ascendra-dev/ascendra-commons.git",
+  "target": "src/ascendra-commons",
+  "migrations": {
+    "tool": "folder",
+    "dir": "src/db/migrations"
+  },
+  "packages": [
+    "audit-logging/audit-logging.core.postgres-drizzle",
+    "audit-logging/audit-logging.api",
+    "domain-events/domain-events.core.in-process",
+    "authorization/authorization.core.static-map"
+  ]
+}

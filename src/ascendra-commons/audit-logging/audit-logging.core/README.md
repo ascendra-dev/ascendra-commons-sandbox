@@ -53,10 +53,10 @@ On another stack: provide your own `AuditEventRepository` (and, for reads, an
 
 ## Consuming this module
 
-Copy `audit-logging/audit-logging.core/` **and** `domain-events/domain-events.core`
-+ `domain-events/domain-events.core.in-process` (this package depends on
-`domain-events.core`; the vertical also needs a transport). Plus one stack
-adapter, and optionally `audit-logging.api`.
+`node ascendra-commons.js add` one stack adapter (`audit-logging.core.postgres-drizzle`)
+and a domain-events transport (`domain-events.core.in-process`) — the transport
+isn't imported, so name it — and optionally `audit-logging.api`. This package and
+`domain-events.core` come with them.
 
 ## Depends on
 

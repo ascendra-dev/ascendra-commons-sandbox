@@ -44,16 +44,35 @@ Errors follow api-contract Rule 1 (`{ statusCode, error, message, code, path }`)
 | Command | Does |
 |---|---|
 | `npm run db:up` / `db:down` | Start / stop the sandbox's Postgres container. |
-| `npm run db:migrate` | Apply migrations not yet applied: each vendored package's `*.migration.sql` (manifest order), then `src/db/migrations/*.sql`. |
+| `npm run db:migrate` | Apply `src/db/migrations/*.sql` not yet applied, in name order — ascendra-commons' migrations land there too. |
 | `npm run db:reset [-- --no-seed] [-- --days 90 --seed 42 --volume small\|normal\|large]` | Drop everything, migrate from scratch, seed (seed options pass through). |
 | `npm run seed -- [--days 90] [--seed 42] [--volume normal]` | Generate history into an empty database. Same `--seed`, same data. |
 | `npm run simulate -- [--every 5] [--count 0]` | Keep it live: one real change every N seconds until Ctrl+C (or `--count`). |
-| `npm run commons:update -- --yes [--from ../ascendra-commons]` | Re-vendor the packages in `commons.manifest.json` into `src/ascendra-commons/` — from GitHub, or a local checkout. Records the source commit in `src/ascendra-commons/VENDORED.json`. |
 | `npm run start:dev` / `build` / `start` | Run in watch mode / build / run the build. |
 | `npm run typecheck` | Typecheck, vendored code included. |
 
-`src/ascendra-commons/` is vendored — never edit it here. Change the module in `ascendra-commons`, then re-sync.
-If a sync changes a migration that was already applied, `db:migrate` refuses and asks for `db:reset`.
+## ascendra-commons, as any project consumes it
+
+The sandbox vendors ascendra-commons the way a product does — with ascendra-commons' own `ascendra-commons.js`
+(see its README, "Distribution"). Nothing here is sandbox-specific:
+
+| File | |
+|---|---|
+| `ascendra-commons.js` | The script, copied in by `init`; `update` keeps it current. |
+| `ascendra-commons.json` | The packages asked for, and where migrations go (`folder` → `src/db/migrations`). |
+| `src/ascendra-commons/` | The vendored packages — never edit them here. `VENDORED.json` records the commit and a checksum per file. |
+
+```sh
+node ascendra-commons.js status                          # edited copies, missing deps, undelivered migrations
+node ascendra-commons.js update [--from ../ascendra-commons]   # GitHub, or a local checkout for unpushed work
+node ascendra-commons.js add <package…>                  # e.g. background-jobs.core.postgres-drizzle
+```
+
+A new migration from an update lands in `src/db/migrations/` — `db:migrate` applies it. Change a module in
+`ascendra-commons`, never here: `update` refuses to overwrite a local edit.
+
+What *is* sandbox-only: `src/cli/` (the data generator), `src/auth/` dev sign-in (dev tokens and personas, standing in
+for a real identity provider), `docker-compose.yml`, and `scripts/` (this project's own small migration runner).
 
 ## The sample data
 

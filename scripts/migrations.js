@@ -1,7 +1,7 @@
 /**
- * Shared by db-migrate.js and db-reset.js. Migrations, in order: each vendored package's *.migration.sql (manifest
- * order — ascendra-commons ships them as reference migrations for the consumer to apply), then this sandbox's own
- * src/db/migrations/*.sql (name order). Each is applied once, in a transaction, and recorded with a checksum.
+ * Shared by db-migrate.js and db-reset.js — this project's own migration tool, the way any consumer has one. It applies
+ * src/db/migrations/*.sql in name order, each once, in a transaction, recorded with a checksum. ascendra-commons'
+ * migrations arrive in that folder too, delivered by `node ascendra-commons.js add` / `update` (timestamped names).
  */
 const crypto = require('crypto');
 const fs = require('fs');
@@ -9,21 +9,12 @@ const path = require('path');
 const { Client } = require('pg');
 
 const ROOT = path.resolve(__dirname, '..');
-const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'commons.manifest.json'), 'utf8'));
-
-function findSqlFiles(dir, suffix) {
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir, { withFileTypes: true, recursive: true })
-    .filter((e) => e.isFile() && e.name.endsWith(suffix))
-    .map((e) => path.join(e.parentPath ?? e.path, e.name))
-    .sort();
-}
+const MIGRATIONS_DIR = path.join(ROOT, 'src', 'db', 'migrations');
 
 function listMigrations() {
-  const vendored = manifest.packages.flatMap((pkg) =>
-    findSqlFiles(path.join(ROOT, 'src', 'ascendra-commons', pkg), '.migration.sql'));
-  const own = findSqlFiles(path.join(ROOT, 'src', 'db', 'migrations'), '.sql');
-  return [...vendored, ...own].map((file) => {
+  if (!fs.existsSync(MIGRATIONS_DIR)) return [];
+  const files = fs.readdirSync(MIGRATIONS_DIR).filter((f) => f.endsWith('.sql')).sort().map((f) => path.join(MIGRATIONS_DIR, f));
+  return files.map((file) => {
     const sql = fs.readFileSync(file, 'utf8');
     return { name: path.relative(ROOT, file), sql, checksum: crypto.createHash('sha256').update(sql).digest('hex') };
   });
@@ -46,7 +37,7 @@ async function migrate(client) {
     const previous = applied.get(m.name);
     if (previous === m.checksum) continue;
     if (previous) {
-      throw new Error(`${m.name} changed since it was applied (a newer sync?). Run db:reset to rebuild the database.`);
+      throw new Error(`${m.name} changed since it was applied — migrations are never edited. Run db:reset to rebuild the database.`);
     }
     await client.query('BEGIN');
     try {
