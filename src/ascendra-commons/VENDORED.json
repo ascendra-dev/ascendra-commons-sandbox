@@ -118,8 +118,8 @@
       "copiedTo": "src/db/migrations/0000_commons_audit_logging_0001_audit_event.sql"
     }
   },
-  "source": "/Users/zakashah/ascendra/ascendra-public/ascendra-commons (local checkout)",
-  "commit": "918f39ba5781c3eee3041cc5b964197e5bedbd7d",
+  "source": "https://github.com/ascendra-dev/ascendra-commons.git",
+  "commit": "51da8f7a2997efb0f106e5155c134e32be42d110",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-18T02:39:45.803Z"
+  "syncedAt": "2026-10-18T02:54:58.268Z"
 }
