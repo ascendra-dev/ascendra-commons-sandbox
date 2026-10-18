@@ -4,7 +4,7 @@ A NestJS host app that runs `ascendra-commons` modules for real, so `ascendra-co
 reviewed against real APIs and real data instead of mocks. Audit logging first; every later module follows the
 same recipe.
 
-Status: **phases 1–3 done, plus 3b (consumer tooling, 2026-10-18); phase 4 (testbed on the real API) is next.** Execution is phase by phase — each phase ends at a checkpoint
+Status: **phases 1–3 done, plus 3b and 3c (2026-10-18); phase 4 (testbed on the real API) built 2026-10-18, awaiting review.** Execution is phase by phase — each phase ends at a checkpoint
 (shown working, reviewed, then committed) before the next one starts.
 
 ## Why
@@ -121,6 +121,12 @@ Each phase ends at a checkpoint: shown working → reviewed → committed.
    Retention & volume (needs a backend decision first), and audit-logging's README not saying the host's SQL executor
    must join the caller's transaction (found in phase 3: its Postgres repository writes through whatever executor it's
    given, so with a plain pool an audit record survives a change that rolled back).
+   Found in phase 4, on real data: the trace and history sheets' timeline dots are all gray (verb-only actions);
+   actor activity's "By action" table drops the entity type (`failed` for a payment beside `payment_failed` for an
+   invoice — and `created` would merge invoices, users and tenants), the stats ranking's problem again; a 401 / 403 is
+   retried several times (~10 s) before the error shows, where it should fail at once — and a direct visit without
+   access deserves a clearer message than a bare "Forbidden"; the testbed avatar's initials come from the persona
+   label ("Acme — member (no audit access)" → "AA").
    *Checkpoint:* each fix reviewed on its own.
 6. **Delete the mocks** (both copies) once nothing uses them; module README updated.
 7. **Docs** — this repo's README, and a "new module onboarding" checklist: `node ascendra-commons.js add`, domain scenario,
