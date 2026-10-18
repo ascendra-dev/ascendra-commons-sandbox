@@ -19,7 +19,7 @@ export class DevAuthController {
   async token(@Body() body: { actorId?: string }) {
     const actor = DEV_ACTORS.find((a) => a.id === body?.actorId);
     if (!actor) throw new NotFoundException(`No dev actor "${body?.actorId ?? ''}" — see GET /dev/personas.`);
-    const { label: _label, ...rest } = actor;
+    const { label: _label, name: _name, ...rest } = actor;
     const signed = await this.tokens.sign(rest);
     return { ...signed, actor: rest };
   }

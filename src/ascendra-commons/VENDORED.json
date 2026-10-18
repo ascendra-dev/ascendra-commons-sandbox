@@ -3,7 +3,7 @@
   "packages": {
     "audit-logging/audit-logging.core.postgres-drizzle": {
       "files": {
-        "README.md": "e260954c89001cb345060f6881064228bb83d266d64168d9e0d41ac5bf56e557",
+        "README.md": "3f0488fbeba7a4b78170085d7beded089626b22193fee067ce108551632b675c",
         "index.ts": "287035735686e08a8706815de15efec015132de9d7fc7dfe8c9cac8c7aecd158",
         "migrations/0001_audit_event.sql": "b8a4bc6a225bb62bf57734595e6c2c1045cc10bec1725ebaf310c53373fdfa2f",
         "observability/postgres-audit-event-reader.ts": "0a3acbbd1ca150526aa9bf65da541a8570c3da1b2e8559c2810576a0e491b034",
@@ -119,7 +119,7 @@
     }
   },
   "source": "/Users/zakashah/ascendra/ascendra-public/ascendra-commons (local checkout)",
-  "commit": "6016cc5048ceb665e3394ec9f9c6bff65e8745c0",
+  "commit": "918f39ba5781c3eee3041cc5b964197e5bedbd7d",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-18T02:36:11.897Z"
+  "syncedAt": "2026-10-18T02:39:45.803Z"
 }

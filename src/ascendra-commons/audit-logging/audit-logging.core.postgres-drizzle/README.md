@@ -27,6 +27,10 @@ AuditLoggingModule.forRoot({
 PostgresAuditObservabilityModule.forRoot({ sqlExecutorToken: DATABASE_CONNECTION, application: 'ascendra-pay', imports: [DatabaseModule] }),
 ```
 
+The repository inserts through exactly the executor `sqlExecutorToken` resolves to. A plain pool (as above)
+commits each audit record on its own, outside the caller's transaction; to make a change and its audit record
+atomic, give it an executor bound to that transaction — see the module README, "Consuming this module".
+
 ## `application`
 
 Stamped on insert and filtered on every read (`application = $1`), so an app's
