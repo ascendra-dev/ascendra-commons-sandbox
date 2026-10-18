@@ -31,9 +31,9 @@ const MAX_LIMIT = 200;
  * no `INSERT`/`UPDATE`/`DELETE` path exists, so "audit records are write-once"
  * holds exactly as before.
  *
- * Scoped to one `application` — an app's own compliance/ops screen. A
- * cross-product compliance view that needs *every* app's rows queries
- * `commons_audit_event` directly.
+ * Scoped to the configured `application`(s) — one for an app's own
+ * compliance/ops screen, several for a backend that serves more than one
+ * application (`AuditQuery.application` then narrows to one of them).
  *
  * Corresponding table: `../persistence/audit-event.schema.ts` (DDL: `../migrations/`).
  */
@@ -41,8 +41,16 @@ const MAX_LIMIT = 200;
 export class PostgresAuditEventReader implements AuditEventReader {
   constructor(
     @Inject(AUDIT_SQL_EXECUTOR) private readonly db: SqlExecutor,
-    @Inject(AUDIT_APPLICATION_ID) private readonly application: string,
-  ) {}
+    @Inject(AUDIT_APPLICATION_ID) application: string | string[],
+  ) {
+    this.scopedApplications = [application].flat();
+  }
+
+  private readonly scopedApplications: string[];
+
+  applications(): string[] {
+    return [...this.scopedApplications];
+  }
 
   async find(query: AuditQuery): Promise<AuditQueryResult> {
     const limit = Math.min(Math.max(1, query.limit ?? DEFAULT_LIMIT), MAX_LIMIT);
@@ -88,7 +96,7 @@ export class PostgresAuditEventReader implements AuditEventReader {
   }
 
   async findOne(id: string, tenantId?: string | null): Promise<AuditEvent | null> {
-    const conds: SQL[] = [sql`id = ${id}`, sql`application = ${this.application}`];
+    const conds: SQL[] = [sql`id = ${id}`, this.inScope()];
     if (tenantId !== undefined) {
       conds.push(tenantId === null ? sql`tenant_id is null` : sql`tenant_id = ${tenantId}`);
     }
@@ -105,7 +113,7 @@ export class PostgresAuditEventReader implements AuditEventReader {
   }
 
   async summarizeActor(actor: string, query: ActorActivityQuery): Promise<ActorActivitySummary> {
-    const conds: SQL[] = [sql`application = ${this.application}`, sql`actor = ${actor}`];
+    const conds: SQL[] = [this.inScope(), sql`actor = ${actor}`];
     if ('tenantId' in query) {
       conds.push(query.tenantId === null ? sql`tenant_id is null` : sql`tenant_id = ${query.tenantId}`);
     }
@@ -252,7 +260,7 @@ export class PostgresAuditEventReader implements AuditEventReader {
     const declaredEntityTypes = [...new Set(query.entityTypes)];
     const declaredActions = [...new Set(query.actions)];
 
-    const conds: SQL[] = [sql`application = ${this.application}`];
+    const conds: SQL[] = [this.inScope()];
     if ('tenantId' in query) {
       conds.push(query.tenantId === null ? sql`tenant_id is null` : sql`tenant_id = ${query.tenantId}`);
     }
@@ -263,7 +271,7 @@ export class PostgresAuditEventReader implements AuditEventReader {
         await this.db.execute(sql`
           select entity_type, count(*)::int as count
           from commons_audit_event
-          where ${sql.join([...conds, sql`entity_type = any(${declaredEntityTypes})`], sql` and `)}
+          where ${sql.join([...conds, sql`entity_type in ${declaredEntityTypes}`], sql` and `)}
           group by entity_type
         `)
       ).rows as Array<{ entity_type: string; count: number }>;
@@ -276,7 +284,7 @@ export class PostgresAuditEventReader implements AuditEventReader {
         await this.db.execute(sql`
           select action, count(*)::int as count
           from commons_audit_event
-          where ${sql.join([...conds, sql`action = any(${declaredActions})`], sql` and `)}
+          where ${sql.join([...conds, sql`action in ${declaredActions}`], sql` and `)}
           group by action
         `)
       ).rows as Array<{ action: string; count: number }>;
@@ -295,16 +303,22 @@ export class PostgresAuditEventReader implements AuditEventReader {
       ...declaredActions.map((value) => toEntry('action', value, actionCounts.get(value) ?? 0)),
     ];
   }
-  /** `AuditQuery`'s filter fields as ANDable conditions — shared by `find()` and `countUpTo()`; ignores `limit`/`cursor`. */
+  /** Rows of the application(s) this reader is scoped to. */
+  private inScope(): SQL {
+    return sql`application in ${this.scopedApplications}`;
+  }
+
   /** This app's rows, narrowed to one tenant (a string), platform-level rows (`null`), or none (absent). */
   private scope(tenantId?: string | null): SQL {
-    const conds: SQL[] = [sql`application = ${this.application}`];
+    const conds: SQL[] = [this.inScope()];
     if (tenantId !== undefined) conds.push(tenantId === null ? sql`tenant_id is null` : sql`tenant_id = ${tenantId}`);
     return sql.join(conds, sql` and `);
   }
 
+  /** `AuditQuery`'s filter fields as ANDable conditions — shared by `find()` and `countUpTo()`; ignores `limit`/`cursor`. */
   private filterConds(query: AuditQuery): SQL[] {
-    const conds: SQL[] = [sql`application = ${this.application}`];
+    const conds: SQL[] = [this.inScope()];
+    if (query.application !== undefined) conds.push(sql`application = ${query.application}`);
     if (query.entityType !== undefined) conds.push(sql`entity_type = ${query.entityType}`);
     if (query.entityId !== undefined) conds.push(sql`entity_id = ${query.entityId}`);
     if ('tenantId' in query) {

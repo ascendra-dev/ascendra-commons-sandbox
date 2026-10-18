@@ -48,8 +48,10 @@ export class AuditEventsController {
     @Query('occurredBefore') occurredBefore?: string,
     @Query('limit') limit?: string,
     @Query('cursor') cursor?: string,
+    @Query('application') application?: string,
   ) {
     return toCursorList(await this.service.find(actor, {
+      application,
       entityType,
       entityId,
       tenantId,
@@ -80,8 +82,10 @@ export class AuditEventsController {
     @Query('correlationId') correlationId?: string,
     @Query('occurredAfter') occurredAfter?: string,
     @Query('occurredBefore') occurredBefore?: string,
+    @Query('application') application?: string,
   ): Promise<StreamableFile> {
     const result = await this.service.exportEvents(actor, {
+      application,
       entityType,
       entityId,
       tenantId,
@@ -138,7 +142,7 @@ export class AuditEventsController {
     return this.service.retention(actor, { tenantId });
   }
 
-  /** api-contract.md Rule 4's bounded bare-array case — the app's fixed vocabulary, never paginated. */
+  /** The filter selects' options — the configured vocabulary and the reader's applications. A small object, never paginated. */
   @Get('catalog')
   @RequiresAction(AUDIT_ACTIONS.VIEW)
   catalog() {

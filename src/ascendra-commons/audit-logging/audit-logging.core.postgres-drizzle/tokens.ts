@@ -8,8 +8,9 @@
 export const AUDIT_SQL_EXECUTOR = Symbol('AUDIT_SQL_EXECUTOR');
 
 /**
- * The `application` string from `forRoot()` — stamped into every audit row's
- * `application` column, and filtered on by the reader. A plain value provided
+ * The `application` from `forRoot()` — stamped into every audit row's
+ * `application` column (the persistence module: one string), and the scope the
+ * reader filters on (the observability module: one string or several). A plain value provided
  * inside this adapter's own module, not `domain-events`' `DOMAIN_EVENTS_APPLICATION_ID`.
  * Module-prefixed (`AUDIT_`) so it never collides with another module's application token.
  */

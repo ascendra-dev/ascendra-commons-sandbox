@@ -3,28 +3,28 @@
   "packages": {
     "audit-logging/audit-logging.core.postgres-drizzle": {
       "files": {
-        "README.md": "3f0488fbeba7a4b78170085d7beded089626b22193fee067ce108551632b675c",
+        "README.md": "00bee9ee27d046ed1a4b09118c373f8c3e712268a345e12ae738c7e091175c86",
         "index.ts": "287035735686e08a8706815de15efec015132de9d7fc7dfe8c9cac8c7aecd158",
         "migrations/0001_audit_event.sql": "b8a4bc6a225bb62bf57734595e6c2c1045cc10bec1725ebaf310c53373fdfa2f",
-        "observability/postgres-audit-event-reader.ts": "0a3acbbd1ca150526aa9bf65da541a8570c3da1b2e8559c2810576a0e491b034",
+        "observability/postgres-audit-event-reader.ts": "4f25d0faf7116b0aedf1fbba625e81334d31fc051ba31d7c5573f7db13ab2dd5",
         "persistence/audit-event.schema.ts": "2ebb454550f60fe538a6607e8155b2163cc2842450177bd6e0950f338e0cda8d",
         "persistence/postgres-audit-event.repository.ts": "7853b081d602f3814d5e5442d1dbdbfdc5da67d23ec25acaebd574bf9c1b1b28",
         "persistence/sql-executor.ts": "7a6cc2072a9baacd5b75970ed90ab51670fb8c28dacbbe2ee2ff2c05c2f04ba1",
-        "postgres-audit-observability.module.ts": "4626a123ebd13337d75a4d4187631739bd9306db132ceccbecded0839d93edb5",
+        "postgres-audit-observability.module.ts": "f808888bdc0ebb896de365d2974ef346616b576c26742f1b3474a00ac8c454e2",
         "postgres-audit-persistence.module.ts": "481e2122680938d1b65d3a534eec8a6784255c87db2a3a397b6f42fd11ba255b",
-        "tokens.ts": "52137cb6d809b982c9957d6f6c1ac2eb0e14ad45aa1f4cf6ff5df2a94e7ccb4f"
+        "tokens.ts": "93ab6d68e1fe067da07cd7ea32de167e580ed655af77762984c6582afbad00a8"
       }
     },
     "audit-logging/audit-logging.api": {
       "files": {
-        "README.md": "d74c3c9dfae76f72ea705952b75e0f980b738ec44625b4a8adc75c5d185d92b6",
+        "README.md": "396e8f062f5894a4c42d079bcc616dd26fc26d86cad461297ef674d63cb0064c",
         "audit-api.module.ts": "cab7d1de6c4b22621cba7a054b8da24ae51a694cfd84beb183856391f74921ed",
-        "audit-api.options.ts": "877d3bfd7d011c5211fa7b2baf9b33cf569ae7a87f217cd571bb130ae805c0c4",
-        "audit-events-api.service.ts": "0edd0dbc2c1d636a13d8e44eff698aa3b56b7e3a693b85dd5504c28bb18f1b44",
+        "audit-api.options.ts": "ce84e63a773a0eb8a62b4556dcb729190c4f3ea31ec83310390bf1b88aa562f1",
+        "audit-events-api.service.ts": "3f2e2b69c15b002b31cbb66476e129dc75085dfc7e7c1c15d14d490a0f35cd74",
         "audit-events-csv.ts": "2113b1de93c4f7992b23590c141d63edde248262791fbf60bb8df957ea598403",
-        "audit-events.controller.ts": "0103f91fb17279bb8e220e501928ef1d7174958ff228a817fd5c01d250cfa775",
-        "dto/audit-api.dto.ts": "b3578ea1b3026ea2b881b1bc458ebf4fe813feff0970bf3c01ba017402247722",
-        "index.ts": "68134e75a9111eb15f18ba63e5995b0cb918aa521de86d0066297dcda398a454",
+        "audit-events.controller.ts": "e0d61b68244a77c7776ed8fc71780c57749198444502fa89e1e8ef0ce4737cf0",
+        "dto/audit-api.dto.ts": "85d67dcfa4a11122617219016a7a1f2c1838cb9fc392da64b168d05c093158df",
+        "index.ts": "72b485e4435934f2ca4dc8b72a5e30d89a5ffdce4872fad6fc08194dd15450a8",
         "tokens.ts": "9481fe5da945593e93a0b16855d34acd35113d8b86fae92fee060707db6e75b8"
       }
     },
@@ -54,7 +54,7 @@
       ],
       "files": {
         "README.md": "c8cfdebfd21ace5d30587a7d69a75e30b8b4ee2684061a9f67d6cb9541ce15f5",
-        "audit-event-reader.port.ts": "ae1a149fa046694ccc74698131722c15c6ad8040b7de0f0b0544aff5caa60ccf",
+        "audit-event-reader.port.ts": "d316b256bca082f4cf92d8e60155c6f3a9fe6d9004cc0f7a6ec46ee30791abbf",
         "audit-event-repository.port.ts": "747ff6ee451464398b0d48182f219d96fe006b694134fad97e08d794b5dbc29e",
         "audit-event.interface.ts": "ef9942dea8bd6eb45e14f67fcb7e080545da2c87db2bf5d9125358793290c93a",
         "audit-listener.ts": "d9d4ef6ba517ed170e5ab2e8ae675828a744e37455b2981c31d968f8d2ed28b4",
@@ -119,7 +119,7 @@
     }
   },
   "source": "https://github.com/ascendra-dev/ascendra-commons.git",
-  "commit": "51da8f7a2997efb0f106e5155c134e32be42d110",
+  "commit": "99bd1dd72a048a928919487520b0397ab0ca270d",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-18T02:54:58.268Z"
+  "syncedAt": "2026-10-18T17:35:31.924Z"
 }

@@ -33,10 +33,13 @@ atomic, give it an executor bound to that transaction — see the module README,
 
 ## `application`
 
-Stamped on insert and filtered on every read (`application = $1`), so an app's
-own screen sees only its own rows. Constant within one app's database; the
-column keeps the table correct if audit history is ever consolidated for
-cross-product compliance reporting (see the module README, "the one to watch").
+Stamped on insert (`PostgresAuditPersistenceModule.forRoot({ application })`, one
+string) and scoped on every read (`application in (…)`): the observability module's
+`application` is one name — an app's own screen sees only its own rows — or a list,
+for a backend that serves more than one application. `AuditQuery.application`
+(`GET /audit/events?application=`) narrows within that scope, never beyond it. No
+`application`-led index yet: with one application per table it would select
+everything; add one when several applications share the table.
 
 ## Retention
 

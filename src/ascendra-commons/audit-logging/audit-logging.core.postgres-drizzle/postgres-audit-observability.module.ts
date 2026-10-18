@@ -6,8 +6,11 @@ import { AUDIT_APPLICATION_ID, AUDIT_SQL_EXECUTOR } from './tokens';
 export interface PostgresAuditObservabilityModuleConfig {
   /** The token the consuming app provides its Drizzle db under — the normal pooled connection is fine (reads only). */
   sqlExecutorToken: string | symbol | (new (...args: never[]) => unknown);
-  /** Which Ascendra application this process is — every query is scoped to it. */
-  application: string;
+  /**
+   * The application(s) this backend reads — every query is scoped to them. One name for an app's own screen (its
+   * rows only); several when one backend serves more than one application, which the audit list can then filter by.
+   */
+  application: string | string[];
   /** Whatever module(s) export the provider behind `sqlExecutorToken`. Omit only if that module is `global: true`. */
   imports?: DynamicModule['imports'];
 }

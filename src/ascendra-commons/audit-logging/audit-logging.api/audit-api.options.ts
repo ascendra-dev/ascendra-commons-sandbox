@@ -22,6 +22,14 @@ export interface AuditCatalogEntry {
   actions: string[];
 }
 
+/** `GET /audit/catalog` — what the audit UI's filter selects offer. */
+export interface AuditCatalog {
+  /** The configured vocabulary (`forRoot({ catalog })`) — the Entity type / Action selects. */
+  entries: AuditCatalogEntry[];
+  /** The applications the reader is scoped to (`AuditEventReader.applications()`) — the Application select. */
+  applications: string[];
+}
+
 export interface AuditApiModuleConfig {
   /** Modules exporting `AUDIT_EVENT_READER` — a stack adapter's `PostgresAuditObservabilityModule`. */
   imports?: DynamicModule['imports'];

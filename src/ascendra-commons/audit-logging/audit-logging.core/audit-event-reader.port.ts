@@ -131,8 +131,13 @@ export interface AuditCoverageEntry {
  * have no dedicated index — fine for their expected cardinality (a
  * correlation id is a handful of rows; `actor`/`action` are normally combined
  * with an indexed filter).
+ *
+ * `application` narrows to one application *within* the reader's own scope (see
+ * `AuditEventReader.applications()`) — it never widens it; a value outside the
+ * scope simply matches nothing.
  */
 export interface AuditQuery {
+  application?: string;
   entityType?: string;
   entityId?: string;
   tenantId?: string | null;
@@ -165,6 +170,12 @@ export interface AuditQueryResult {
  * Never imported by feature code — an admin API module resolves it.
  */
 export interface AuditEventReader {
+  /**
+   * The applications this reader can see — every query is scoped to them. One for an app's own screen; several
+   * once one backend serves more than one application. Feeds `GET /audit/catalog`'s Application options.
+   */
+  applications(): string[];
+
   find(query: AuditQuery): Promise<AuditQueryResult>;
 
   /**

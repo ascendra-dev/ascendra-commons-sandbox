@@ -4,6 +4,8 @@
  * service parses dates and applies the actor-scoped tenant filter.
  */
 export interface AuditEventsQueryDto {
+  /** One of the reader's applications (`GET /audit/catalog`'s `applications`); any other value matches nothing. */
+  application?: string;
   entityType?: string;
   entityId?: string;
   /** Only honored for a platform admin; a non-platform actor is pinned to their own tenant. `'null'` = platform-level rows. */

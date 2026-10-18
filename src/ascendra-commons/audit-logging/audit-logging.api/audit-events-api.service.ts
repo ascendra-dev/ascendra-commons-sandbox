@@ -15,7 +15,7 @@ import {
   type AuditTopActionsStats,
 } from '../audit-logging.core';
 import { AUDIT_API_OPTIONS } from './tokens';
-import type { AuditApiOptions, AuditCatalogEntry } from './audit-api.options';
+import type { AuditApiOptions, AuditCatalog } from './audit-api.options';
 import type {
   AuditActorActivityQueryDto,
   AuditCoverageRequestDto,
@@ -129,9 +129,12 @@ export class AuditEventsApiService {
     return this.reader.retention(await this.statsTenant(actor, dto));
   }
 
-  /** The app's configured audit vocabulary (`forRoot({ catalog })`) — not tenant data, so not tenant-scoped. */
-  catalog(): AuditCatalogEntry[] {
-    return this.options.catalog;
+  /**
+   * The filter selects' options: the configured audit vocabulary (`forRoot({ catalog })`) and the applications the
+   * reader is scoped to. Configuration, not tenant data — so not tenant-scoped.
+   */
+  catalog(): AuditCatalog {
+    return { entries: this.options.catalog, applications: this.reader.applications() };
   }
 
   /**
@@ -201,6 +204,7 @@ export class AuditEventsApiService {
 
   private baseQuery(dto: AuditEventsQueryDto): AuditQuery {
     const query: AuditQuery = {
+      application: dto.application,
       entityType: dto.entityType,
       entityId: dto.entityId,
       actor: dto.actor,
