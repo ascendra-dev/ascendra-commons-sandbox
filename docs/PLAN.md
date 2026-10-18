@@ -4,7 +4,7 @@ A NestJS host app that runs `ascendra-commons` modules for real, so `ascendra-co
 reviewed against real APIs and real data instead of mocks. Audit logging first; every later module follows the
 same recipe.
 
-Status: **phases 1–6 done (3b, 3c included), 2026-10-18; phase 7 (docs + new-module onboarding) is next.** Execution is phase by phase — each phase ends at a checkpoint
+Status: **all seven phases done (3b, 3c included), 2026-10-18.** Next: the second module — [NEW-MODULE.md](NEW-MODULE.md). Execution is phase by phase — each phase ends at a checkpoint
 (shown working, reviewed, then committed) before the next one starts.
 
 ## Why
@@ -134,10 +134,10 @@ Each phase ends at a checkpoint: shown working → reviewed → committed.
    screen; the transaction note in audit-logging's README; dev users' display names.
 6. **Delete the mocks** (both copies) once nothing uses them; module README updated. **Done 2026-10-18** (commons-ui).
 7. **Docs** — this repo's README, and a "new module onboarding" checklist: `node ascendra-commons.js add`, domain scenario,
-   seed scenario, catalog, testbed wiring.
+   seed scenario, catalog, testbed wiring. **Done 2026-10-18**: the README is the start-here page; the checklist is [NEW-MODULE.md](NEW-MODULE.md).
 
 ## Later modules
 
-Same recipe per module — one `node ascendra-commons.js add` and one generator script that drives the module through its own entry
+Follow [NEW-MODULE.md](NEW-MODULE.md). Same recipe per module — one `node ascendra-commons.js add` and one generator script that drives the module through its own entry
 points, never a product built around it: `background-jobs` enqueues and runs real jobs, `rate-limiting` gets a
 throttled endpoint the generator hits, `notification` sends through a fake channel.

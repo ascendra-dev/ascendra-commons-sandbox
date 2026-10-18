@@ -1,9 +1,18 @@
 # ascendra-commons-sandbox
 
-A NestJS host app that runs `ascendra-commons` modules for real — vendored exactly as a product would vendor them —
-so `ascendra-commons-ui` is built and reviewed against real APIs and real data instead of mocks.
+A NestJS host app that runs `ascendra-commons` modules for real — vendored and wired exactly as a product would — so
+`ascendra-commons-ui` is built and reviewed against real APIs and real data. (`ascendra-commons-ui` has no mocks: its
+testbed runs on this.)
 
-The plan, decisions and phase status: [docs/PLAN.md](docs/PLAN.md).
+| Repo | Role |
+|---|---|
+| `ascendra-commons` | The backend modules — the source of truth. |
+| **`ascendra-commons-sandbox`** (this repo) | Runs them: NestJS on :3010, its own Postgres, generated history, dev sign-in. |
+| `ascendra-commons-ui` | The modules' admin UI; its `testbed/` (Next.js, :3002) talks to this API. |
+| `ascendra-ui` | The component library the UI is built with. |
+
+- The plan, decisions and phase status: [docs/PLAN.md](docs/PLAN.md).
+- Adding the next module (background-jobs, rate-limiting, …): [docs/NEW-MODULE.md](docs/NEW-MODULE.md).
 
 ## Quickstart
 
@@ -17,10 +26,26 @@ npm run db:reset     # migrate + seed 90 days of realistic audit history
 npm run start:dev    # http://localhost:3010 — GET /health
 ```
 
+Then the UI, in `ascendra-commons-ui/testbed`:
+
+```sh
+cp .env.example .env.local    # NEXT_PUBLIC_API_URL=http://localhost:3010, next-auth settings
+npm install
+npm run dev -- -p 3002        # http://localhost:3002/observability — sign in from the avatar menu
+```
+
 ## Signing in (dev)
 
-There's no real identity provider: pick a dev user and get a token for it. A platform admin reads every tenant's
-audit records, a tenant admin only its own tenant's, and the member has no `audit.view` (the audit API answers 403).
+There's no real identity provider: pick a dev user and get a token for it (the testbed's avatar menu does this for
+you). Tokens last 12 hours.
+
+| Dev user | Persona | Tenant | Sees |
+|---|---|---|---|
+| `platform.admin@ascendra.test` — Platform Admin | `platform-admin` | — | every tenant's records |
+| `admin@acme.test` / `admin@globex.test` / `admin@meridian.test` | `tenant-admin` | their own | their tenant's records only |
+| `member@acme.test` — Acme Member | `member` | `tenant_acme` | nothing: no `audit.view`, the audit API answers 403 |
+
+What each persona may do is authorization's config — `PERSONA_ACTIONS` in `src/modules/commons/authorization.ts`.
 
 ```sh
 curl localhost:3010/dev/personas                       # who you can be
@@ -34,7 +59,12 @@ curl localhost:3010/audit/events -H "Authorization: Bearer <token>"
 | `GET /health` | public | App up, database reachable (503 if not). |
 | `GET /dev/personas`, `POST /dev/token` | public, not in production | Dev sign-in. |
 | `GET /me` | token | `{ actor, allowedActions }` — for showing or hiding nav. |
-| `GET /audit/*` | `audit.view` | audit-logging's read API (`audit-logging.api`). |
+| `GET /audit/events`, `/events.csv`, `/events/:id` | `audit.view` | The audit log, its CSV export, one record with its diff. |
+| `GET /audit/entities/:type/:id/history`, `/trace/:correlationId`, `/actors/:actor/activity` | `audit.view` | One entity's history, one request's trace, one actor's activity. |
+| `GET /audit/stats/overview`, `/stats/top-actions`, `/retention`, `/catalog` | `audit.view` | The Overview, Retention & Volume, and the filter vocabulary. |
+
+The audit endpoints are `audit-logging.api`'s — its README has the details. A tenant admin's results are always
+scoped to their own tenant; a platform admin may pass `tenantId`.
 
 Errors follow api-contract Rule 1 (`{ statusCode, error, message, code, path }`); every response carries an
 `X-Request-Id` (Rule 7). CORS allows the origins in `CORS_ORIGINS`.
@@ -92,4 +122,6 @@ There's no product behind it: each event carries just what that change touched.
 - One draft invoice revised 60 times, so its history needs "Load older".
 - Platform-level records (no tenant): tenants created and upgraded.
 
-`normal` volume is about 3,900 records over 90 days; `large` is about 25× that, for export and performance testing.
+`normal` volume is about 3,700–3,900 records over 90 days (history ends at the real "now", so the exact count moves
+with the hour); `large` is about 25× that, for export and performance testing. The same `--seed` at the same moment
+gives the same records.
