@@ -120,10 +120,16 @@ export class AuditEventsController {
     return this.service.actorActivity(actor, actorFilter, { occurredAfter, occurredBefore });
   }
 
-  @Get('stats')
+  @Get('stats/overview')
   @RequiresAction(AUDIT_ACTIONS.VIEW)
-  stats(@CurrentActor() actor: Actor, @Query('window') window?: string, @Query('tenantId') tenantId?: string) {
-    return this.service.stats(actor, { window, tenantId });
+  overviewStats(@CurrentActor() actor: Actor, @Query('window') window?: string, @Query('tenantId') tenantId?: string) {
+    return this.service.overviewStats(actor, { window, tenantId });
+  }
+
+  @Get('stats/top-actions')
+  @RequiresAction(AUDIT_ACTIONS.VIEW)
+  topActions(@CurrentActor() actor: Actor, @Query('window') window?: string, @Query('tenantId') tenantId?: string) {
+    return this.service.topActions(actor, { window, tenantId });
   }
 
   /** api-contract.md Rule 4's bounded bare-array case — the app's fixed vocabulary, never paginated. */

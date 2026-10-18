@@ -3,6 +3,8 @@ import { sql, type SQL } from 'drizzle-orm';
 import {
   decodeKeysetCursor,
   encodeKeysetCursor,
+  fillDailyCounts,
+  kpiValue,
   parseStatsWindow,
   type ActorActivityQuery,
   type ActorActivitySummary,
@@ -11,8 +13,9 @@ import {
   type AuditEvent,
   type AuditEventReader,
   type AuditQuery,
+  type AuditOverviewStats,
   type AuditQueryResult,
-  type AuditStats,
+  type AuditTopActionsStats,
 } from '../../audit-logging.core';
 import type { SqlExecutor } from '../persistence/sql-executor';
 import { AUDIT_APPLICATION_ID, AUDIT_SQL_EXECUTOR } from '../tokens';
@@ -120,13 +123,13 @@ export class PostgresAuditEventReader implements AuditEventReader {
 
     const byActionRows = (
       await this.db.execute(sql`
-        select action, count(*)::int as count, max(occurred_at) as last_occurred_at
+        select entity_type, action, count(*)::int as count, max(occurred_at) as last_occurred_at
         from commons_audit_event
         where ${where}
-        group by action
-        order by count(*) desc, action asc
+        group by entity_type, action
+        order by count(*) desc, entity_type asc, action asc
       `)
-    ).rows as Array<{ action: string; count: number; last_occurred_at: unknown }>;
+    ).rows as Array<{ entity_type: string; action: string; count: number; last_occurred_at: unknown }>;
 
     return {
       actor,
@@ -134,66 +137,75 @@ export class PostgresAuditEventReader implements AuditEventReader {
       lastSeen: overall.last_seen == null ? null : asDate(overall.last_seen),
       totalRecords: overall.total ?? 0,
       tenantsTouched: overall.tenants ?? [],
-      byAction: byActionRows.map((r) => ({ action: r.action, count: r.count, lastOccurredAt: asDate(r.last_occurred_at) })),
+      byAction: byActionRows.map((r) => ({
+        entityType: r.entity_type,
+        action: r.action,
+        count: r.count,
+        lastOccurredAt: asDate(r.last_occurred_at),
+      })),
     };
   }
 
-  async stats(window: string, tenantId?: string | null): Promise<AuditStats> {
-    const { label, since } = parseStatsWindow(window);
-    const conds: SQL[] = [sql`application = ${this.application}`, sql`occurred_at >= ${since}`];
-    if (tenantId !== undefined) {
-      conds.push(tenantId === null ? sql`tenant_id is null` : sql`tenant_id = ${tenantId}`);
-    }
-    const where = sql.join(conds, sql` and `);
+  async overviewStats(window: string, tenantId?: string | null, now: Date = new Date()): Promise<AuditOverviewStats> {
+    const { label, since } = parseStatsWindow(window, now);
+    const scope = this.scope(tenantId);
 
     const perDayRows = (
       await this.db.execute(sql`
-        select to_char(date_trunc('day', occurred_at), 'YYYY-MM-DD') as day, count(*)::int as count
+        select to_char(occurred_at at time zone 'UTC', 'YYYY-MM-DD') as day, count(*)::int as count
         from commons_audit_event
-        where ${where}
+        where ${scope} and occurred_at >= ${since}
         group by 1
-        order by 1
       `)
     ).rows as Array<{ day: string; count: number }>;
 
-    const topActionRows = (
+    // Each KPI against the equal period before it — one pass over the past 60 days (the widest pair, 30 + 30).
+    const ago = (days: number) => new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+    const [d1, d2, d7, d14, d30, d60] = [1, 2, 7, 14, 30, 60].map(ago);
+    const kpiRows = (
       await this.db.execute(sql`
-        select action, count(*)::int as count
+        select
+          count(*) filter (where occurred_at >= ${d1})::int as records_24h,
+          count(*) filter (where occurred_at >= ${d2} and occurred_at < ${d1})::int as records_24h_prior,
+          count(*) filter (where occurred_at >= ${d7})::int as records_7d,
+          count(*) filter (where occurred_at >= ${d14} and occurred_at < ${d7})::int as records_7d_prior,
+          count(distinct actor) filter (where occurred_at >= ${d30})::int as actors_30d,
+          count(distinct actor) filter (where occurred_at < ${d30})::int as actors_30d_prior,
+          count(distinct entity_type) filter (where occurred_at >= ${d30})::int as entity_types_30d,
+          count(distinct entity_type) filter (where occurred_at < ${d30})::int as entity_types_30d_prior
         from commons_audit_event
-        where ${where}
-        group by action
-        order by count(*) desc, action asc
-        limit 10
+        where ${scope} and occurred_at >= ${d60} and occurred_at <= ${now}
       `)
-    ).rows as Array<{ action: string; count: number }>;
-
-    const topActorRows = (
-      await this.db.execute(sql`
-        select actor, count(*)::int as count
-        from commons_audit_event
-        where ${where}
-        group by actor
-        order by count(*) desc, actor asc
-        limit 10
-      `)
-    ).rows as Array<{ actor: string; count: number }>;
-
-    const perTenantRows = (
-      await this.db.execute(sql`
-        select tenant_id, count(*)::int as count
-        from commons_audit_event
-        where ${where}
-        group by tenant_id
-        order by count(*) desc
-      `)
-    ).rows as Array<{ tenant_id: string | null; count: number }>;
+    ).rows as Array<Record<string, number>>;
+    const k = kpiRows[0];
 
     return {
       window: label,
-      perDay: perDayRows.map((r) => ({ day: r.day, count: r.count })),
-      topActions: topActionRows.map((r) => ({ action: r.action, count: r.count })),
-      topActors: topActorRows.map((r) => ({ actor: r.actor, count: r.count })),
-      perTenant: perTenantRows.map((r) => ({ tenantId: r.tenant_id, count: r.count })),
+      perDay: fillDailyCounts(since, now, new Map(perDayRows.map((r) => [r.day, r.count]))),
+      kpis: {
+        records24h: kpiValue(k.records_24h, k.records_24h_prior),
+        records7d: kpiValue(k.records_7d, k.records_7d_prior),
+        distinctActors30d: kpiValue(k.actors_30d, k.actors_30d_prior),
+        entityTypes30d: kpiValue(k.entity_types_30d, k.entity_types_30d_prior),
+      },
+    };
+  }
+
+  async topActions(window: string, tenantId?: string | null): Promise<AuditTopActionsStats> {
+    const { label, since } = parseStatsWindow(window);
+    const rows = (
+      await this.db.execute(sql`
+        select entity_type, action, count(*)::int as count, count(distinct actor)::int as actors
+        from commons_audit_event
+        where ${this.scope(tenantId)} and occurred_at >= ${since}
+        group by entity_type, action
+        order by count(*) desc, entity_type asc, action asc
+        limit 10
+      `)
+    ).rows as Array<{ entity_type: string; action: string; count: number; actors: number }>;
+    return {
+      window: label,
+      topActions: rows.map((r) => ({ entityType: r.entity_type, action: r.action, count: r.count, actors: r.actors })),
     };
   }
 
@@ -245,6 +257,13 @@ export class PostgresAuditEventReader implements AuditEventReader {
     ];
   }
   /** `AuditQuery`'s filter fields as ANDable conditions — shared by `find()` and `countUpTo()`; ignores `limit`/`cursor`. */
+  /** This app's rows, narrowed to one tenant (a string), platform-level rows (`null`), or none (absent). */
+  private scope(tenantId?: string | null): SQL {
+    const conds: SQL[] = [sql`application = ${this.application}`];
+    if (tenantId !== undefined) conds.push(tenantId === null ? sql`tenant_id is null` : sql`tenant_id = ${tenantId}`);
+    return sql.join(conds, sql` and `);
+  }
+
   private filterConds(query: AuditQuery): SQL[] {
     const conds: SQL[] = [sql`application = ${this.application}`];
     if (query.entityType !== undefined) conds.push(sql`entity_type = ${query.entityType}`);

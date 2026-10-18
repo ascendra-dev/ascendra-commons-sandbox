@@ -10,7 +10,9 @@ export interface ActorActivityQuery {
   occurredBefore?: Date;
 }
 
+/** One (entity type, action) pair — a verb-only `created` means different things for an invoice and a user. */
 export interface ActorActionCount {
+  entityType: string;
   action: string;
   count: number;
   lastOccurredAt: Date;
@@ -34,30 +36,48 @@ export interface AuditDailyCount {
   count: number;
 }
 
-export interface AuditActionCount {
-  action: string;
-  count: number;
+/** A KPI's value now, and its change against the equal period just before. */
+export interface AuditKpiValue {
+  value: number;
+  /** Percent change vs. the prior period, one decimal; `null` when the prior period was empty (no meaningful %). */
+  deltaPct: number | null;
 }
 
-export interface AuditActorCount {
-  actor: string;
-  count: number;
+/** Fixed rolling periods, independent of the overview's `window` (see `kpiValue`). */
+export interface AuditStatsKpis {
+  /** Records in the past 24 hours, vs. the 24 hours before. */
+  records24h: AuditKpiValue;
+  /** Records in the past 7 days, vs. the 7 days before. */
+  records7d: AuditKpiValue;
+  /** Distinct actors in the past 30 days, vs. the 30 days before. */
+  distinctActors30d: AuditKpiValue;
+  /** Distinct entity types in the past 30 days, vs. the 30 days before. */
+  entityTypes30d: AuditKpiValue;
 }
 
-export interface AuditTenantCount {
-  tenantId: string | null;
-  count: number;
-}
-
-/** What the Overview screen renders (`GET /audit/stats`). */
-export interface AuditStats {
+/** `GET /audit/stats/overview` — the Overview screen's KPI row and volume chart. */
+export interface AuditOverviewStats {
   /** Normalized window label, e.g. `'30d'` (see `parseStatsWindow`). */
   window: string;
-  /** Oldest first. */
+  /** Every UTC day in the window, oldest first — `0` on a day with no records (see `fillDailyCounts`). */
   perDay: AuditDailyCount[];
-  topActions: AuditActionCount[];
-  topActors: AuditActorCount[];
-  perTenant: AuditTenantCount[];
+  kpis: AuditStatsKpis;
+}
+
+/** One row of the Top actions ranking — by (entity type, action), so `created` for invoices and users stay apart. */
+export interface AuditTopAction {
+  entityType: string;
+  action: string;
+  count: number;
+  /** Distinct actors behind those records. */
+  actors: number;
+}
+
+/** `GET /audit/stats/top-actions` — the Overview screen's Top actions table. */
+export interface AuditTopActionsStats {
+  window: string;
+  /** The 10 most frequent, most frequent first. */
+  topActions: AuditTopAction[];
 }
 
 /** Body of `POST /audit/coverage` — a vertical's own declared catalog. */
@@ -146,11 +166,14 @@ export interface AuditEventReader {
   summarizeActor(actor: string, query: ActorActivityQuery): Promise<ActorActivitySummary>;
 
   /**
-   * Aggregate volume/shape stats over `window` (e.g. `'30d'`, see
-   * `parseStatsWindow`) — the Overview screen. `tenantId` follows the same
-   * absent/string/`null` convention as `AuditQuery.tenantId`.
+   * The Overview screen's KPI row and daily volume over `window` (e.g. `'30d'`,
+   * see `parseStatsWindow`). `tenantId` follows the same absent/string/`null`
+   * convention as `AuditQuery.tenantId`.
    */
-  stats(window: string, tenantId?: string | null): Promise<AuditStats>;
+  overviewStats(window: string, tenantId?: string | null): Promise<AuditOverviewStats>;
+
+  /** The Overview screen's Top actions over `window`, ranked by (entity type, action). Same `tenantId` convention. */
+  topActions(window: string, tenantId?: string | null): Promise<AuditTopActionsStats>;
 
   /**
    * Per-request drift check — for each declared entity type / action, how

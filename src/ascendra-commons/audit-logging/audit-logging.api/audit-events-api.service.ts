@@ -9,8 +9,9 @@ import {
   type AuditEventDetail,
   type AuditEventReader,
   type AuditQuery,
+  type AuditOverviewStats,
   type AuditQueryResult,
-  type AuditStats,
+  type AuditTopActionsStats,
 } from '../audit-logging.core';
 import { AUDIT_API_OPTIONS } from './tokens';
 import type { AuditApiOptions, AuditCatalogEntry } from './audit-api.options';
@@ -111,21 +112,14 @@ export class AuditEventsApiService {
     });
   }
 
-  /**
-   * The Overview screen. A non-platform actor's figures are forced to their
-   * own tenant; a platform admin sees every tenant by default and may filter
-   * to one via `tenantId` (or `'null'` for platform-level rows only) — same
-   * convention as `find()`'s `tenantId` param.
-   */
-  async stats(actor: Actor, dto: AuditStatsQueryDto): Promise<AuditStats> {
-    if (await this.options.isPlatformAdmin(actor)) {
-      const tenantId = dto.tenantId !== undefined ? (dto.tenantId === 'null' ? null : dto.tenantId) : undefined;
-      return this.reader.stats(dto.window ?? '30d', tenantId);
-    }
-    if (actor.tenantId === null) {
-      throw new ForbiddenException('a tenant-scoped actor cannot read the audit log without a tenant');
-    }
-    return this.reader.stats(dto.window ?? '30d', actor.tenantId);
+  /** The Overview screen's KPI row and volume chart (window defaults to 30 days). */
+  async overviewStats(actor: Actor, dto: AuditStatsQueryDto): Promise<AuditOverviewStats> {
+    return this.reader.overviewStats(dto.window ?? '30d', await this.statsTenant(actor, dto));
+  }
+
+  /** The Overview screen's Top actions, by (entity type, action) (window defaults to 7 days). */
+  async topActions(actor: Actor, dto: AuditStatsQueryDto): Promise<AuditTopActionsStats> {
+    return this.reader.topActions(dto.window ?? '7d', await this.statsTenant(actor, dto));
   }
 
   /** The app's configured audit vocabulary (`forRoot({ catalog })`) — not tenant data, so not tenant-scoped. */
@@ -145,6 +139,21 @@ export class AuditEventsApiService {
       actions: declaresNothing ? this.options.catalog.flatMap((e) => e.actions) : (dto?.actions ?? []),
       ...(tenantId !== undefined ? { tenantId } : {}),
     });
+  }
+
+  /**
+   * Whose figures the Overview shows. A non-platform actor's are forced to their own tenant; a platform admin sees
+   * every tenant by default and may filter to one via `tenantId` (or `'null'` for platform-level rows only) — same
+   * convention as `find()`'s `tenantId` param.
+   */
+  private async statsTenant(actor: Actor, dto: AuditStatsQueryDto): Promise<string | null | undefined> {
+    if (await this.options.isPlatformAdmin(actor)) {
+      return dto.tenantId !== undefined ? (dto.tenantId === 'null' ? null : dto.tenantId) : undefined;
+    }
+    if (actor.tenantId === null) {
+      throw new ForbiddenException('a tenant-scoped actor cannot read the audit log without a tenant');
+    }
+    return actor.tenantId;
   }
 
   /** `undefined` → platform admin, unrestricted. Throws for a tenant-scoped actor with no tenant. */

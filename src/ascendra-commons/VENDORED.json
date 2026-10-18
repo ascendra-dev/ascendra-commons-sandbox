@@ -6,7 +6,7 @@
         "README.md": "e260954c89001cb345060f6881064228bb83d266d64168d9e0d41ac5bf56e557",
         "index.ts": "287035735686e08a8706815de15efec015132de9d7fc7dfe8c9cac8c7aecd158",
         "migrations/0001_audit_event.sql": "b8a4bc6a225bb62bf57734595e6c2c1045cc10bec1725ebaf310c53373fdfa2f",
-        "observability/postgres-audit-event-reader.ts": "47641ab3595266e537ef0a8c1a831e9d7bde4fb0ed91fd355233004a9657fa6f",
+        "observability/postgres-audit-event-reader.ts": "46e132a129104e47c9a94da7ec02f7b45438bdb768bf2dcaa643b305bef3c051",
         "persistence/audit-event.schema.ts": "2ebb454550f60fe538a6607e8155b2163cc2842450177bd6e0950f338e0cda8d",
         "persistence/postgres-audit-event.repository.ts": "7853b081d602f3814d5e5442d1dbdbfdc5da67d23ec25acaebd574bf9c1b1b28",
         "persistence/sql-executor.ts": "7a6cc2072a9baacd5b75970ed90ab51670fb8c28dacbbe2ee2ff2c05c2f04ba1",
@@ -17,13 +17,13 @@
     },
     "audit-logging/audit-logging.api": {
       "files": {
-        "README.md": "a1d488c32bc00ca1762a4059dec6ff1d3240f5ce6b0b5ce2f6043dc7598caac0",
+        "README.md": "beaa66083eda00985c77d678f8c58b6d72a486bb600df10fcce787f3763ba243",
         "audit-api.module.ts": "cab7d1de6c4b22621cba7a054b8da24ae51a694cfd84beb183856391f74921ed",
         "audit-api.options.ts": "877d3bfd7d011c5211fa7b2baf9b33cf569ae7a87f217cd571bb130ae805c0c4",
-        "audit-events-api.service.ts": "8365b2f2be92266922ea2ccb0b165b7d06ab8c63a8bc5aaf96de80f463561382",
+        "audit-events-api.service.ts": "529915635cb9de03a0920c5c5e471e8dbd254031318100e57449f90e1da441ad",
         "audit-events-csv.ts": "2113b1de93c4f7992b23590c141d63edde248262791fbf60bb8df957ea598403",
-        "audit-events.controller.ts": "41379f021d0b4e4ee798403b5c3166fa6b83c1899801ddff13d85c69f3b2794b",
-        "dto/audit-api.dto.ts": "79b6dc0ada80b76574fcb32a980c486b4437b46774feeb443fb211f046f3300f",
+        "audit-events.controller.ts": "e87d152258dd9a61622b626a697c51f2ed7c5b94b16b0ffb6acecdc1f0470cb6",
+        "dto/audit-api.dto.ts": "a3d69b140efe99a19c7cb330cc4cbf8db3dae6f00d670a70980e79ad09642bc8",
         "index.ts": "7ebce7984e5e0da800bf8d5ed421d9aa5ac8fa3ede4b4622cec827675d8de4aa",
         "tokens.ts": "9481fe5da945593e93a0b16855d34acd35113d8b86fae92fee060707db6e75b8"
       }
@@ -54,7 +54,7 @@
       ],
       "files": {
         "README.md": "c8cfdebfd21ace5d30587a7d69a75e30b8b4ee2684061a9f67d6cb9541ce15f5",
-        "audit-event-reader.port.ts": "591d07dfb5786de59dc4fd4ebd546edce37bcda67c2a2de65cc27e57929ad305",
+        "audit-event-reader.port.ts": "8f2070143bb1d053cf7550c71a01bbb64f2bbb6e0c05ae2553dd2828acc41917",
         "audit-event-repository.port.ts": "747ff6ee451464398b0d48182f219d96fe006b694134fad97e08d794b5dbc29e",
         "audit-event.interface.ts": "ef9942dea8bd6eb45e14f67fcb7e080545da2c87db2bf5d9125358793290c93a",
         "audit-listener.ts": "d9d4ef6ba517ed170e5ab2e8ae675828a744e37455b2981c31d968f8d2ed28b4",
@@ -63,10 +63,10 @@
         "correlation-context.ts": "dca068464586ec5bc2f6f8ce7f91abfcfbe7ed0eb660af1046af749054513438",
         "correlation-id.middleware.ts": "7137020b547e55205db4bce0c390d8276404bfdaeb496d837d57c26cbb7bd6a9",
         "field-diff.ts": "5584d54e7197c4450f8eea9bbde0e98c0739122f5529290a9eb6b1aa4e8499da",
-        "index.ts": "f4cbbbef8203c36cbe91bdc3889c818349e5871a550d57a7a6bd76e687632671",
+        "index.ts": "843121c5064bc6f20f4723dabbe2571d3bc9f73704f75f806800fa1d8a9601d9",
         "keyset-cursor.ts": "23e1002fb67e1f91541aa5dee0fb8f1ce300571d46ff94f4c4c7671b0e362e3d",
         "persist-audit-record.ts": "44f07c55e9e0c691037d693ee8c0d5ae55b442063ea6909031e547ed31d38c49",
-        "stats-window.ts": "a302006ba9c6df4c18cc314f778de61200042c22cc73c6798e0d59bacc298105",
+        "stats-window.ts": "d4ab8443014b3abe20e355d409da6089618d9e7d387aea68d09666ef9f578359",
         "tokens.ts": "8c09f16f195e508dbc23703a3155f48c8dde9ec43597d5613106fb4d96d6fd8e"
       }
     },
@@ -119,7 +119,7 @@
     }
   },
   "source": "/Users/zakashah/ascendra/ascendra-public/ascendra-commons (local checkout)",
-  "commit": "5bb46c0be97afc0ce826cc16938c4443cfc0fc23",
+  "commit": "61042f777ee635936245b2446c1a73f904bd5d1c",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-18T01:21:36.531Z"
+  "syncedAt": "2026-10-18T02:10:03.269Z"
 }

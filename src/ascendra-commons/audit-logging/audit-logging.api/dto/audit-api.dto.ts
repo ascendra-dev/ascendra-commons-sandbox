@@ -26,9 +26,9 @@ export interface AuditActorActivityQueryDto {
   occurredBefore?: string;
 }
 
-/** Query params for `GET /audit/stats`. */
+/** Query params for `GET /audit/stats/overview` and `/audit/stats/top-actions`. */
 export interface AuditStatsQueryDto {
-  /** e.g. `'30d'` — see `parseStatsWindow`. Defaults to 30 days. */
+  /** e.g. `'30d'` — see `parseStatsWindow`. Defaults to 30 days (overview) / 7 days (top actions). */
   window?: string;
   /** Only honored for a platform admin, same convention as `AuditEventsQueryDto.tenantId`. */
   tenantId?: string;
