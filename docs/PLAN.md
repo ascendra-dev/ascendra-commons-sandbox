@@ -4,7 +4,7 @@ A NestJS host app that runs `ascendra-commons` modules for real, so `ascendra-co
 reviewed against real APIs and real data instead of mocks. Audit logging first; every later module follows the
 same recipe.
 
-Status: **phases 1–5 done (3b, 3c included), 2026-10-18; phase 6 (delete the mocks) is next.** Execution is phase by phase — each phase ends at a checkpoint
+Status: **phases 1–6 done (3b, 3c included), 2026-10-18; phase 7 (docs + new-module onboarding) is next.** Execution is phase by phase — each phase ends at a checkpoint
 (shown working, reviewed, then committed) before the next one starts.
 
 ## Why
@@ -132,7 +132,7 @@ Each phase ends at a checkpoint: shown working → reviewed → committed.
    (KPIs, top actions by entity type + action — also actor activity); 4xx not retried + the guard's 403 names the
    action; a tenant admin sees no Tenant column/filter; `GET /audit/retention` (read-only) and the real Retention
    screen; the transaction note in audit-logging's README; dev users' display names.
-6. **Delete the mocks** (both copies) once nothing uses them; module README updated.
+6. **Delete the mocks** (both copies) once nothing uses them; module README updated. **Done 2026-10-18** (commons-ui).
 7. **Docs** — this repo's README, and a "new module onboarding" checklist: `node ascendra-commons.js add`, domain scenario,
    seed scenario, catalog, testbed wiring.
 
