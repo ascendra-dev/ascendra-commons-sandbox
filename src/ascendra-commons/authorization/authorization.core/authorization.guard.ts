@@ -76,11 +76,13 @@ export class AuthorizationGuard implements CanActivate {
       // populated request.actor. If it didn't (misconfigured guard order, a
       // route that skipped auth by mistake), fail as "not authenticated"
       // rather than crashing on a read of an undefined actor's persona.
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Sign in to continue.');
     }
 
     if (!(await this.authorizer.can(actor, decision.action))) {
-      throw new ForbiddenException();
+      // Names the missing action: the caller can see what they lack (the frontend already knows every action name
+      // from GET /me), instead of a bare "Forbidden resource".
+      throw new ForbiddenException(`You don't have permission for this — it needs "${decision.action}".`);
     }
     return true;
   }

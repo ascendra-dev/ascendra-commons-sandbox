@@ -79,7 +79,7 @@
         "README.md": "2998218805e1b515bae73b62283097f0bfc0d1c208732f19d92d2c9fca428cbe",
         "action-availability.ts": "9a15338d8074e73a9d49f1559d1a22b89e9f87b4417cb416ed0175dcce84525e",
         "actor.type.ts": "6ecf4600841fae0460760f26ba3ea7d455901f11aae1eca31ffd5fa3b4e8eca5",
-        "authorization.guard.ts": "d836e11c62be2f5985d395bb90eb19777e0c5094990bde53439607ec8ff9bf1e",
+        "authorization.guard.ts": "9841b2cce03183f3dad49886dcb5b098106caba3cbd23ea27ece6a62a132723d",
         "authorization.module.ts": "1a90fee949d0dc4c7518726c7fd5735bb229896bf54ded38ba8274c1cbd30a0f",
         "authorizer.port.ts": "dab91d6385a7617517f546dda1b4bc7338af431fe651f6bda6f4daeb558a878e",
         "current-actor.decorator.ts": "cea75615fa1f4d975a129dd1a03a87a0761675f773c8dc0d342a64d7815e4132",
@@ -119,7 +119,7 @@
     }
   },
   "source": "/Users/zakashah/ascendra/ascendra-public/ascendra-commons (local checkout)",
-  "commit": "61042f777ee635936245b2446c1a73f904bd5d1c",
+  "commit": "0cae9ba244b098cf497e803fc1b83941d16222a6",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-18T02:10:03.269Z"
+  "syncedAt": "2026-10-18T02:13:16.263Z"
 }
