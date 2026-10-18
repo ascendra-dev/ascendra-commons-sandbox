@@ -17,12 +17,11 @@ no audit-emitter.
 | GET | `/audit/actors/:actor/activity` | `summarizeActor(actor, query)` — counts by (entity type, action), first/last seen, distinct tenants touched. Query params: `occurredAfter`, `occurredBefore`. |
 | GET | `/audit/stats/overview` | `overviewStats(window, tenantFilter)` — the Overview's KPI row and volume chart: `perDay` (every UTC day in the window, zero-filled) and `kpis` (records in the past 24 h / 7 d, distinct actors / entity types in the past 30 d — each with `deltaPct` vs. the equal period before, `null` when that period was empty). Query params: `window` (e.g. `'30d'`, default 30 days), `tenantId` (platform admin only). |
 | GET | `/audit/stats/top-actions` | `topActions(window, tenantFilter)` — the Overview's Top actions: the 10 most frequent (entity type, action) pairs, with distinct actors. Same params; `window` defaults to 7 days. |
+| GET | `/audit/retention` | `retention(tenantFilter)` — the Retention & Volume screen: `oldestRecordAt`, `rowCount`, `tableSizeBytes` (the whole table's on-disk size; `null` when scoped to one tenant) and `perMonth` (every UTC month since the oldest record, zero-filled). Read-only — records are kept indefinitely; there is no deletion. Query param: `tenantId` (platform admin only). |
 | GET | `/audit/catalog` | The app's audit vocabulary from `forRoot({ catalog })` (required) — `{ entityType, actions }[]`, a bare array (api-contract.md Rule 4's bounded case). Not tenant-scoped (it's vocabulary, not data). Feeds the audit UI's Entity type / Action selects, so an app passing `[]` gets empty dropdowns. |
 | POST | `/audit/coverage` | `countByDeclared({ entityTypes, actions })` — body is the caller's own declared catalog; an empty body (or none) uses the configured `catalog` instead. Response is a per-declared-entry `{ kind, value, count, assessment }[]`, no catalog table involved. |
 
 All gated on `@RequiresAction('audit.view')`.
-
-`GET /audit/retention` (oldest record, row count, table size) is deliberately **not** built — see the module's `mocks.html` Retention & Volume screen, left `proposed`.
 
 ## Actor scoping
 

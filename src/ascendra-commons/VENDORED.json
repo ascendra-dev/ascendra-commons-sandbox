@@ -6,7 +6,7 @@
         "README.md": "e260954c89001cb345060f6881064228bb83d266d64168d9e0d41ac5bf56e557",
         "index.ts": "287035735686e08a8706815de15efec015132de9d7fc7dfe8c9cac8c7aecd158",
         "migrations/0001_audit_event.sql": "b8a4bc6a225bb62bf57734595e6c2c1045cc10bec1725ebaf310c53373fdfa2f",
-        "observability/postgres-audit-event-reader.ts": "46e132a129104e47c9a94da7ec02f7b45438bdb768bf2dcaa643b305bef3c051",
+        "observability/postgres-audit-event-reader.ts": "0a3acbbd1ca150526aa9bf65da541a8570c3da1b2e8559c2810576a0e491b034",
         "persistence/audit-event.schema.ts": "2ebb454550f60fe538a6607e8155b2163cc2842450177bd6e0950f338e0cda8d",
         "persistence/postgres-audit-event.repository.ts": "7853b081d602f3814d5e5442d1dbdbfdc5da67d23ec25acaebd574bf9c1b1b28",
         "persistence/sql-executor.ts": "7a6cc2072a9baacd5b75970ed90ab51670fb8c28dacbbe2ee2ff2c05c2f04ba1",
@@ -17,14 +17,14 @@
     },
     "audit-logging/audit-logging.api": {
       "files": {
-        "README.md": "beaa66083eda00985c77d678f8c58b6d72a486bb600df10fcce787f3763ba243",
+        "README.md": "d74c3c9dfae76f72ea705952b75e0f980b738ec44625b4a8adc75c5d185d92b6",
         "audit-api.module.ts": "cab7d1de6c4b22621cba7a054b8da24ae51a694cfd84beb183856391f74921ed",
         "audit-api.options.ts": "877d3bfd7d011c5211fa7b2baf9b33cf569ae7a87f217cd571bb130ae805c0c4",
-        "audit-events-api.service.ts": "529915635cb9de03a0920c5c5e471e8dbd254031318100e57449f90e1da441ad",
+        "audit-events-api.service.ts": "0edd0dbc2c1d636a13d8e44eff698aa3b56b7e3a693b85dd5504c28bb18f1b44",
         "audit-events-csv.ts": "2113b1de93c4f7992b23590c141d63edde248262791fbf60bb8df957ea598403",
-        "audit-events.controller.ts": "e87d152258dd9a61622b626a697c51f2ed7c5b94b16b0ffb6acecdc1f0470cb6",
-        "dto/audit-api.dto.ts": "a3d69b140efe99a19c7cb330cc4cbf8db3dae6f00d670a70980e79ad09642bc8",
-        "index.ts": "7ebce7984e5e0da800bf8d5ed421d9aa5ac8fa3ede4b4622cec827675d8de4aa",
+        "audit-events.controller.ts": "0103f91fb17279bb8e220e501928ef1d7174958ff228a817fd5c01d250cfa775",
+        "dto/audit-api.dto.ts": "b3578ea1b3026ea2b881b1bc458ebf4fe813feff0970bf3c01ba017402247722",
+        "index.ts": "68134e75a9111eb15f18ba63e5995b0cb918aa521de86d0066297dcda398a454",
         "tokens.ts": "9481fe5da945593e93a0b16855d34acd35113d8b86fae92fee060707db6e75b8"
       }
     },
@@ -54,7 +54,7 @@
       ],
       "files": {
         "README.md": "c8cfdebfd21ace5d30587a7d69a75e30b8b4ee2684061a9f67d6cb9541ce15f5",
-        "audit-event-reader.port.ts": "8f2070143bb1d053cf7550c71a01bbb64f2bbb6e0c05ae2553dd2828acc41917",
+        "audit-event-reader.port.ts": "ae1a149fa046694ccc74698131722c15c6ad8040b7de0f0b0544aff5caa60ccf",
         "audit-event-repository.port.ts": "747ff6ee451464398b0d48182f219d96fe006b694134fad97e08d794b5dbc29e",
         "audit-event.interface.ts": "ef9942dea8bd6eb45e14f67fcb7e080545da2c87db2bf5d9125358793290c93a",
         "audit-listener.ts": "d9d4ef6ba517ed170e5ab2e8ae675828a744e37455b2981c31d968f8d2ed28b4",
@@ -63,10 +63,10 @@
         "correlation-context.ts": "dca068464586ec5bc2f6f8ce7f91abfcfbe7ed0eb660af1046af749054513438",
         "correlation-id.middleware.ts": "7137020b547e55205db4bce0c390d8276404bfdaeb496d837d57c26cbb7bd6a9",
         "field-diff.ts": "5584d54e7197c4450f8eea9bbde0e98c0739122f5529290a9eb6b1aa4e8499da",
-        "index.ts": "843121c5064bc6f20f4723dabbe2571d3bc9f73704f75f806800fa1d8a9601d9",
+        "index.ts": "5e762a03484d8858d30c1727848128b999308b19ac5399e5288d0fe3a6a5f946",
         "keyset-cursor.ts": "23e1002fb67e1f91541aa5dee0fb8f1ce300571d46ff94f4c4c7671b0e362e3d",
         "persist-audit-record.ts": "44f07c55e9e0c691037d693ee8c0d5ae55b442063ea6909031e547ed31d38c49",
-        "stats-window.ts": "d4ab8443014b3abe20e355d409da6089618d9e7d387aea68d09666ef9f578359",
+        "stats-window.ts": "bf9228d666eb91a8b354ac49d833f2b30348b88f9272ead6cf9c84164fa54828",
         "tokens.ts": "8c09f16f195e508dbc23703a3155f48c8dde9ec43597d5613106fb4d96d6fd8e"
       }
     },
@@ -119,7 +119,7 @@
     }
   },
   "source": "/Users/zakashah/ascendra/ascendra-public/ascendra-commons (local checkout)",
-  "commit": "0cae9ba244b098cf497e803fc1b83941d16222a6",
+  "commit": "6016cc5048ceb665e3394ec9f9c6bff65e8745c0",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-18T02:13:16.263Z"
+  "syncedAt": "2026-10-18T02:36:11.897Z"
 }

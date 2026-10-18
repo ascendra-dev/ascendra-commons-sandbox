@@ -4,6 +4,7 @@ import {
   decodeKeysetCursor,
   encodeKeysetCursor,
   fillDailyCounts,
+  fillMonthlyCounts,
   kpiValue,
   parseStatsWindow,
   type ActorActivityQuery,
@@ -15,6 +16,7 @@ import {
   type AuditQuery,
   type AuditOverviewStats,
   type AuditQueryResult,
+  type AuditRetentionStats,
   type AuditTopActionsStats,
 } from '../../audit-logging.core';
 import type { SqlExecutor } from '../persistence/sql-executor';
@@ -206,6 +208,43 @@ export class PostgresAuditEventReader implements AuditEventReader {
     return {
       window: label,
       topActions: rows.map((r) => ({ entityType: r.entity_type, action: r.action, count: r.count, actors: r.actors })),
+    };
+  }
+
+  async retention(tenantId?: string | null, now: Date = new Date()): Promise<AuditRetentionStats> {
+    const scope = this.scope(tenantId);
+    const totals = (
+      await this.db.execute(sql`
+        select min(occurred_at) as oldest, count(*)::bigint as total
+        from commons_audit_event
+        where ${scope}
+      `)
+    ).rows[0] as { oldest: unknown; total: string | number };
+
+    const perMonthRows = (
+      await this.db.execute(sql`
+        select to_char(occurred_at at time zone 'UTC', 'YYYY-MM') as month, count(*)::bigint as count
+        from commons_audit_event
+        where ${scope}
+        group by 1
+      `)
+    ).rows as Array<{ month: string; count: string | number }>;
+
+    // The whole table's size — only meaningful unscoped; a tenant's share of a table has no size of its own.
+    let tableSizeBytes: number | null = null;
+    if (tenantId === undefined) {
+      const size = (await this.db.execute(sql`select pg_total_relation_size('commons_audit_event') as bytes`)).rows[0] as
+        | { bytes: string | number | null }
+        | undefined;
+      tableSizeBytes = size?.bytes == null ? null : Number(size.bytes);
+    }
+
+    const oldestRecordAt = totals.oldest == null ? null : asDate(totals.oldest);
+    return {
+      oldestRecordAt,
+      rowCount: Number(totals.total ?? 0),
+      tableSizeBytes,
+      perMonth: fillMonthlyCounts(oldestRecordAt, now, new Map(perMonthRows.map((r) => [r.month, Number(r.count)]))),
     };
   }
 

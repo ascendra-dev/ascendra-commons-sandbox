@@ -73,6 +73,30 @@ export interface AuditTopAction {
   actors: number;
 }
 
+export interface AuditMonthlyCount {
+  /** `YYYY-MM`, UTC. */
+  month: string;
+  count: number;
+}
+
+/**
+ * `GET /audit/retention` — the Retention & Volume screen: how far back the audit store goes and how big it is.
+ * Read-only: `audit-logging` keeps records indefinitely and ships no deletion of any kind.
+ */
+export interface AuditRetentionStats {
+  /** `null` when there are no records. */
+  oldestRecordAt: Date | null;
+  rowCount: number;
+  /**
+   * On-disk size of the whole audit table, indexes included — every tenant and every application sharing it. `null`
+   * when the figures are scoped to one tenant (a tenant's share of a table has no size of its own), or when the
+   * store can't tell.
+   */
+  tableSizeBytes: number | null;
+  /** Records per UTC month, oldest first, from the oldest record's month through now — `0` on a quiet month. */
+  perMonth: AuditMonthlyCount[];
+}
+
 /** `GET /audit/stats/top-actions` — the Overview screen's Top actions table. */
 export interface AuditTopActionsStats {
   window: string;
@@ -174,6 +198,9 @@ export interface AuditEventReader {
 
   /** The Overview screen's Top actions over `window`, ranked by (entity type, action). Same `tenantId` convention. */
   topActions(window: string, tenantId?: string | null): Promise<AuditTopActionsStats>;
+
+  /** The Retention & Volume screen: oldest record, row count, table size, volume per month. Same `tenantId` convention. */
+  retention(tenantId?: string | null): Promise<AuditRetentionStats>;
 
   /**
    * Per-request drift check — for each declared entity type / action, how

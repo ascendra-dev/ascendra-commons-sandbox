@@ -34,6 +34,12 @@ export interface AuditStatsQueryDto {
   tenantId?: string;
 }
 
+/** Query params for `GET /audit/retention`. */
+export interface AuditRetentionQueryDto {
+  /** Only honored for a platform admin, same convention as `AuditEventsQueryDto.tenantId`. */
+  tenantId?: string;
+}
+
 /**
  * Body of `POST /audit/coverage` — the caller's own declared catalog. Leave both empty (or send
  * no body) to use the catalog configured on `AuditApiModule.forRoot`.

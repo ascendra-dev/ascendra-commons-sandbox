@@ -11,6 +11,7 @@ import {
   type AuditQuery,
   type AuditOverviewStats,
   type AuditQueryResult,
+  type AuditRetentionStats,
   type AuditTopActionsStats,
 } from '../audit-logging.core';
 import { AUDIT_API_OPTIONS } from './tokens';
@@ -20,6 +21,7 @@ import type {
   AuditCoverageRequestDto,
   AuditEventsExportQueryDto,
   AuditEventsQueryDto,
+  AuditRetentionQueryDto,
   AuditStatsQueryDto,
 } from './dto/audit-api.dto';
 
@@ -122,6 +124,11 @@ export class AuditEventsApiService {
     return this.reader.topActions(dto.window ?? '7d', await this.statsTenant(actor, dto));
   }
 
+  /** The Retention & Volume screen — scoped like the Overview (a tenant admin sees their own tenant's, with no table size). */
+  async retention(actor: Actor, dto: AuditRetentionQueryDto): Promise<AuditRetentionStats> {
+    return this.reader.retention(await this.statsTenant(actor, dto));
+  }
+
   /** The app's configured audit vocabulary (`forRoot({ catalog })`) — not tenant data, so not tenant-scoped. */
   catalog(): AuditCatalogEntry[] {
     return this.options.catalog;
@@ -146,7 +153,7 @@ export class AuditEventsApiService {
    * every tenant by default and may filter to one via `tenantId` (or `'null'` for platform-level rows only) — same
    * convention as `find()`'s `tenantId` param.
    */
-  private async statsTenant(actor: Actor, dto: AuditStatsQueryDto): Promise<string | null | undefined> {
+  private async statsTenant(actor: Actor, dto: { tenantId?: string }): Promise<string | null | undefined> {
     if (await this.options.isPlatformAdmin(actor)) {
       return dto.tenantId !== undefined ? (dto.tenantId === 'null' ? null : dto.tenantId) : undefined;
     }

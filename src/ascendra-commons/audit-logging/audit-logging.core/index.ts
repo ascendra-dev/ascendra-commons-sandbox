@@ -14,6 +14,8 @@ export type {
   AuditOverviewStats,
   AuditTopAction,
   AuditTopActionsStats,
+  AuditMonthlyCount,
+  AuditRetentionStats,
   AuditCoverageQuery,
   AuditCoverageEntry,
 } from './audit-event-reader.port';
@@ -24,7 +26,7 @@ export { CorrelationIdMiddleware } from './correlation-id.middleware';
 export { encodeKeysetCursor, decodeKeysetCursor } from './keyset-cursor';
 export { diffFields } from './field-diff';
 export type { FieldDiffEntry } from './field-diff';
-export { parseStatsWindow, fillDailyCounts, kpiValue } from './stats-window';
+export { parseStatsWindow, fillDailyCounts, fillMonthlyCounts, kpiValue } from './stats-window';
 export type { StatsWindow } from './stats-window';
 export { AuditLoggingModule } from './audit-logging.module';
 export type { AuditLoggingModuleConfig } from './audit-logging.module';

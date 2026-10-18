@@ -132,6 +132,12 @@ export class AuditEventsController {
     return this.service.topActions(actor, { window, tenantId });
   }
 
+  @Get('retention')
+  @RequiresAction(AUDIT_ACTIONS.VIEW)
+  retention(@CurrentActor() actor: Actor, @Query('tenantId') tenantId?: string) {
+    return this.service.retention(actor, { tenantId });
+  }
+
   /** api-contract.md Rule 4's bounded bare-array case — the app's fixed vocabulary, never paginated. */
   @Get('catalog')
   @RequiresAction(AUDIT_ACTIONS.VIEW)

@@ -45,6 +45,22 @@ export function fillDailyCounts(since: Date, now: Date, counts: ReadonlyMap<stri
 }
 
 /**
+ * Every UTC month from `first`'s through `now`'s, oldest first, with each month's count from `counts` (`YYYY-MM` →
+ * count) or `0`. Empty when `first` is `null` (no records yet).
+ */
+export function fillMonthlyCounts(first: Date | null, now: Date, counts: ReadonlyMap<string, number>): Array<{ month: string; count: number }> {
+  if (!first) return [];
+  const out: Array<{ month: string; count: number }> = [];
+  // Months as one running number (year * 12 + month), so a year end needs no special case.
+  const last = now.getUTCFullYear() * 12 + now.getUTCMonth();
+  for (let i = first.getUTCFullYear() * 12 + first.getUTCMonth(); i <= last; i++) {
+    const month = `${Math.floor(i / 12)}-${String((i % 12) + 1).padStart(2, '0')}`;
+    out.push({ month, count: counts.get(month) ?? 0 });
+  }
+  return out;
+}
+
+/**
  * A KPI against the equal period before it: percent change to one decimal, or `null` when the prior period was
  * empty — "+100%" (or "+∞") from zero says nothing useful, so the screen shows "new" instead.
  */

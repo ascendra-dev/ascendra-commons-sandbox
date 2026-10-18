@@ -7,5 +7,6 @@ export type {
   AuditEventsExportQueryDto,
   AuditActorActivityQueryDto,
   AuditStatsQueryDto,
+  AuditRetentionQueryDto,
   AuditCoverageRequestDto,
 } from './dto/audit-api.dto';
