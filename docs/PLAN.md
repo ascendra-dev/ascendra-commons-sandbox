@@ -44,15 +44,17 @@ seen mocks, and the mocks already hide real mismatches:
 ```
 ascendra-commons-sandbox/
   ascendra-commons.js          ascendra-commons' own script (copied in by init, kept current by update)
-  ascendra-commons.json        the packages asked for + where migrations go
-  scripts/                     this project's own small migration runner (db:migrate / db:reset)
+  ascendra-commons.json        the packages asked for + where migrations go (drizzle-kit)
+  drizzle.config.ts            drizzle-kit — the migration tool, as in any Ascendra app
+  scripts/db-reset.js          sandbox-only: drop, drizzle-kit migrate, seed
   docker-compose.yml           Postgres 16
   src/
     ascendra-commons/<pattern>/<package>/   vendored by the script, never hand-edited (VENDORED.json: commit + checksums)
-    auth/                      dev token guard, personas, static-map wiring
-    audit/                     AuditLoggingModule + AuditApiModule wiring, the audit catalog
-    db/                        connection; migrations/ (commons' arrive here, timestamped)
-    cli/                       audit-history.ts (the event script) + seed / simulate (Nest standalone context)
+    modules/commons/           every commons module configured in one place — one file per module + CommonsModule
+    auth/                      sandbox-only dev sign-in (dev tokens, personas) + the global guard order
+    db/                        DatabaseModule (DATABASE_CONNECTION), schema/ (own tables — none), migrations/ (drizzle-kit)
+    common/                    api-contract plumbing: error filter, request id
+    cli/                       sandbox-only: audit-history.ts (the event script) + seed / simulate
   docs/PLAN.md                 this page
 ```
 
@@ -77,7 +79,7 @@ NestJS version follows `ascendra-commons` (`@nestjs` ^10).
 | Where | Command | Does |
 |---|---|---|
 | sandbox | `npm run db:up` / `db:down` | Start / stop Postgres. |
-| sandbox | `npm run db:migrate` | Apply `src/db/migrations/*.sql` not yet applied (commons' included). |
+| sandbox | `npm run db:migrate` | `drizzle-kit migrate` — commons' delivered migrations included. |
 | sandbox | `npm run db:reset` | Drop, migrate, seed — a clean slate in one step. |
 | sandbox | `npm run seed -- --days 90 --seed 42 [--volume large]` | Generate history. |
 | sandbox | `npm run simulate -- --live --every 5s` | Continuous events. |
@@ -109,6 +111,9 @@ Each phase ends at a checkpoint: shown working → reviewed → committed.
    *Checkpoint:* `db:reset` produces a realistic 90-day history; a few raw API calls reviewed.
    **3b. Consumer tooling (done 2026-10-18)** — built in ascendra-commons: numbered never-edited migrations,
    `ascendra-commons.js`, `scripts/check.js` + pre-push hook. The sandbox switched to it — no sandbox-only vendoring left.
+   **3c. Integrate like any consumer (done 2026-10-18)** — drizzle-kit as the migration tool (commons' migrations in
+   its journal via `generate --custom`); all commons configuration in `src/modules/commons/` (`CommonsModule`), dev
+   sign-in alone in `src/auth/`; ascendra-commons' README gained "Integrating into a project", which this follows.
 4. **Testbed on the real API** — env, dev persona switcher, list + sheets on `auditApi`, mirror copied verbatim.
    *Checkpoint:* the Audit Log and all four sheets reviewed on real data.
 5. **Fix what real data exposes** — verb-only dot colours (UI), stats `kpis` / `actors` (backend or UI reshape),

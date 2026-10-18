@@ -585,10 +585,13 @@ async function cmdUpdate(args) {
       for (const c of log) console.log(`  ${c.hash} ${c.subject}`);
       console.log('');
     }
-    console.log('Packages:');
-    for (const c of changes) console.log(`  ${c.kind === 'new' ? '+' : '~'} ${c.id}   (${c.note})`);
-    for (const id of dropped) console.log(`  - ${id}   (no longer needed by ${CONFIG_FILE})`);
-    if (pending.length) console.log(`\nNew migrations: ${pending.map((p) => `${p.id}/${p.file}`).join(', ')}`);
+    if (changes.length || dropped.length) {
+      console.log('Packages:');
+      for (const c of changes) console.log(`  ${c.kind === 'new' ? '+' : '~'} ${c.id}   (${c.note})`);
+      for (const id of dropped) console.log(`  - ${id}   (no longer needed by ${CONFIG_FILE})`);
+      if (pending.length) console.log('');
+    }
+    if (pending.length) console.log(`New migrations: ${pending.map((p) => `${p.id}/${p.file}`).join(', ')}`);
     if (!(await confirm(`\n${breaking.length ? 'Includes breaking changes. ' : ''}Replace the packages above?`, args))) return console.log('Aborted — nothing was changed.');
 
     for (const c of changes) lock.packages[c.id] = lockEntry(copyPackage(config, source, c.id), closure.get(c.id));

@@ -115,11 +115,11 @@
   "migrations": {
     "audit-logging/audit-logging.core.postgres-drizzle/0001_audit_event.sql": {
       "checksum": "b8a4bc6a225bb62bf57734595e6c2c1045cc10bec1725ebaf310c53373fdfa2f",
-      "copiedTo": "src/db/migrations/20261018003934_commons_audit_logging_0001_audit_event.sql"
+      "copiedTo": "src/db/migrations/0000_commons_audit_logging_0001_audit_event.sql"
     }
   },
   "source": "/Users/zakashah/ascendra/ascendra-public/ascendra-commons (local checkout)",
-  "commit": "c1aeb0f65c4756b13e5ba6ec447aa1a49404bf98",
+  "commit": "5bb46c0be97afc0ce826cc16938c4443cfc0fc23",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-18T00:54:24.335Z"
+  "syncedAt": "2026-10-18T01:21:36.531Z"
 }

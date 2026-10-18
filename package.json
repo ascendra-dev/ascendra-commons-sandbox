@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
-    "db:migrate": "node --env-file=.env scripts/db-migrate.js",
+    "db:migrate": "node --env-file=.env node_modules/.bin/drizzle-kit migrate",
     "db:reset": "node --env-file=.env scripts/db-reset.js",
     "seed": "nest build >/dev/null && node --env-file=.env dist/cli/seed.js",
     "simulate": "nest build >/dev/null && node --env-file=.env dist/cli/simulate.js"
@@ -31,6 +31,7 @@
     "@nestjs/schematics": "^10.2.3",
     "@types/node": "^20.19.43",
     "@types/pg": "^8.23.1",
+    "drizzle-kit": "^0.31.11",
     "typescript": "^5.9.3"
   }
 }

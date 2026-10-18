@@ -1,4 +1,4 @@
--- From ascendra-commons audit-logging/audit-logging.core.postgres-drizzle/migrations/0001_audit_event.sql @ fd2c92b.
+-- From ascendra-commons audit-logging/audit-logging.core.postgres-drizzle/migrations/0001_audit_event.sql @ c1aeb0f.
 -- Never edit: src/ascendra-commons/VENDORED.json holds its checksum; a schema change arrives as a new file.
 
 -- audit-logging · Postgres/Drizzle adapter — the audit event table.

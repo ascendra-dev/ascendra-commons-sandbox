@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { sql } from 'drizzle-orm';
 import { DOMAIN_EVENT_EMITTER, type DomainEventEmitter } from '../ascendra-commons/domain-events/domain-events.core';
-import { AuditModule } from '../audit/audit.module';
+import { CommonsModule } from '../modules/commons/commons.module';
 import { DATABASE_CONNECTION, type Database } from '../db/database.module';
 import { parseArgs } from './args';
 import { AuditHistory } from './audit-history';
@@ -25,8 +25,8 @@ async function main() {
   if (!volume) throw new Error(`--volume must be one of ${Object.keys(VOLUMES).join(', ')}`);
   if (days < 1 || days > 400) throw new Error('--days must be between 1 and 400');
 
-  // Just the audit wiring — the same modules the API runs, without HTTP.
-  const app = await NestFactory.createApplicationContext(AuditModule, { logger: ['error', 'warn'] });
+  // The commons modules — exactly what the API runs, without HTTP.
+  const app = await NestFactory.createApplicationContext(CommonsModule, { logger: ['error', 'warn'] });
   try {
     const db = app.get<Database>(DATABASE_CONNECTION, { strict: false });
     const { rows } = await db.execute(sql`select count(*)::int as n from commons_audit_event`);

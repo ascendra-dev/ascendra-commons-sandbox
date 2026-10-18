@@ -1,4 +1,4 @@
-import type { AuditCatalogEntry } from '../ascendra-commons/audit-logging/audit-logging.api';
+import type { AuditCatalogEntry } from '../../ascendra-commons/audit-logging/audit-logging.api';
 
 /**
  * The sandbox's audit vocabulary — what the sample domain records, per entity type. Served by `GET /audit/catalog`,

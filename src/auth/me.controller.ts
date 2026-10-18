@@ -7,7 +7,7 @@ import {
   type Actor,
   type Authorizer,
 } from '../ascendra-commons/authorization/authorization.core';
-import { ALL_ACTIONS } from './dev-actors';
+import { ALL_ACTIONS } from '../modules/commons/authorization';
 
 /** `GET /me` — who's signed in and which actions they hold, fetched once by the frontend to show or hide nav. */
 @Controller('me')

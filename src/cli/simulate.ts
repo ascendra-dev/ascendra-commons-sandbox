@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { DOMAIN_EVENT_EMITTER, type DomainEventEmitter } from '../ascendra-commons/domain-events/domain-events.core';
-import { AuditModule } from '../audit/audit.module';
+import { CommonsModule } from '../modules/commons/commons.module';
 import { parseArgs } from './args';
 import { AuditHistory } from './audit-history';
 import { CUSTOMERS, FAILURE_REASONS, PAYMENT_GATEWAY, PAYMENT_METHODS, SERVICES, TENANTS } from './cast';
@@ -19,7 +19,7 @@ async function main() {
   const count = (args.count as number | undefined) ?? 0;
   if (every < 1) throw new Error('--every must be at least 1 (seconds)');
 
-  const app = await NestFactory.createApplicationContext(AuditModule, { logger: ['error', 'warn'] });
+  const app = await NestFactory.createApplicationContext(CommonsModule, { logger: ['error', 'warn'] });
   const rng = new Rng(Date.now());
   const events = app.get<DomainEventEmitter>(DOMAIN_EVENT_EMITTER, { strict: false });
   // Invoices issued during this run, so a later tick can pay one.

@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1792286145639,
+      "tag": "0000_commons_audit_logging_0001_audit_event",
+      "breakpoints": true
+    }
+  ]
+}

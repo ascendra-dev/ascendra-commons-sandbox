@@ -1,18 +1,17 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { CorrelationIdMiddleware } from './ascendra-commons/audit-logging/audit-logging.core';
-import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { RequestIdMiddleware } from './common/request-id.middleware';
 import { DatabaseModule } from './db/database.module';
 import { HealthController } from './health/health.controller';
+import { CommonsModule } from './modules/commons/commons.module';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, AuditModule],
+  imports: [DatabaseModule, CommonsModule, AuthModule],
   controllers: [HealthController],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    // Every request gets a request id (Rule 7) and a correlation id (what audit records are grouped by in a trace).
-    consumer.apply(RequestIdMiddleware, CorrelationIdMiddleware).forRoutes('*');
+    // Every request gets a request id (api-contract Rule 7); CommonsModule adds the correlation id.
+    consumer.apply(RequestIdMiddleware).forRoutes('*');
   }
 }

@@ -44,7 +44,7 @@ Errors follow api-contract Rule 1 (`{ statusCode, error, message, code, path }`)
 | Command | Does |
 |---|---|
 | `npm run db:up` / `db:down` | Start / stop the sandbox's Postgres container. |
-| `npm run db:migrate` | Apply `src/db/migrations/*.sql` not yet applied, in name order — ascendra-commons' migrations land there too. |
+| `npm run db:migrate` | `drizzle-kit migrate` — applies `src/db/migrations/` (ascendra-commons' delivered migrations included). |
 | `npm run db:reset [-- --no-seed] [-- --days 90 --seed 42 --volume small\|normal\|large]` | Drop everything, migrate from scratch, seed (seed options pass through). |
 | `npm run seed -- [--days 90] [--seed 42] [--volume normal]` | Generate history into an empty database. Same `--seed`, same data. |
 | `npm run simulate -- [--every 5] [--count 0]` | Keep it live: one real change every N seconds until Ctrl+C (or `--count`). |
@@ -53,14 +53,16 @@ Errors follow api-contract Rule 1 (`{ statusCode, error, message, code, path }`)
 
 ## ascendra-commons, as any project consumes it
 
-The sandbox vendors ascendra-commons the way a product does — with ascendra-commons' own `ascendra-commons.js`
-(see its README, "Distribution"). Nothing here is sandbox-specific:
+The sandbox integrates ascendra-commons exactly as its README's "Integrating into a project" says a product does.
+Nothing here is sandbox-specific:
 
 | File | |
 |---|---|
 | `ascendra-commons.js` | The script, copied in by `init`; `update` keeps it current. |
-| `ascendra-commons.json` | The packages asked for, and where migrations go (`folder` → `src/db/migrations`). |
+| `ascendra-commons.json` | The packages asked for, and where migrations go (`drizzle-kit` → `src/db/migrations`). |
 | `src/ascendra-commons/` | The vendored packages — never edit them here. `VENDORED.json` records the commit and a checksum per file. |
+| `src/modules/commons/` | Every commons module configured in one place: `domain-events.ts`, `authorization.ts` (persona → actions), `audit-logging.ts` (+ `audit-catalog.ts`), and `CommonsModule`, which `AppModule` imports. |
+| `drizzle.config.ts`, `src/db/` | drizzle-kit as the migration tool; `DatabaseModule` provides `DATABASE_CONNECTION`, the executor the Postgres adapters write through. |
 
 ```sh
 node ascendra-commons.js status                          # edited copies, missing deps, undelivered migrations
@@ -68,11 +70,12 @@ node ascendra-commons.js update [--from ../ascendra-commons]   # GitHub, or a lo
 node ascendra-commons.js add <package…>                  # e.g. background-jobs.core.postgres-drizzle
 ```
 
-A new migration from an update lands in `src/db/migrations/` — `db:migrate` applies it. Change a module in
-`ascendra-commons`, never here: `update` refuses to overwrite a local edit.
+A new migration from an update lands in `src/db/migrations/`, registered in drizzle-kit's journal — `db:migrate`
+applies it. Adding a module: `add` it, then one new file in `src/modules/commons/` imported by `CommonsModule`. Change a
+module in `ascendra-commons`, never here: `update` refuses to overwrite a local edit.
 
 What *is* sandbox-only: `src/cli/` (the data generator), `src/auth/` dev sign-in (dev tokens and personas, standing in
-for a real identity provider), `docker-compose.yml`, and `scripts/` (this project's own small migration runner).
+for a real identity provider), `docker-compose.yml`, and `scripts/db-reset.js`.
 
 ## The sample data
 

@@ -3,8 +3,9 @@
   "source": "https://github.com/ascendra-dev/ascendra-commons.git",
   "target": "src/ascendra-commons",
   "migrations": {
-    "tool": "folder",
-    "dir": "src/db/migrations"
+    "tool": "drizzle-kit",
+    "dir": "src/db/migrations",
+    "drizzleConfig": "drizzle.config.ts"
   },
   "packages": [
     "audit-logging/audit-logging.core.postgres-drizzle",
