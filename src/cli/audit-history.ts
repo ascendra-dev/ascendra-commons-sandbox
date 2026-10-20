@@ -55,8 +55,17 @@ export class AuditHistory {
   async emit(at: Date, correlationId: string, actor: string, e: AuditEvent): Promise<boolean> {
     if (at > this.until) return false;
     await runWithCorrelationId(correlationId, () =>
-      this.events.emitCritical(AUDIT_EVENT_NAME, new AuditRecordRaised(
-        e.entityType, e.entityId, e.tenantId, actor, e.action, e.before, e.after, at, e.reason ?? null)));
+      this.events.emitCritical(AUDIT_EVENT_NAME, new AuditRecordRaised({
+        entityType: e.entityType,
+        entityId: e.entityId,
+        tenantId: e.tenantId,
+        actor,
+        action: e.action,
+        before: e.before,
+        after: e.after,
+        occurredAt: at,
+        reason: e.reason,
+      })));
     return true;
   }
 

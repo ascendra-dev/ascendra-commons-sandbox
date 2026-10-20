@@ -19,6 +19,7 @@ vendoring one of:
 | `Actor` (`actor.type.ts`) | `{ id, persona, tenantId }`. `persona` is a plain string — each project defines its own set. `tenantId` is nullable. |
 | `@RequiresAction` / `@NoActionRequired` | Declare one action per state-changing endpoint, or opt out explicitly. |
 | `AuthorizationGuard` | Deny-by-default: an endpoint under the guard with neither decorator throws `AuthorizationNotDeclaredError` (500, fails closed). Expects `request.actor` populated by an upstream auth guard. |
+| `AuthorizationEnforcedGuard` | For a controller that ships in a library (`audit-logging.api`, …): `@UseGuards(AuthorizationEnforcedGuard)` fails the request with `AuthorizationNotEnforcedError` (500, naming the fix) when `AuthorizationGuard` didn't run on it. `AuthorizationGuard` marks every request it lets through (`AUTHORIZATION_CHECKED`); this checks the mark, so nothing is authorized twice. |
 | `computeSessionSnapshot` | The computation behind a project's own `GET /me` — filters the full action list to what the actor holds. Uses `allowedActions` when the bound model implements it. |
 | `computeActionAvailability` | Per-entity, per-action button state. Permission first, then business state — never leaks record state to an actor who can't act on it. |
 | `AuthorizationModule.forRoot({ authorizerToken?, imports? })` | Pure token wiring: binds `AUTHORIZER` to `authorizerToken` (or to the throwing `MissingAuthorizer` when omitted) and provides `AuthorizationGuard`. |
@@ -49,6 +50,12 @@ the consumer decides: globally via `{ provide: APP_GUARD, useExisting: Authoriza
 per-controller via `@UseGuards(AuthorizationGuard)`. Either way `request.actor`
 must be populated by an authentication guard ordered before it — this module has
 no opinion on how.
+
+The per-controller setup covers only your own controllers: a library's `.api`
+controller is mounted by its module, and nothing would read its `@RequiresAction`.
+Those controllers add `@UseGuards(AuthorizationEnforcedGuard)`, so a missing global
+`AuthorizationGuard` is a 500 that names the fix — never an open endpoint. An app
+that mounts any library `.api` module registers `AuthorizationGuard` globally.
 
 ## Consuming this module
 

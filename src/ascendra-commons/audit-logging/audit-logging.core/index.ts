@@ -1,5 +1,6 @@
 export type { AuditEvent, AuditEventInput, AuditEventDetail } from './audit-event.interface';
 export { AuditRecordRaised } from './audit-record-raised';
+export type { AuditRecordFields } from './audit-record-raised';
 export type { AuditEventRepository } from './audit-event-repository.port';
 export type {
   AuditEventReader,

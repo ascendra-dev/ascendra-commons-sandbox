@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream';
-import { Body, Controller, Get, Inject, Param, Post, Query, Res, StreamableFile } from '@nestjs/common';
-import { CurrentActor, RequiresAction, type Actor } from '../../authorization/authorization.core';
+import { Body, Controller, Get, Inject, Param, Post, Query, Res, StreamableFile, UseGuards } from '@nestjs/common';
+import { AuthorizationEnforcedGuard, CurrentActor, RequiresAction, type Actor } from '../../authorization/authorization.core';
 import type { AuditQueryResult } from '../audit-logging.core';
 import { AUDIT_ACTIONS } from './audit-api.options';
 import { streamAuditEventsCsv } from './audit-events-csv';
@@ -28,9 +28,12 @@ const EXPORT_HEADERS = ['Content-Disposition', 'X-Export-Row-Count', 'X-Export-T
  * Read endpoints for a compliance / ops audit screen. All gated on `audit.view`.
  * A non-platform actor's reads are auto-scoped to their own tenant (see
  * `AuditEventsApiService`). Requires `AuthorizationGuard` wired globally as
- * `APP_GUARD` (see `authorization.core`'s README).
+ * `APP_GUARD` (see `authorization.core`'s README) — and fails closed without it:
+ * `AuthorizationEnforcedGuard` turns a missing global guard into a 500 naming the
+ * fix, rather than every signed-in user reading the audit log.
  */
 @Controller('audit')
+@UseGuards(AuthorizationEnforcedGuard)
 export class AuditEventsController {
   constructor(@Inject(AuditEventsApiService) private readonly service: AuditEventsApiService) {}
 

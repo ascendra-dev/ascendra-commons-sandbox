@@ -22,16 +22,50 @@ import type { DomainEvent } from '../../domain-events/domain-events.core';
  * listener that reacts to it, rather than asking every consumer to hand-write
  * one (see audit-listener.ts).
  */
+/**
+ * What one audited change carries — named, so no two of its strings can be swapped unnoticed (positional, three
+ * strings in a row compiled fine either way round).
+ */
+export interface AuditRecordFields {
+  /** What changed — e.g. `'invoice'`. */
+  entityType: string;
+  entityId: string;
+  /** Whose data it is. Required, even when `null`: a platform-level change (no tenant) is visible only to platform admins, so it's never a default. */
+  tenantId: string | null;
+  /** Who made the change — e.g. `'admin@acme.test'`, `'system:payment-gateway'`. */
+  actor: string;
+  /** Verb only — `'status_changed'`; `entityType` carries the resource. */
+  action: string;
+  /** The state before — omit (or `null`) for a create. */
+  before?: Record<string, unknown> | null;
+  /** The state after — omit (or `null`) for a delete. */
+  after?: Record<string, unknown> | null;
+  /** When the business fact happened — not when the record is written. */
+  occurredAt: Date;
+  /** An optional free-text justification. */
+  reason?: string | null;
+}
+
 export class AuditRecordRaised implements DomainEvent {
-  constructor(
-    public readonly entityType: string,
-    public readonly entityId: string,
-    public readonly tenantId: string | null,
-    public readonly actor: string,
-    public readonly action: string,
-    public readonly before: Record<string, unknown> | null,
-    public readonly after: Record<string, unknown> | null,
-    public readonly occurredAt: Date,
-    public readonly reason: string | null = null,
-  ) {}
+  readonly entityType: string;
+  readonly entityId: string;
+  readonly tenantId: string | null;
+  readonly actor: string;
+  readonly action: string;
+  readonly before: Record<string, unknown> | null;
+  readonly after: Record<string, unknown> | null;
+  readonly occurredAt: Date;
+  readonly reason: string | null;
+
+  constructor(fields: AuditRecordFields) {
+    this.entityType = fields.entityType;
+    this.entityId = fields.entityId;
+    this.tenantId = fields.tenantId;
+    this.actor = fields.actor;
+    this.action = fields.action;
+    this.before = fields.before ?? null;
+    this.after = fields.after ?? null;
+    this.occurredAt = fields.occurredAt;
+    this.reason = fields.reason ?? null;
+  }
 }

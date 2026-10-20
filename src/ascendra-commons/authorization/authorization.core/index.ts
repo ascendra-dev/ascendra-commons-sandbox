@@ -10,6 +10,7 @@ export {
   NO_ACTION_REQUIRED_KEY,
 } from './requires-action.decorator';
 export { AuthorizationGuard, AuthorizationNotDeclaredError } from './authorization.guard';
+export { AuthorizationEnforcedGuard, AuthorizationNotEnforcedError, AUTHORIZATION_CHECKED } from './authorization-enforced.guard';
 export { CurrentActor } from './current-actor.decorator';
 
 export type { SessionSnapshot } from './session-snapshot';

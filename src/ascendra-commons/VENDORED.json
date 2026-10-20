@@ -23,7 +23,7 @@
         "audit-api.options.ts": "ce84e63a773a0eb8a62b4556dcb729190c4f3ea31ec83310390bf1b88aa562f1",
         "audit-events-api.service.ts": "6ad6dbd8a02eb3ef5468c054a6c2afbeef7c8947d944dddc39bcf94a304ca5b2",
         "audit-events-csv.ts": "273452b0ce702e550d539a66eb759f19f87c71da7b99e3aa745001455dff2d2c",
-        "audit-events.controller.ts": "90ae69046c7849de7e2abf134b1c7d5a1e16e17f6a9f803b207d1dd6f8fe917b",
+        "audit-events.controller.ts": "19dc8134b2d312cb6fc0e5387510c8c70b9f6a08c1ba1c7bd55d4d427b1bee1d",
         "dto/audit-api.dto.ts": "4eee284ae7a358c505bf68abdf6362b4d4a77bc6073ad1c5bb71f336ff3a35f9",
         "index.ts": "72b485e4435934f2ca4dc8b72a5e30d89a5ffdce4872fad6fc08194dd15450a8",
         "tokens.ts": "9481fe5da945593e93a0b16855d34acd35113d8b86fae92fee060707db6e75b8"
@@ -60,11 +60,11 @@
         "audit-event.interface.ts": "c9c622334febeefca38113af4cde37b60f1926630519a3865ead2ce246bf25db",
         "audit-listener.ts": "d9d4ef6ba517ed170e5ab2e8ae675828a744e37455b2981c31d968f8d2ed28b4",
         "audit-logging.module.ts": "1fec0a825f017d0833f5305d990296ca06b67e95d281cfc1448b3b3a772a1a63",
-        "audit-record-raised.ts": "a828f746376ec2c7b86af054e96675aa53067cfc6c5c6d82f7ec790abd1abb4d",
+        "audit-record-raised.ts": "f3f7e018be6b27902ca1b9ff10ef9a646b38f8ef2baff08325610d5f75c5aab6",
         "correlation-context.ts": "dca068464586ec5bc2f6f8ce7f91abfcfbe7ed0eb660af1046af749054513438",
         "correlation-id.middleware.ts": "455ff7a293e9581fbc379f135d4c129a3429cb4d9098e5418581de0ea47e83fe",
         "field-diff.ts": "5584d54e7197c4450f8eea9bbde0e98c0739122f5529290a9eb6b1aa4e8499da",
-        "index.ts": "20129adbd386ec66298a30c86f8ef48b872ed65d282f1fa72e101d8101827de6",
+        "index.ts": "e7ee2f777edd1c3e152c72dc365c848e8ff2be793143f9d0e559010505ba80df",
         "keyset-cursor.ts": "ec077656a92abfd3731cda0dff9c523e4290c4232efe66b939e658ff5d1fa2a9",
         "persist-audit-record.ts": "44f07c55e9e0c691037d693ee8c0d5ae55b442063ea6909031e547ed31d38c49",
         "stats-window.ts": "1a29e3b9e807658347cf35f07d31807ed129a7f6a4569a519f8a1af76e93fc6d",
@@ -77,14 +77,15 @@
         "authorization/authorization.core.static-map"
       ],
       "files": {
-        "README.md": "2998218805e1b515bae73b62283097f0bfc0d1c208732f19d92d2c9fca428cbe",
+        "README.md": "c445985d3181ce32d82dac8bb016aa0bc726509843e475be4343ac77d6f2ae48",
         "action-availability.ts": "9a15338d8074e73a9d49f1559d1a22b89e9f87b4417cb416ed0175dcce84525e",
         "actor.type.ts": "6ecf4600841fae0460760f26ba3ea7d455901f11aae1eca31ffd5fa3b4e8eca5",
-        "authorization.guard.ts": "9841b2cce03183f3dad49886dcb5b098106caba3cbd23ea27ece6a62a132723d",
+        "authorization-enforced.guard.ts": "1e091cf263e6fe3af14c1a004bc4e9c63ac934bbc0eb8413638b94853985af49",
+        "authorization.guard.ts": "765f10edab56e699bf5b43d4f5096a3537689daefee6702e15ac61734acc23bc",
         "authorization.module.ts": "1a90fee949d0dc4c7518726c7fd5735bb229896bf54ded38ba8274c1cbd30a0f",
         "authorizer.port.ts": "dab91d6385a7617517f546dda1b4bc7338af431fe651f6bda6f4daeb558a878e",
         "current-actor.decorator.ts": "cea75615fa1f4d975a129dd1a03a87a0761675f773c8dc0d342a64d7815e4132",
-        "index.ts": "6744357a92ed8945677e9fe621d832c295eeabc11de723cd78535a1d7df69d6e",
+        "index.ts": "0385d465212b80892fcea3871509f6f94f910277967be9b919aa8292fd2e57f5",
         "missing-authorizer.ts": "1ca76f458265f348da3cec6e707b7390cc59393fb201ca58158b167b06f00304",
         "requires-action.decorator.ts": "395e97f5f2246236f2b215a69de2d1f2d8bcb5295b26b900ad19f82884a65caf",
         "session-snapshot.ts": "578ecf615a4bc57a728fa3c73c005066e1b68bbe34c0de21f0ceea527b34ef71",
@@ -124,7 +125,7 @@
     }
   },
   "source": "https://github.com/ascendra-dev/ascendra-commons.git",
-  "commit": "dd9bb3efd57bd25eca54f787a348ca6f4f21f942",
+  "commit": "49158495d2644be769a5b26a46a16a5bf20bbf0b",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-20T21:52:23.056Z"
+  "syncedAt": "2026-10-20T21:58:35.541Z"
 }

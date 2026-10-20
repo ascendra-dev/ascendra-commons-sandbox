@@ -4,6 +4,7 @@ import { Actor } from './actor.type';
 import { Authorizer } from './authorizer.port';
 import { ACTION_METADATA_KEY, NO_ACTION_REQUIRED_KEY } from './requires-action.decorator';
 import { AUTHORIZER } from './tokens';
+import { AUTHORIZATION_CHECKED } from './authorization-enforced.guard';
 
 /**
  * Thrown when an endpoint under AuthorizationGuard declares neither
@@ -67,9 +68,12 @@ export class AuthorizationGuard implements CanActivate {
     if (!decision) {
       throw new AuthorizationNotDeclaredError(`${controller.name}.${handler.name}()`);
     }
-    if (decision.kind === 'no-action-required') return true;
-
-    const request = context.switchToHttp().getRequest<{ actor?: Actor }>();
+    // Marked once let through, for AuthorizationEnforcedGuard: a library controller checks this guard ran at all.
+    const request = context.switchToHttp().getRequest<{ actor?: Actor; [AUTHORIZATION_CHECKED]?: boolean }>();
+    if (decision.kind === 'no-action-required') {
+      request[AUTHORIZATION_CHECKED] = true;
+      return true;
+    }
     const actor = request.actor;
     if (!actor) {
       // Defensive: this guard assumes an upstream authentication step already
@@ -84,6 +88,7 @@ export class AuthorizationGuard implements CanActivate {
       // from GET /me), instead of a bare "Forbidden resource".
       throw new ForbiddenException(`You don't have permission for this — it needs "${decision.action}".`);
     }
+    request[AUTHORIZATION_CHECKED] = true;
     return true;
   }
 
