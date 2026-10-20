@@ -1,8 +1,9 @@
-import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { Actor } from '../../authorization/authorization.core';
 import {
   AUDIT_EVENT_READER,
   diffFields,
+  isValidTimeZone,
   type ActorActivitySummary,
   type AuditCoverageEntry,
   type AuditEvent,
@@ -114,9 +115,10 @@ export class AuditEventsApiService {
     });
   }
 
-  /** The Overview screen's KPI row and volume chart (window defaults to 30 days). */
+  /** The Overview screen's KPI row and volume chart (window defaults to 30 days, days bucketed in `tz`, default UTC). */
   async overviewStats(actor: Actor, dto: AuditStatsQueryDto): Promise<AuditOverviewStats> {
-    return this.reader.overviewStats(dto.window ?? '30d', await this.statsTenant(actor, dto));
+    if (dto.tz !== undefined && !isValidTimeZone(dto.tz)) throw new BadRequestException(`Unknown time zone "${dto.tz}"`);
+    return this.reader.overviewStats(dto.window ?? '30d', await this.statsTenant(actor, dto), dto.tz ?? 'UTC');
   }
 
   /** The Overview screen's Top actions, by (entity type, action) (window defaults to 7 days). */

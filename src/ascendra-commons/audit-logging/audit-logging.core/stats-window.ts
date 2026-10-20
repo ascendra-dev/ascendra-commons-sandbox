@@ -29,19 +29,35 @@ export function parseStatsWindow(
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/**
- * Every UTC day from `since`'s through `now`'s, oldest first, with each day's count from `counts` (`YYYY-MM-DD` →
- * count) or `0` — so a chart over the window spans all of it, quiet days included. A reader returns only the days
- * that have records; this fills the rest.
- */
-export function fillDailyCounts(since: Date, now: Date, counts: ReadonlyMap<string, number>): Array<{ day: string; count: number }> {
-  const out: Array<{ day: string; count: number }> = [];
-  const first = Date.UTC(since.getUTCFullYear(), since.getUTCMonth(), since.getUTCDate());
-  for (let t = first; t <= now.getTime(); t += DAY_MS) {
-    const day = new Date(t).toISOString().slice(0, 10);
-    out.push({ day, count: counts.get(day) ?? 0 });
+/** Whether `timeZone` is an IANA zone this runtime knows (e.g. `'Asia/Dubai'`, `'UTC'`). */
+export function isValidTimeZone(timeZone: string): boolean {
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone });
+    return true;
+  } catch {
+    return false;
   }
-  return out;
+}
+
+/**
+ * The calendar dates (`YYYY-MM-DD`) of the past `days` days in `timeZone` — the `days` before today and today, oldest
+ * first. Whole local days, so a chart's first bar is a full day like the rest (a `now − days` instant would cut it);
+ * only today is "so far". The viewer's zone, so a bar is the same day their calendar shows.
+ */
+export function calendarDays(now: Date, days: number, timeZone: string): string[] {
+  // en-CA formats a date as YYYY-MM-DD.
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+  // Calendar arithmetic on the date itself (as a UTC midnight) — no zone offsets or DST involved.
+  const todayMs = Date.parse(`${today}T00:00:00Z`);
+  return Array.from({ length: days + 1 }, (_, i) => new Date(todayMs - (days - i) * DAY_MS).toISOString().slice(0, 10));
+}
+
+/**
+ * Each of `days` (`YYYY-MM-DD`, see `calendarDays`) with its count from `counts` or `0` — so a chart over the window
+ * spans all of it, quiet days included. A reader returns only the days that have records; this fills the rest.
+ */
+export function fillDailyCounts(days: readonly string[], counts: ReadonlyMap<string, number>): Array<{ day: string; count: number }> {
+  return days.map((day) => ({ day, count: counts.get(day) ?? 0 }));
 }
 
 /**

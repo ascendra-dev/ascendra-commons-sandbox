@@ -34,6 +34,9 @@ export interface AuditStatsQueryDto {
   window?: string;
   /** Only honored for a platform admin, same convention as `AuditEventsQueryDto.tenantId`. */
   tenantId?: string;
+  /** Overview only: the IANA time zone the per-day volume is bucketed in (e.g. `'Asia/Dubai'`) — the viewer's, so
+   *  each bar is a day on their calendar. Defaults to `'UTC'`; an unknown zone is a 400. */
+  tz?: string;
 }
 
 /** Query params for `GET /audit/retention`. */

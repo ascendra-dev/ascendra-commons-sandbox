@@ -3,6 +3,7 @@ import { sql, type SQL } from 'drizzle-orm';
 import {
   decodeKeysetCursor,
   encodeKeysetCursor,
+  calendarDays,
   fillDailyCounts,
   fillMonthlyCounts,
   kpiValue,
@@ -156,15 +157,22 @@ export class PostgresAuditEventReader implements AuditEventReader {
     };
   }
 
-  async overviewStats(window: string, tenantId?: string | null, now: Date = new Date()): Promise<AuditOverviewStats> {
-    const { label, since } = parseStatsWindow(window, now);
+  async overviewStats(
+    window: string,
+    tenantId?: string | null,
+    timeZone = 'UTC',
+    now: Date = new Date(),
+  ): Promise<AuditOverviewStats> {
+    const { label, days } = parseStatsWindow(window, now);
     const scope = this.scope(tenantId);
 
+    // Whole calendar days in the viewer's zone: from the first day's local midnight, bucketed by local date.
+    const dayList = calendarDays(now, days, timeZone);
     const perDayRows = (
       await this.db.execute(sql`
-        select to_char(occurred_at at time zone 'UTC', 'YYYY-MM-DD') as day, count(*)::int as count
+        select to_char(occurred_at at time zone ${timeZone}, 'YYYY-MM-DD') as day, count(*)::int as count
         from commons_audit_event
-        where ${scope} and occurred_at >= ${since}
+        where ${scope} and occurred_at >= (${dayList[0]}::date::timestamp at time zone ${timeZone})
         group by 1
       `)
     ).rows as Array<{ day: string; count: number }>;
@@ -191,7 +199,7 @@ export class PostgresAuditEventReader implements AuditEventReader {
 
     return {
       window: label,
-      perDay: fillDailyCounts(since, now, new Map(perDayRows.map((r) => [r.day, r.count]))),
+      perDay: fillDailyCounts(dayList, new Map(perDayRows.map((r) => [r.day, r.count]))),
       kpis: {
         records24h: kpiValue(k.records_24h, k.records_24h_prior),
         records7d: kpiValue(k.records_7d, k.records_7d_prior),

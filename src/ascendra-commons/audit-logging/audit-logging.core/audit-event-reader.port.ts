@@ -59,7 +59,8 @@ export interface AuditStatsKpis {
 export interface AuditOverviewStats {
   /** Normalized window label, e.g. `'30d'` (see `parseStatsWindow`). */
   window: string;
-  /** Every UTC day in the window, oldest first — `0` on a day with no records (see `fillDailyCounts`). */
+  /** Every calendar day of the window in the requested time zone (UTC by default), oldest first — whole days, today
+   *  "so far"; `0` on a day with no records (see `calendarDays`, `fillDailyCounts`). */
   perDay: AuditDailyCount[];
   kpis: AuditStatsKpis;
 }
@@ -203,9 +204,10 @@ export interface AuditEventReader {
   /**
    * The Overview screen's KPI row and daily volume over `window` (e.g. `'30d'`,
    * see `parseStatsWindow`). `tenantId` follows the same absent/string/`null`
-   * convention as `AuditQuery.tenantId`.
+   * convention as `AuditQuery.tenantId`. `timeZone` (IANA, default `'UTC'`) is the zone the per-day volume is
+   * bucketed in — the viewer's, so each day matches their calendar; the KPIs are rolling windows, zone-free.
    */
-  overviewStats(window: string, tenantId?: string | null): Promise<AuditOverviewStats>;
+  overviewStats(window: string, tenantId?: string | null, timeZone?: string): Promise<AuditOverviewStats>;
 
   /** The Overview screen's Top actions over `window`, ranked by (entity type, action). Same `tenantId` convention. */
   topActions(window: string, tenantId?: string | null): Promise<AuditTopActionsStats>;

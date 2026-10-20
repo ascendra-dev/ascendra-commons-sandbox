@@ -126,8 +126,13 @@ export class AuditEventsController {
 
   @Get('stats/overview')
   @RequiresAction(AUDIT_ACTIONS.VIEW)
-  overviewStats(@CurrentActor() actor: Actor, @Query('window') window?: string, @Query('tenantId') tenantId?: string) {
-    return this.service.overviewStats(actor, { window, tenantId });
+  overviewStats(
+    @CurrentActor() actor: Actor,
+    @Query('window') window?: string,
+    @Query('tenantId') tenantId?: string,
+    @Query('tz') tz?: string,
+  ) {
+    return this.service.overviewStats(actor, { window, tenantId, tz });
   }
 
   @Get('stats/top-actions')
