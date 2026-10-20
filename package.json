@@ -29,9 +29,12 @@
   "devDependencies": {
     "@nestjs/cli": "^12.0.10",
     "@nestjs/schematics": "^12.0.10",
-    "@types/node": "^20.19.43",
+    "@types/node": "^24.19.2",
     "@types/pg": "^8.23.1",
     "drizzle-kit": "^0.31.11",
     "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }
