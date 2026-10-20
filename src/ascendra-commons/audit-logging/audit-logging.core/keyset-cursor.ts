@@ -5,6 +5,15 @@
  * cursor. Stack-agnostic — a MySQL (or any other) reader reuses it verbatim,
  * which is why it lives in `.core` rather than a stack adapter.
  */
+/**
+ * A cursor the reader didn't issue — undecodable, or naming an id its store can't have. A reader throws it rather than
+ * ignoring the cursor: ignoring it would restart from the first page, so a client walking pages would loop over the
+ * same rows. `audit-logging.api` answers it with a 400.
+ */
+export class InvalidAuditCursorError extends Error {
+  override readonly name = 'InvalidAuditCursorError';
+}
+
 export function encodeKeysetCursor(timestamp: Date, id: string): string {
   return Buffer.from(`${timestamp.toISOString()}|${id}`).toString('base64url');
 }

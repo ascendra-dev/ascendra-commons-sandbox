@@ -53,6 +53,14 @@ function renderRow(record: AuditEvent): string {
   );
 }
 
+/**
+ * A spreadsheet runs a cell that starts with `=`, `+`, `-`, `@`, a tab or a carriage return as a formula — and these
+ * files are opened in spreadsheets. `reason` is free text, and actors and entity ids can come from users, so such a
+ * value gets a leading `'`, which makes it plain text (OWASP "CSV injection").
+ */
+const FORMULA_START = /^[=+\-@\t\r]/;
+
 function csvField(value: string): string {
-  return /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+  const text = FORMULA_START.test(value) ? `'${value}` : value;
+  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }

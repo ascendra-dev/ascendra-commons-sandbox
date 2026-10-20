@@ -23,7 +23,7 @@ export { persistAuditRecord } from './persist-audit-record';
 export { AuditListener } from './audit-listener';
 export { runWithCorrelationId, getCurrentCorrelationId } from './correlation-context';
 export { CorrelationIdMiddleware } from './correlation-id.middleware';
-export { encodeKeysetCursor, decodeKeysetCursor } from './keyset-cursor';
+export { encodeKeysetCursor, decodeKeysetCursor, InvalidAuditCursorError } from './keyset-cursor';
 export { diffFields } from './field-diff';
 export type { FieldDiffEntry } from './field-diff';
 export { parseStatsWindow, calendarDays, fillDailyCounts, fillMonthlyCounts, isValidTimeZone, kpiValue } from './stats-window';

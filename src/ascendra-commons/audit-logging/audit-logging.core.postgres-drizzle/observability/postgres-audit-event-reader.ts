@@ -3,6 +3,7 @@ import { sql, type SQL } from 'drizzle-orm';
 import {
   decodeKeysetCursor,
   encodeKeysetCursor,
+  InvalidAuditCursorError,
   calendarDays,
   fillDailyCounts,
   fillMonthlyCounts,
@@ -25,6 +26,9 @@ import { AUDIT_APPLICATION_ID, AUDIT_SQL_EXECUTOR } from '../tokens';
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 200;
+
+/** `id` is a Postgres `uuid` — anything else can't be a row here, and binding it would be a cast error, not a miss. */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Reference `AuditEventReader` for Postgres via Drizzle — one library-owned
@@ -58,6 +62,9 @@ export class PostgresAuditEventReader implements AuditEventReader {
 
     const conds = this.filterConds(query);
     const cursor = query.cursor ? decodeKeysetCursor(query.cursor) : null;
+    if (query.cursor && (!cursor || !UUID.test(cursor.id))) {
+      throw new InvalidAuditCursorError('not a cursor this reader issued');
+    }
     if (cursor) {
       conds.push(
         sql`(occurred_at < ${cursor.timestamp} or (occurred_at = ${cursor.timestamp} and id < ${cursor.id}))`,
@@ -97,6 +104,7 @@ export class PostgresAuditEventReader implements AuditEventReader {
   }
 
   async findOne(id: string, tenantId?: string | null): Promise<AuditEvent | null> {
+    if (!UUID.test(id)) return null;
     const conds: SQL[] = [sql`id = ${id}`, this.inScope()];
     if (tenantId !== undefined) {
       conds.push(tenantId === null ? sql`tenant_id is null` : sql`tenant_id = ${tenantId}`);

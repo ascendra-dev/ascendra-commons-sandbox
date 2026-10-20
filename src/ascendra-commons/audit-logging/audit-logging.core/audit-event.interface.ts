@@ -21,8 +21,7 @@ export type AuditEventInput = Pick<
  * layer assigned on insert (never supplied by the caller, so neither can be
  * part of AuditEventInput): the id, and the application that wrote it. No UPDATE or DELETE is ever exposed
  * against this shape at the application layer — audit records are
- * write-once. What a repository's find() (not built — see this pattern's
- * README) would read back.
+ * write-once. What `AuditEventReader.find()` / `findOne()` read back.
  */
 export interface AuditEvent extends AuditEventInput {
   readonly id: string;

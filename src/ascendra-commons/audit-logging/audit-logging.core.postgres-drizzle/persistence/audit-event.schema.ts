@@ -49,9 +49,15 @@ export const auditEventTable = pgTable(
     application: text('application').notNull(),
   },
   (table) => [
-    /** "this record's full history" — the not-yet-built `AuditQuery` by `entityType`+`entityId`. */
+    /** "this record's full history" — `AuditQuery` by `entityType`+`entityId` (`GET /audit/entities/:type/:id/history`). */
     index('commons_audit_event_entity_idx').on(table.entityType, table.entityId),
     /** "this tenant's activity feed, recent first" — `AuditQuery` by `tenantId`+`occurredAfter`/`occurredBefore`. */
     index('commons_audit_event_tenant_time_idx').on(table.tenantId, table.occurredAt),
+    /** The list newest-first (keyset on `occurred_at`, `id`) and the platform-wide stats — every read is `application`-scoped. (0002) */
+    index('commons_audit_event_app_time_idx').on(table.application, table.occurredAt.desc(), table.id.desc()),
+    /** A request / job trace, and the list's correlation-id filter. (0002) */
+    index('commons_audit_event_correlation_idx').on(table.correlationId),
+    /** One actor's activity, and the list's actor filter. (0002) */
+    index('commons_audit_event_actor_idx').on(table.application, table.actor, table.occurredAt.desc()),
   ],
 );

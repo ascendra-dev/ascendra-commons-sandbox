@@ -37,9 +37,19 @@ Stamped on insert (`PostgresAuditPersistenceModule.forRoot({ application })`, on
 string) and scoped on every read (`application in (…)`): the observability module's
 `application` is one name — an app's own screen sees only its own rows — or a list,
 for a backend that serves more than one application. `AuditQuery.application`
-(`GET /audit/events?application=`) narrows within that scope, never beyond it. No
-`application`-led index yet: with one application per table it would select
-everything; add one when several applications share the table.
+(`GET /audit/events?application=`) narrows within that scope, never beyond it.
+
+## Indexes
+
+`0001`: `(entity_type, entity_id)` for an entity's history, `(tenant_id, occurred_at)`
+for a tenant's feed. `0002` adds what the screens' other reads need:
+`(application, occurred_at desc, id desc)` — with one application per table it
+doesn't *filter* anything, but it gives the list its order, so a page reads its 51
+rows instead of sorting the whole table, and the overview's time windows become
+range reads; `(correlation_id)` for a trace; `(application, actor, occurred_at desc)`
+for an actor's activity. Counting every row (the retention figures) still reads the
+whole table. On a large table, build `0002`'s indexes `CONCURRENTLY` first — see the
+migration.
 
 ## Retention
 

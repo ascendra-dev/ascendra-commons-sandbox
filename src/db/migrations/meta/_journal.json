@@ -8,6 +8,13 @@
       "when": 1792286145639,
       "tag": "0000_commons_audit_logging_0001_audit_event",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792532534587,
+      "tag": "0001_commons_audit_logging_0002_audit_event_read_indexes",
+      "breakpoints": true
     }
   ]
 }

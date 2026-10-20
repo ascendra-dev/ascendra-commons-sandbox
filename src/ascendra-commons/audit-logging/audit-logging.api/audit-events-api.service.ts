@@ -3,6 +3,7 @@ import type { Actor } from '../../authorization/authorization.core';
 import {
   AUDIT_EVENT_READER,
   diffFields,
+  InvalidAuditCursorError,
   isValidTimeZone,
   type ActorActivitySummary,
   type AuditCoverageEntry,
@@ -25,6 +26,17 @@ import type {
   AuditRetentionQueryDto,
   AuditStatsQueryDto,
 } from './dto/audit-api.dto';
+
+/**
+ * A date query param as a Date — a 400 when it isn't one. Unchecked, `new Date('yesterday')` is an Invalid Date that
+ * only fails when the driver serializes it: a 500 for what is the caller's mistake.
+ */
+function dateParam(name: string, value: string | undefined): Date | undefined {
+  if (!value) return undefined;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) throw new BadRequestException(`"${name}" must be an ISO 8601 date or date-time`);
+  return date;
+}
 
 /** Rows fetched per `find()` call while an export walks its result — the postgres reader's own max page size. */
 const EXPORT_PAGE_SIZE = 200;
@@ -55,7 +67,7 @@ export class AuditEventsApiService {
     @Inject(AUDIT_API_OPTIONS) private readonly options: AuditApiOptions,
   ) {}
 
-  find(actor: Actor, dto: AuditEventsQueryDto): Promise<AuditQueryResult> {
+  async find(actor: Actor, dto: AuditEventsQueryDto): Promise<AuditQueryResult> {
     return this.query(actor, this.baseQuery(dto));
   }
 
@@ -84,11 +96,11 @@ export class AuditEventsApiService {
     };
   }
 
-  entityHistory(actor: Actor, entityType: string, entityId: string, dto: AuditEventsQueryDto): Promise<AuditQueryResult> {
+  async entityHistory(actor: Actor, entityType: string, entityId: string, dto: AuditEventsQueryDto): Promise<AuditQueryResult> {
     return this.query(actor, { ...this.baseQuery(dto), entityType, entityId });
   }
 
-  trace(actor: Actor, correlationId: string, dto: AuditEventsQueryDto): Promise<AuditQueryResult> {
+  async trace(actor: Actor, correlationId: string, dto: AuditEventsQueryDto): Promise<AuditQueryResult> {
     return this.query(actor, { ...this.baseQuery(dto), correlationId });
   }
 
@@ -110,8 +122,8 @@ export class AuditEventsApiService {
     const tenantId = await this.resolveTenantScope(actor);
     return this.reader.summarizeActor(actorFilter, {
       ...(tenantId !== undefined ? { tenantId } : {}),
-      occurredAfter: dto.occurredAfter ? new Date(dto.occurredAfter) : undefined,
-      occurredBefore: dto.occurredBefore ? new Date(dto.occurredBefore) : undefined,
+      occurredAfter: dateParam('occurredAfter', dto.occurredAfter),
+      occurredBefore: dateParam('occurredBefore', dto.occurredBefore),
     });
   }
 
@@ -178,7 +190,15 @@ export class AuditEventsApiService {
   }
 
   private async query(actor: Actor, query: AuditQuery): Promise<AuditQueryResult> {
-    return this.reader.find(await this.scoped(actor, query));
+    const scoped = await this.scoped(actor, query);
+    try {
+      return await this.reader.find(scoped);
+    } catch (err) {
+      if (err instanceof InvalidAuditCursorError) {
+        throw new BadRequestException('"cursor" is not one this endpoint returned — start again without it');
+      }
+      throw err;
+    }
   }
 
   /** `query` as `actor` may run it — a non-platform actor is forced to their own tenant. */
@@ -205,6 +225,9 @@ export class AuditEventsApiService {
   }
 
   private baseQuery(dto: AuditEventsQueryDto): AuditQuery {
+    if (dto.limit !== undefined && (!Number.isInteger(dto.limit) || dto.limit < 1)) {
+      throw new BadRequestException('"limit" must be a positive whole number');
+    }
     const query: AuditQuery = {
       application: dto.application,
       entityType: dto.entityType,
@@ -212,8 +235,8 @@ export class AuditEventsApiService {
       actor: dto.actor,
       action: dto.action,
       correlationId: dto.correlationId,
-      occurredAfter: dto.occurredAfter ? new Date(dto.occurredAfter) : undefined,
-      occurredBefore: dto.occurredBefore ? new Date(dto.occurredBefore) : undefined,
+      occurredAfter: dateParam('occurredAfter', dto.occurredAfter),
+      occurredBefore: dateParam('occurredBefore', dto.occurredBefore),
       limit: dto.limit,
       cursor: dto.cursor,
     };
