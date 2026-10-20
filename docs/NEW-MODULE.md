@@ -5,7 +5,10 @@ the sandbox and the `ascendra-commons-ui` testbed — the path `audit-logging` t
 any product does (`ascendra-commons`' README, "Integrating into a project"); the sandbox only adds data (step 5) and a
 way to sign in as different people.
 
-Each numbered step ends at a checkpoint — shown working, reviewed, committed — before the next starts.
+Each numbered step ends at a checkpoint — shown working, reviewed, committed — before the next starts. A module is
+done when it also has its `GUIDE.md` and `AUDIT-REPORT.md` (step 9) — `ascendra-commons`'
+[`MODULE-GUIDE-TEMPLATE.md`](https://github.com/ascendra-dev/ascendra-commons/blob/main/MODULE-GUIDE-TEMPLATE.md) says
+what they cover; `audit-logging/` is the worked example.
 
 ## 1. Vendor it
 
@@ -88,7 +91,21 @@ Each numbered step ends at a checkpoint — shown working, reviewed, committed �
       every dot gray, stats ranking by verb alone, no KPIs) — and fix each on its own, backend fixes in
       `ascendra-commons` (then `update` here).
 
-## 9. Record it
+## 9. Review it, and write its guide
+
+The module's own review, run the way `MODULE-GUIDE-TEMPLATE.md` ("How a module review runs") lays it out.
+
+- [ ] Its drill-downs: every number on a screen that can link to the list does, carrying exactly the window it
+      counted — click it and compare with the list's total.
+- [ ] A backend code review against the template's **backend conventions** checklist. Reproduce each suspected bug
+      here first (`curl` as a dev user: a bad date, a bad number, a garbage cursor, a malformed id — none may be a
+      500), fix it in `ascendra-commons` with a test, `update`, and probe again.
+- [ ] `EXPLAIN` each read the screens make (`SET enable_seqscan = off` first — the sample data is small enough that
+      Postgres prefers scanning); a missing index is the next numbered migration.
+- [ ] Write `<module>/GUIDE.md` and `<module>/AUDIT-REPORT.md` in `ascendra-commons`, beside its README, with the
+      template's required sections — the guide's code excerpts real, the report's gaps prioritised P1 / P2 / P3.
+
+## 10. Record it
 
 - [ ] `docs/PLAN.md` — the module under "Later modules", with its status.
 - [ ] `README.md` — its endpoints in the table, its data under "The sample data".
