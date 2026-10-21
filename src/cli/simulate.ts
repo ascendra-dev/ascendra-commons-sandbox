@@ -39,6 +39,10 @@ async function main() {
     if (roll < 0.1) {
       // A short burst from a random address — over the limit, so part of it is turned away (and recorded).
       const ip = `203.0.113.${rng.int(1, 254)}`;
+      if (rng.chance(0.3)) {
+        const correlationId = await limits.syncJob(`100.64.1.${rng.int(1, 254)}`);
+        return `rate-limit: a partner sync job was throttled (trace ${correlationId.slice(0, 8)}…)`;
+      }
       if (rng.chance(0.5)) {
         await limits.enumeration(ip, rng.int(25, 60));
         return `rate-limit: ${ip} tried payment-link tokens`;

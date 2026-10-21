@@ -19,6 +19,8 @@ const BRUTE_FORCER = '192.0.2.44';
 const PARTNER = '100.64.0.12';
 /** A normal visitor who stays under every limit — no rejections. */
 const VISITOR = '198.51.100.23';
+/** A partner's nightly sync job — one correlation id for the whole job, across routes. */
+const SYNC_JOB = '100.64.0.40';
 
 export interface RateLimitTotals {
   requests: number;
@@ -47,6 +49,8 @@ export class RateLimitHistory {
     await this.enumeration(ENUMERATOR, 300);
     await this.bruteForce(BRUTE_FORCER, 40);
     await this.partnerPolling();
+    await this.syncJob(SYNC_JOB);
+    await this.syncJob('100.64.0.41');
     // Last, and wider than the sandbox recorder's buffer (100 sources): the excess lands in an `(overflow)` row.
     await this.distributedEnumeration(150, 24);
     return this.totals;
@@ -79,6 +83,19 @@ export class RateLimitHistory {
       if (await this.hit('GET', '/demo/quotes', PARTNER, { 'X-Correlation-Id': correlationId })) lastRejected = correlationId;
     }
     if (lastRejected) await this.hit('GET', '/demo/quotes', PARTNER, { 'X-Correlation-Id': lastRejected });
+  }
+
+  /**
+   * A partner's sync job: one correlation id for the whole job (as audit-logging traces a job), refreshing quotes and
+   * re-checking its payment links in a tight loop — both limits turn part of it away, so its trace has a window on
+   * each route. Returns the job's correlation id.
+   */
+  async syncJob(ip: string): Promise<string> {
+    const correlationId = this.rng.uuid();
+    const headers = { 'X-Correlation-Id': correlationId };
+    for (let i = 0; i < 16; i++) await this.hit('GET', '/demo/quotes', ip, headers);
+    for (let i = 0; i < 26; i++) await this.hit('GET', `/demo/pay/${this.token()}`, ip, headers);
+    return correlationId;
   }
 
   /** `sources` addresses each try `perSource` tokens — a botnet spreading an enumeration thin. Run concurrently. */

@@ -136,6 +136,7 @@ only what its guard turns away — each caller's address in `X-Forwarded-For` (d
 
 - one address enumerating payment-link tokens (280 rejections), one brute-forcing sign-in (35);
 - a partner polling too fast with a correlation id per call (4 rejections, each traceable; one retried, so it counts 2);
+- two partner sync jobs, each one correlation id across `/demo/quotes` and `/demo/pay/:token` — a trace with a window on each route;
 - a 150-address botnet spreading an enumeration thin — past the sandbox recorder's deliberately tiny buffer (100
   sources), so the excess lands in one `(overflow)` row; and the list runs past one page;
 - a visitor who stays under every limit (no rejections).
