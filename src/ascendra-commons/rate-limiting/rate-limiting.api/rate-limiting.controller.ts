@@ -1,7 +1,19 @@
 import { Controller, Get, Inject, Param, Query, UseGuards } from '@nestjs/common';
 import { AuthorizationEnforcedGuard, RequiresAction } from '../../authorization/authorization.core';
+import type { RejectionPage } from '../rate-limiting.core';
 import { RATE_LIMIT_ACTIONS } from './rate-limiting-api.options';
 import { RateLimitingApiService } from './rate-limiting-api.service';
+
+/**
+ * api-contract.md Rule 4's cursor-based list shape. The core port's `{ rejections, nextCursor }`
+ * stays a domain type — the wire shape is this controller's concern. An absent `nextCursor`
+ * serializes as `meta: {}`. The catalog and top identifiers are bounded (by routes, by `limit`),
+ * so they stay bare arrays (Rule 4's bounded case).
+ */
+async function toCursorList(page: Promise<RejectionPage>) {
+  const { rejections, nextCursor } = await page;
+  return { data: rejections, meta: { nextCursor } };
+}
 
 /**
  * Read endpoints for a rate-limiting security/ops screen: the rejection log,
@@ -27,7 +39,7 @@ export class RateLimitingController {
     @Query('limit') limit?: string,
     @Query('cursor') cursor?: string,
   ) {
-    return this.service.listRejections({
+    return toCursorList(this.service.listRejections({
       route,
       identifier,
       correlationId,
@@ -35,7 +47,7 @@ export class RateLimitingController {
       until,
       limit: limit !== undefined ? Number(limit) : undefined,
       cursor,
-    });
+    }));
   }
 
   @Get('rejections/trace/:correlationId')
@@ -45,10 +57,10 @@ export class RateLimitingController {
     @Query('limit') limit?: string,
     @Query('cursor') cursor?: string,
   ) {
-    return this.service.getTrace(correlationId, {
+    return toCursorList(this.service.getTrace(correlationId, {
       limit: limit !== undefined ? Number(limit) : undefined,
       cursor,
-    });
+    }));
   }
 
   @Get('rejections/catalog')

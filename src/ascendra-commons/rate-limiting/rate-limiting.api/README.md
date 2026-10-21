@@ -8,8 +8,8 @@ Opt-in NestJS controller over `RATE_LIMIT_OBSERVABILITY_PORT`. Stack-agnostic.
 
 | Method | Path | → |
 |---|---|---|
-| GET | `/rate-limits/rejections` | `listRejections(RejectionQuery)` — query params: `route`, `identifier`, `correlationId`, `since`, `until`, `limit`, `cursor`. Returns `RejectionPage` (newest window first + `nextCursor`) unchanged — each row is one rejection *window*: route, identifier, limit, `windowStart` (minute), `count`, `firstRejectedAt`, `lastRejectedAt`, `correlationId`. `since`/`until` bound `windowStart`. |
-| GET | `/rate-limits/rejections/trace/:correlationId` | every rejection from one request — a cross-module trace. |
+| GET | `/rate-limits/rejections` | `listRejections(RejectionQuery)` — query params: `route`, `identifier`, `correlationId`, `since`, `until`, `limit`, `cursor`. Returns api-contract Rule 4's cursor shape — `{ data, meta: { nextCursor } }`, newest window first, `nextCursor` absent on the last page — each row is one rejection *window*: route, identifier, limit, `windowStart` (minute), `count`, `firstRejectedAt`, `lastRejectedAt`, `correlationId`. `since`/`until` bound `windowStart`. |
+| GET | `/rate-limits/rejections/trace/:correlationId` | every rejection from one request — a cross-module trace. Same cursor shape. |
 | GET | `/rate-limits/rejections/catalog` | total rejections per route (the windows' counts summed; optional `since`) — a spike on one route is the "being hammered" signal. |
 | GET | `/rate-limits/rejections/top-identifiers` | the identifiers with the most rejections — query params `since`, `route`, `limit` (default 10, max 100). Each: `identifier`, summed `count`, the `routes` it hit, `lastRejectedAt`. `(overflow)` is the sources beyond the recorder's buffer, counted together. |
 | GET | `/rate-limits/rejections/volume` | the Overview's "Volume & retention" card — `oldestWindowAt` (how far back the log goes), `rowCount` (stored windows), `tableSizeBytes` (the whole table, every application sharing it), and `perDay`: rejections for each of the past 30 calendar days, zero-filled. Query param `tz` (IANA, default `UTC`) sets where a day starts — an unknown zone is a 400. |

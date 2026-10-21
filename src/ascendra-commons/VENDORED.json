@@ -141,13 +141,13 @@
     },
     "rate-limiting/rate-limiting.api": {
       "files": {
-        "README.md": "1880911caf176aee49ca037979006518dbf99a33ab7651c4d6a250be85b02378",
+        "README.md": "c5e33a5bc24b5b709ed727ad84ada61eb3e90c1c1ff628b532c8564938f97182",
         "dto/rate-limiting-api.dto.ts": "c65ac23473dff27ac3433f557fbd5516c186ee084d166d435fd1c9322e9e7959",
         "index.ts": "a307fd5256e0ac7bb0039dc5858db77d147675cb0e9ad6dddd9d99c0be6dd72f",
         "rate-limiting-api.module.ts": "9fc319e2a72647c0502a49a27f89fb6c53f4073c202e41b0998c272aa745ed32",
         "rate-limiting-api.options.ts": "9aaec3656fc6501ae5c2ae89d585e012eb5109d346eb17958ebaadcb0be4290b",
         "rate-limiting-api.service.ts": "3874522ae4d45119b9bd40c42c690cb0bb05da98eb6d20ef7bc86bdcddf7a04d",
-        "rate-limiting.controller.ts": "eaf5e7ee71e71d5c6f17ca56490f432cac5026a2ebcee6965117ad199487f8a0"
+        "rate-limiting.controller.ts": "0ad216ff3a77e68eae3a7b6c84485c43490dbbe845c67a943bab6af93fddc92d"
       }
     },
     "rate-limiting/rate-limiting.core": {
@@ -186,7 +186,7 @@
     }
   },
   "source": "https://github.com/ascendra-dev/ascendra-commons.git",
-  "commit": "68f3060fb3661a31e5ca6d59955ea88dd4b13879",
+  "commit": "81f42f0a7689df05fb5054bdcc4fdd52ead1481d",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-21T11:47:45.251Z"
+  "syncedAt": "2026-10-21T11:50:12.839Z"
 }
