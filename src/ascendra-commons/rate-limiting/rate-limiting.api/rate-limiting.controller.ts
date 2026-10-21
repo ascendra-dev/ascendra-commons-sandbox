@@ -5,7 +5,7 @@ import { RateLimitingApiService } from './rate-limiting-api.service';
 
 /**
  * Read endpoints for a rate-limiting security/ops screen: the rejection log,
- * a correlation trace, per-route counts and the top identifiers. All gated on
+ * a correlation trace, per-route counts, the top identifiers and the volume card. All gated on
  * `rate-limit.view`. No tenant scoping. Requires `AuthorizationGuard` wired
  * globally as `APP_GUARD` (see `authorization.core`'s README) — and fails closed
  * without it: `AuthorizationEnforcedGuard` turns a missing global guard into a
@@ -55,6 +55,12 @@ export class RateLimitingController {
   @RequiresAction(RATE_LIMIT_ACTIONS.VIEW)
   catalog(@Query('since') since?: string) {
     return this.service.rejectionCatalog(since);
+  }
+
+  @Get('rejections/volume')
+  @RequiresAction(RATE_LIMIT_ACTIONS.VIEW)
+  volume(@Query('tz') tz?: string) {
+    return this.service.volume(tz);
   }
 
   @Get('rejections/top-identifiers')

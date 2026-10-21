@@ -7,7 +7,9 @@ export type {
   RouteRejectionCount,
   IdentifierRejectionCount,
   TopIdentifiersQuery,
+  RejectionVolume,
   RateLimitObservabilityPort,
 } from './rate-limit-observability.port';
 export { encodeKeysetCursor, decodeKeysetCursor, InvalidRateLimitCursorError } from './keyset-cursor';
+export { calendarDays, fillDailyCounts, isValidTimeZone } from './calendar-days';
 export { RATE_LIMIT_EVENT_RECORDER, RATE_LIMIT_OBSERVABILITY_PORT } from './tokens';

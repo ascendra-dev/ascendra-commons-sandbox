@@ -1,7 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { sql, type SQL } from 'drizzle-orm';
 import {
+  calendarDays,
   decodeKeysetCursor,
+  fillDailyCounts,
   encodeKeysetCursor,
   InvalidRateLimitCursorError,
   type IdentifierRejectionCount,
@@ -9,6 +11,7 @@ import {
   type RateLimitRejectionRecord,
   type RejectionPage,
   type RejectionQuery,
+  type RejectionVolume,
   type RouteRejectionCount,
   type TopIdentifiersQuery,
 } from '../../rate-limiting.core';
@@ -19,13 +22,14 @@ const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 200;
 const DEFAULT_TOP_IDENTIFIERS = 10;
 const MAX_TOP_IDENTIFIERS = 100;
+const VOLUME_DAYS = 30;
 
 /**
  * Reference `RateLimitObservabilityPort` for Postgres — one dynamic
  * `SELECT` over the rejection windows, keyset-paginated newest-first on the
  * immutable `window_start` (a window's count and last-seen keep growing, so
  * they can't be the sort key), plus one aggregate query for
- * `rejectionCatalog()` and one for `topIdentifiers()`. Read-only. Scoped to one `application`.
+ * `rejectionCatalog()`, `topIdentifiers()` and `volume()`. Read-only. Scoped to one `application`.
  */
 @Injectable()
 export class PostgresRateLimitObservabilityService implements RateLimitObservabilityPort {
@@ -107,6 +111,38 @@ export class PostgresRateLimitObservabilityService implements RateLimitObservabi
       routes: (row.routes as unknown[]).map(String),
       lastRejectedAt: toDate(row.last_rejected_at),
     }));
+  }
+  async volume(timeZone = 'UTC', now: Date = new Date()): Promise<RejectionVolume> {
+    const app = sql`application = ${this.application}`;
+    // Whole calendar days in the viewer's zone: from the first day's local midnight, bucketed by local date.
+    const days = calendarDays(now, VOLUME_DAYS, timeZone);
+    const perDayRows = (
+      await this.db.execute(sql`
+        select to_char(window_start at time zone ${timeZone}, 'YYYY-MM-DD') as day, sum(rejection_count)::bigint as count
+        from commons_rate_limit_rejection
+        where ${app} and window_start >= (${days[0]}::date::timestamp at time zone ${timeZone})
+        group by 1
+      `)
+    ).rows as Array<{ day: string; count: string | number }>;
+
+    const totals = (
+      await this.db.execute(sql`
+        select min(window_start) as oldest, count(*)::bigint as total
+        from commons_rate_limit_rejection
+        where ${app}
+      `)
+    ).rows[0] as { oldest: unknown; total: string | number } | undefined;
+
+    const size = (await this.db.execute(sql`select pg_total_relation_size('commons_rate_limit_rejection') as bytes`)).rows[0] as
+      | { bytes: string | number | null }
+      | undefined;
+
+    return {
+      oldestWindowAt: totals?.oldest == null ? null : toDate(totals.oldest),
+      rowCount: Number(totals?.total ?? 0),
+      tableSizeBytes: size?.bytes == null ? null : Number(size.bytes),
+      perDay: fillDailyCounts(days, new Map(perDayRows.map((r) => [r.day, Number(r.count)]))),
+    };
   }
 }
 

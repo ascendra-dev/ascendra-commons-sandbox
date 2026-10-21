@@ -1,10 +1,12 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import {
   InvalidRateLimitCursorError,
+  isValidTimeZone,
   RATE_LIMIT_OBSERVABILITY_PORT,
   type IdentifierRejectionCount,
   type RateLimitObservabilityPort,
   type RejectionPage,
+  type RejectionVolume,
   type RouteRejectionCount,
 } from '../rate-limiting.core';
 import type { RejectionQueryDto, TopIdentifiersQueryDto } from './dto/rate-limiting-api.dto';
@@ -64,6 +66,11 @@ export class RateLimitingApiService {
 
   rejectionCatalog(since?: string): Promise<RouteRejectionCount[]> {
     return this.observability.rejectionCatalog(dateParam('since', since));
+  }
+
+  volume(tz?: string): Promise<RejectionVolume> {
+    if (tz !== undefined && !isValidTimeZone(tz)) throw new BadRequestException(`Unknown time zone "${tz}"`);
+    return this.observability.volume(tz);
   }
 
   topIdentifiers(query: TopIdentifiersQueryDto): Promise<IdentifierRejectionCount[]> {

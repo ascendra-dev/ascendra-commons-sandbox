@@ -65,6 +65,18 @@ export interface TopIdentifiersQuery {
   limit?: number;
 }
 
+/** The Overview's "Volume & retention" card — how much is stored, how old it goes, and the daily trend. */
+export interface RejectionVolume {
+  /** The oldest stored window's minute — how far back the log goes (what a prune last left). `null` when empty. */
+  oldestWindowAt: Date | null;
+  /** Stored rejection windows (rows) for this application. */
+  rowCount: number;
+  /** The whole table's on-disk size, every application sharing it included. `null` when the store can't say. */
+  tableSizeBytes: number | null;
+  /** The past 30 calendar days in the requested time zone, oldest first, zero-filled: rejections per day (summed counts). */
+  perDay: Array<{ day: string; count: number }>;
+}
+
 /**
  * Read-only reporting over the rejection log for a security/ops screen.
  * Bound under `RATE_LIMIT_OBSERVABILITY_PORT` by a stack adapter; consumed by
@@ -77,4 +89,6 @@ export interface RateLimitObservabilityPort {
   rejectionCatalog(since?: Date): Promise<RouteRejectionCount[]>;
   /** The identifiers with the most rejections, most first — one source hitting many routes, or one route from many sources. */
   topIdentifiers(query?: TopIdentifiersQuery): Promise<IdentifierRejectionCount[]>;
+  /** Storage and the daily trend. `timeZone` (IANA, default `'UTC'`) decides where each day starts. */
+  volume(timeZone?: string, now?: Date): Promise<RejectionVolume>;
 }
