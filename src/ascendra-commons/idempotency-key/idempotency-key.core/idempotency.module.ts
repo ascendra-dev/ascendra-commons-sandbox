@@ -67,7 +67,9 @@ export class IdempotencyModule {
         scopeResolverProvider,
         IdempotencyInterceptor,
       ],
-      exports: [IDEMPOTENCY_STORE, IdempotencyInterceptor],
+      // A controller's @UseInterceptors(IdempotencyInterceptor) is built in *its* module, from what that module can
+      // see — so the interceptor's own dependencies are exported along with it.
+      exports: [IDEMPOTENCY_STORE, IDEMPOTENCY_SCOPE_RESOLVER, IdempotencyInterceptor],
     };
   }
 }
