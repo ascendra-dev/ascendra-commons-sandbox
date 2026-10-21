@@ -3,6 +3,7 @@ import { CorrelationIdMiddleware } from '../../ascendra-commons/audit-logging/au
 import { auditApi, auditLogging } from './audit-logging';
 import { authorization } from './authorization';
 import { domainEvents } from './domain-events';
+import { RateLimitRetentionModule, rateLimiting, rateLimitingApi, throttler } from './rate-limiting';
 
 /**
  * Every ascendra-commons module this app uses, configured in one place — what any consuming project writes (see
@@ -10,8 +11,8 @@ import { domainEvents } from './domain-events';
  * The vendored code itself lives in src/ascendra-commons and is never edited.
  */
 @Module({
-  imports: [domainEvents, authorization, auditLogging, auditApi],
-  exports: [domainEvents, authorization],
+  imports: [domainEvents, authorization, auditLogging, auditApi, throttler, rateLimiting, rateLimitingApi, RateLimitRetentionModule],
+  exports: [domainEvents, authorization, rateLimiting],
 })
 export class CommonsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

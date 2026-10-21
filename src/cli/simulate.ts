@@ -1,17 +1,17 @@
 import 'reflect-metadata';
-import { NestFactory } from '@nestjs/core';
 import { DOMAIN_EVENT_EMITTER, type DomainEventEmitter } from '../ascendra-commons/domain-events/domain-events.core';
-import { CommonsModule } from '../modules/commons/commons.module';
 import { parseArgs } from './args';
 import { AuditHistory } from './audit-history';
 import { CUSTOMERS, FAILURE_REASONS, PAYMENT_GATEWAY, PAYMENT_METHODS, SERVICES, TENANTS } from './cast';
+import { startHttpApp } from './http-app';
+import { RateLimitHistory } from './rate-limit-history';
 import { Rng } from './rng';
 
 /**
  *   npm run simulate -- [--every 5] [--count 0]
  *
  * Keeps the history live: every N seconds one change happens now — an invoice raised and issued, one of those paid
- * (or its payment failing), or a profile edit. --count stops after that many (0 = until Ctrl+C).
+ * (or its payment failing), a profile edit, or now and then a burst against a throttled endpoint (rate-limiting). --count stops after that many (0 = until Ctrl+C).
  */
 async function main() {
   const args = parseArgs(process.argv.slice(2), { every: 'number', count: 'number' });
@@ -19,8 +19,10 @@ async function main() {
   const count = (args.count as number | undefined) ?? 0;
   if (every < 1) throw new Error('--every must be at least 1 (seconds)');
 
-  const app = await NestFactory.createApplicationContext(CommonsModule, { logger: ['error', 'warn'] });
+  // The whole API on a local port — rate-limit bursts go through HTTP, the only way its guard records them.
+  const { app, baseUrl } = await startHttpApp();
   const rng = new Rng(Date.now());
+  const limits = new RateLimitHistory(baseUrl, rng);
   const events = app.get<DomainEventEmitter>(DOMAIN_EVENT_EMITTER, { strict: false });
   // Invoices issued during this run, so a later tick can pay one.
   const open: { id: string; tenantId: string; currency: string; amount: number; status: 'issued' | 'payment_failed' }[] = [];
@@ -33,6 +35,17 @@ async function main() {
     const now = new Date();
     const t = rng.pick(TENANTS);
     const roll = rng.next();
+
+    if (roll < 0.1) {
+      // A short burst from a random address — over the limit, so part of it is turned away (and recorded).
+      const ip = `203.0.113.${rng.int(1, 254)}`;
+      if (rng.chance(0.5)) {
+        await limits.enumeration(ip, rng.int(25, 60));
+        return `rate-limit: ${ip} tried payment-link tokens`;
+      }
+      await limits.bruteForce(ip, rng.int(8, 20));
+      return `rate-limit: ${ip} hammered sign-in`;
+    }
 
     if (roll < 0.5 || open.length === 0) {
       const author = rng.pick(t.staff).id;

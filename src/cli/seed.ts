@@ -1,11 +1,15 @@
 import 'reflect-metadata';
-import { NestFactory } from '@nestjs/core';
 import { sql } from 'drizzle-orm';
 import { DOMAIN_EVENT_EMITTER, type DomainEventEmitter } from '../ascendra-commons/domain-events/domain-events.core';
-import { CommonsModule } from '../modules/commons/commons.module';
+import {
+  POSTGRES_RATE_LIMIT_EVENT_RECORDER,
+  type PostgresRateLimitEventRecorder,
+} from '../ascendra-commons/rate-limiting/rate-limiting.core.postgres-drizzle';
 import { DATABASE_CONNECTION, type Database } from '../db/database.module';
 import { parseArgs } from './args';
 import { AuditHistory } from './audit-history';
+import { startHttpApp } from './http-app';
+import { RateLimitHistory } from './rate-limit-history';
 import { Rng } from './rng';
 
 const VOLUMES: Record<string, number> = { small: 0.3, normal: 1, large: 25 };
@@ -13,8 +17,9 @@ const VOLUMES: Record<string, number> = { small: 0.3, normal: 1, large: 25 };
 /**
  *   npm run seed -- [--days 90] [--seed 42] [--volume small|normal|large]
  *
- * Generates audit history into an empty database (see audit-history.ts). Same --seed → same records (only their own
- * uuids and "now" differ). Refuses a database that already has audit records — run db:reset.
+ * Generates audit history (see audit-history.ts) and rate-limit rejections (rate-limit-history.ts — recent only) into
+ * an empty database. Same --seed → same records (only their own uuids and "now" differ). Refuses a database that
+ * already has audit records — run db:reset.
  */
 async function main() {
   const args = parseArgs(process.argv.slice(2), { days: 'number', seed: 'number', volume: 'string' });
@@ -25,8 +30,8 @@ async function main() {
   if (!volume) throw new Error(`--volume must be one of ${Object.keys(VOLUMES).join(', ')}`);
   if (days < 1 || days > 400) throw new Error('--days must be between 1 and 400');
 
-  // The commons modules — exactly what the API runs, without HTTP.
-  const app = await NestFactory.createApplicationContext(CommonsModule, { logger: ['error', 'warn'] });
+  // The whole API on a local port — audit is driven in-process, rate-limiting over HTTP (only its guard records).
+  const { app, baseUrl } = await startHttpApp();
   try {
     const db = app.get<Database>(DATABASE_CONNECTION, { strict: false });
     const { rows } = await db.execute(sql`select count(*)::int as n from commons_audit_event`);
@@ -43,6 +48,13 @@ async function main() {
     const count = summary.rows.reduce((sum, r) => sum + (r.n as number), 0);
     console.log(`✓ ${count} audit records in ${((Date.now() - started) / 1000).toFixed(1)}s — ` +
       summary.rows.map((r) => `${r.entity_type} ${r.n}`).join(', '));
+
+    console.log('Driving throttled endpoints for rate-limit rejections …');
+    const limits = await new RateLimitHistory(baseUrl, new Rng(seed)).run();
+    // Write the recorder's buffer now rather than on its next tick, so the summary sees it.
+    await app.get<PostgresRateLimitEventRecorder>(POSTGRES_RATE_LIMIT_EVENT_RECORDER, { strict: false }).flush();
+    const windows = await db.execute(sql`select count(*)::int as n, coalesce(sum(rejection_count), 0)::int as total from commons_rate_limit_rejection`);
+    console.log(`✓ ${limits.requests} requests, ${limits.rejected} rejected → ${windows.rows[0].n} rejection windows (${windows.rows[0].total} counted)`);
   } finally {
     await app.close();
   }

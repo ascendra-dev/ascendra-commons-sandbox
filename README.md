@@ -22,7 +22,7 @@ Needs Node 20.6+ (for `--env-file`) and Docker.
 cp .env.example .env
 npm install
 npm run db:up        # Postgres 16 in docker, on :5433
-npm run db:reset     # migrate + seed 90 days of realistic audit history
+npm run db:reset     # migrate + seed 90 days of audit history, plus recent rate-limit rejections
 npm run start:dev    # http://localhost:3010 — GET /health
 ```
 
@@ -41,9 +41,9 @@ you). Tokens last 12 hours.
 
 | Dev user | Persona | Tenant | Sees |
 |---|---|---|---|
-| `platform.admin@ascendra.test` — Platform Admin | `platform-admin` | — | every tenant's records |
-| `admin@acme.test` / `admin@globex.test` / `admin@meridian.test` | `tenant-admin` | their own | their tenant's records only |
-| `member@acme.test` — Acme Member | `member` | `tenant_acme` | nothing: no `audit.view`, the audit API answers 403 |
+| `platform.admin@ascendra.test` — Platform Admin | `platform-admin` | — | every tenant's records, and the rate-limit log |
+| `admin@acme.test` / `admin@globex.test` / `admin@meridian.test` | `tenant-admin` | their own | their tenant's records only; no `rate-limit.view` (a rejection has no tenant) |
+| `member@acme.test` — Acme Member | `member` | `tenant_acme` | nothing: no `audit.view` or `rate-limit.view` — both APIs answer 403 |
 
 What each persona may do is authorization's config — `PERSONA_ACTIONS` in `src/modules/commons/authorization.ts`.
 
@@ -62,8 +62,13 @@ curl localhost:3010/audit/events -H "Authorization: Bearer <token>"
 | `GET /audit/events`, `/events.csv`, `/events/:id` | `audit.view` | The audit log, its CSV export, one record with its diff. |
 | `GET /audit/entities/:type/:id/history`, `/trace/:correlationId`, `/actors/:actor/activity` | `audit.view` | One entity's history, one request's trace, one actor's activity. |
 | `GET /audit/stats/overview`, `/stats/top-actions`, `/retention`, `/catalog` | `audit.view` | The Overview, Retention & Volume, and the filter vocabulary. |
+| `GET /rate-limits/rejections`, `/rejections/trace/:correlationId` | `rate-limit.view` | The rejection log (one row per source per minute, counted), one request's rejections. |
+| `GET /rate-limits/rejections/catalog`, `/rejections/top-identifiers` | `rate-limit.view` | Rejections per route; the sources with the most. |
+| `GET /demo/pay/:token`, `POST /demo/login`, `GET /demo/quotes` | public, throttled (20 / 5 / 10 a minute) | Sandbox-only stand-ins for what `@Throttle()` protects — the rate-limit generator's targets. |
 
-The audit endpoints are `audit-logging.api`'s — its README has the details. A tenant admin's results are always
+The audit endpoints are `audit-logging.api`'s, the rate-limit ones `rate-limiting.api`'s — their READMEs have the
+details. Every route is throttled (600 a minute per caller, behind one trusted proxy — `src/configure-app.ts`); a 429
+is recorded by rate-limiting's guard, which runs before sign-in. A tenant admin's results are always
 scoped to their own tenant; a platform admin may pass `tenantId`.
 
 Errors follow api-contract Rule 1 (`{ statusCode, error, message, code, path }`); every response carries an
@@ -77,7 +82,7 @@ Errors follow api-contract Rule 1 (`{ statusCode, error, message, code, path }`)
 | `npm run db:migrate` | `drizzle-kit migrate` — applies `src/db/migrations/` (ascendra-commons' delivered migrations included). |
 | `npm run db:reset [-- --no-seed] [-- --days 90 --seed 42 --volume small\|normal\|large]` | Drop everything, migrate from scratch, seed (seed options pass through). |
 | `npm run seed -- [--days 90] [--seed 42] [--volume normal]` | Generate history into an empty database. Same `--seed`, same data. |
-| `npm run simulate -- [--every 5] [--count 0]` | Keep it live: one real change every N seconds until Ctrl+C (or `--count`). |
+| `npm run simulate -- [--every 5] [--count 0]` | Keep it live: one real change every N seconds until Ctrl+C (or `--count`) — now and then a rate-limit burst. |
 | `npm run start:dev` / `build` / `start` | Run in watch mode / build / run the build. |
 | `npm run typecheck` | Typecheck, vendored code included. |
 
@@ -91,7 +96,7 @@ Nothing here is sandbox-specific:
 | `ascendra-commons.js` | The script, copied in by `init`; `update` keeps it current. |
 | `ascendra-commons.json` | The packages asked for, and where migrations go (`drizzle-kit` → `src/db/migrations`). |
 | `src/ascendra-commons/` | The vendored packages — never edit them here. `VENDORED.json` records the commit and a checksum per file. |
-| `src/modules/commons/` | Every commons module configured in one place: `domain-events.ts`, `authorization.ts` (persona → actions), `audit-logging.ts` (+ `audit-catalog.ts`), and `CommonsModule`, which `AppModule` imports. |
+| `src/modules/commons/` | Every commons module configured in one place: `domain-events.ts`, `authorization.ts` (persona → actions), `audit-logging.ts` (+ `audit-catalog.ts`), `rate-limiting.ts` (the limits, the recorder, the read API, retention), and `CommonsModule`, which `AppModule` imports. |
 | `drizzle.config.ts`, `src/db/` | drizzle-kit as the migration tool; `DatabaseModule` provides `DATABASE_CONNECTION`, the executor the Postgres adapters write through. |
 
 ```sh
@@ -104,7 +109,7 @@ A new migration from an update lands in `src/db/migrations/`, registered in driz
 applies it. Adding a module: `add` it, then one new file in `src/modules/commons/` imported by `CommonsModule`. Change a
 module in `ascendra-commons`, never here: `update` refuses to overwrite a local edit.
 
-What *is* sandbox-only: `src/cli/` (the data generator), `src/auth/` dev sign-in (dev tokens and personas, standing in
+What *is* sandbox-only: `src/cli/` (the data generators), `src/demo/` (throttled stand-in endpoints), `src/auth/` dev sign-in (dev tokens and personas, standing in
 for a real identity provider), `docker-compose.yml`, and `scripts/db-reset.js`.
 
 ## The sample data
@@ -125,3 +130,15 @@ There's no product behind it: each event carries just what that change touched.
 `normal` volume is about 3,700–3,900 records over 90 days (history ends at the real "now", so the exact count moves
 with the hour); `large` is about 25× that, for export and performance testing. The same `--seed` at the same moment
 gives the same records.
+
+`src/cli/rate-limit-history.ts` drives real requests at the throttled `src/demo` endpoints — rate-limiting records
+only what its guard turns away — each caller's address in `X-Forwarded-For` (documentation ranges, never a real host):
+
+- one address enumerating payment-link tokens (280 rejections), one brute-forcing sign-in (35);
+- a partner polling too fast with a correlation id per call (4 rejections, each traceable; one retried, so it counts 2);
+- a 150-address botnet spreading an enumeration thin — past the sandbox recorder's deliberately tiny buffer (100
+  sources), so the excess lands in one `(overflow)` row; and the list runs past one page;
+- a visitor who stays under every limit (no rejections).
+
+Recent only: the recorder stamps the real clock, so all of it lands in the minute the seed runs; `simulate` adds a
+burst now and then. Rows older than 90 days are pruned at boot and daily (`src/modules/commons/rate-limiting.ts`).

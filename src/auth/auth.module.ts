@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthorizationGuard } from '../ascendra-commons/authorization/authorization.core';
+import { RecordingThrottlerGuard } from '../ascendra-commons/rate-limiting/rate-limiting.core.throttler';
 import { CommonsModule } from '../modules/commons/commons.module';
 import { DevAuthController } from './dev-auth.controller';
 import { DevAuthGuard } from './dev-auth.guard';
@@ -11,7 +12,8 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 /**
  * Authentication — the dev sign-in standing in for a real identity provider (sandbox-only) — and the global guard
- * order: DevAuthGuard first, so `request.actor` is set before authorization's AuthorizationGuard (configured in
+ * order: rate-limiting's RecordingThrottlerGuard first, so a flood is turned away (and recorded) before any token is
+ * checked; then DevAuthGuard, so `request.actor` is set before authorization's AuthorizationGuard (configured in
  * src/modules/commons) reads it. AuthorizationGuard is deny-by-default: a route with neither `@RequiresAction` nor
  * `@NoActionRequired` fails with a 500.
  */
@@ -20,6 +22,7 @@ const isProduction = process.env.NODE_ENV === 'production';
   controllers: [MeController, ...(isProduction ? [] : [DevAuthController])],
   providers: [
     DevTokenService,
+    { provide: APP_GUARD, useExisting: RecordingThrottlerGuard },
     { provide: APP_GUARD, useClass: DevAuthGuard },
     { provide: APP_GUARD, useExisting: AuthorizationGuard },
   ],
