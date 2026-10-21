@@ -15,6 +15,20 @@
       "when": 1792532534587,
       "tag": "0001_commons_audit_logging_0002_audit_event_read_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792581812520,
+      "tag": "0002_commons_rate_limiting_0001_rate_limit_rejection",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792581820483,
+      "tag": "0003_commons_rate_limiting_0002_rate_limit_rejection_windows",
+      "breakpoints": true
     }
   ]
 }

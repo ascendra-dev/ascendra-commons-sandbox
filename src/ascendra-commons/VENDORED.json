@@ -74,7 +74,8 @@
     "authorization/authorization.core": {
       "requiredBy": [
         "audit-logging/audit-logging.api",
-        "authorization/authorization.core.static-map"
+        "authorization/authorization.core.static-map",
+        "rate-limiting/rate-limiting.api"
       ],
       "files": {
         "README.md": "c445985d3181ce32d82dac8bb016aa0bc726509843e475be4343ac77d6f2ae48",
@@ -112,6 +113,57 @@
         "on-critical-event.decorator.ts": "1c0e5e2852985818c10094d2e16ca9834d81ec1d79c7e1cf4a4a0375d8c0a3a5",
         "tokens.ts": "c99cf8821cc08091136d7cbb15387001e12bc4c1efc48ff79b4e4b6b0224f47c"
       }
+    },
+    "rate-limiting/rate-limiting.core.throttler": {
+      "files": {
+        "README.md": "0c7cdb94240d9fa48c559710d98de58c2bdc63d1f28f4b4c3ff3e829d1e2b94f",
+        "index.ts": "9e3b85cb19d7a0d25c5449e21a3102be9a801ba8b7bd7c880fb542a1c77000b8",
+        "rate-limiting-throttler.module.ts": "04cf678ff920606e74738e295bb687373432f10325d9900174270e1d0156845f",
+        "recording-throttler.guard.ts": "5fa4364f17a709e8df5604d302eb5921f57fa1ed8409a422b82fe38266066232"
+      }
+    },
+    "rate-limiting/rate-limiting.core.postgres-drizzle": {
+      "files": {
+        "README.md": "d018d2f88d8b8f24aaab3f3caa6c658ba06229271319e7fdcd215d6fbc2f9cd5",
+        "index.ts": "19b66821a249d62367b29247b80907ed29907b40a1e234ed080c1d73a9e8c464",
+        "migrations/0001_rate_limit_rejection.sql": "b8298d80382c2b39f0810bd763423a700c534c9b9975146c0426c2958e3eecc6",
+        "migrations/0002_rate_limit_rejection_windows.sql": "c7b3c32fe7b722d3707508c01370a41f38b8dc0aee9dbace63dd8be79689efe9",
+        "observability/postgres-rate-limit-observability.module.ts": "0b55d4120d6f54e449a8ef58bfe947f0aeb276d03c52650740ccd83de2aef4e0",
+        "observability/postgres-rate-limit-observability.service.ts": "b67eb4d39b0d54708c916943f346e1a085750b5e75edb67df46b91e3566c1d29",
+        "persistence/rate-limit-rejection.schema.ts": "85dd1372c6a5f805ef8150e905f5039c5a4413ce4c27910f6af11613d6c9a2bc",
+        "persistence/sql-executor.ts": "e14ca9d653aa5333d2a19675801c2f8db32e8ab6848d94db4924872aab43e73d",
+        "recorder/postgres-rate-limit-event-recorder.module.ts": "97448940fcd8626501772a676704adeb837144efe3f76a94df695e7255d3b3a2",
+        "recorder/postgres-rate-limit-event-recorder.ts": "964fe906a26eff108ca90276d044e109e792b789387f76f8391b683fd9a37420",
+        "retention/postgres-rate-limit-retention.module.ts": "9cc29fcc5d17475f5923a0b2a050d184778e3369d13d7508c1002b349b5a46dd",
+        "retention/postgres-rate-limit-retention.service.ts": "84e96d645e833d663d9d975b1b39aa646342de4da495850f99d9dd3f0b04d540",
+        "tokens.ts": "d7a64d6fe7cd7ea1f3fe8c0d05b8976ac5ef8ed2c338772c9e046a9b8423f69f"
+      }
+    },
+    "rate-limiting/rate-limiting.api": {
+      "files": {
+        "README.md": "5e22c904b6e4e1858845f5ee14fb783494049262d64fbeb8e6e1d7832ab6f06a",
+        "dto/rate-limiting-api.dto.ts": "c65ac23473dff27ac3433f557fbd5516c186ee084d166d435fd1c9322e9e7959",
+        "index.ts": "a307fd5256e0ac7bb0039dc5858db77d147675cb0e9ad6dddd9d99c0be6dd72f",
+        "rate-limiting-api.module.ts": "9fc319e2a72647c0502a49a27f89fb6c53f4073c202e41b0998c272aa745ed32",
+        "rate-limiting-api.options.ts": "9aaec3656fc6501ae5c2ae89d585e012eb5109d346eb17958ebaadcb0be4290b",
+        "rate-limiting-api.service.ts": "a7395f1401bc3ed6de3478785ad124ed6d2a2b53d3b1905f936a35ca1e7610e3",
+        "rate-limiting.controller.ts": "5136d784db73c667d5c9083d4fb54c283677f7eead087504675f6f793566f9b4"
+      }
+    },
+    "rate-limiting/rate-limiting.core": {
+      "requiredBy": [
+        "rate-limiting/rate-limiting.core.throttler",
+        "rate-limiting/rate-limiting.core.postgres-drizzle",
+        "rate-limiting/rate-limiting.api"
+      ],
+      "files": {
+        "index.ts": "38754ee49ed1808d9fa092d213d78e9656bb5fa5cf4b9964714d9b5d717c1bf3",
+        "keyset-cursor.ts": "f80dde9c5ca2204c97f383b8fd8c856dfbf5c4a10f1f2db4795b227beb4438bc",
+        "noop-rate-limit-event-recorder.ts": "77f493f60bc5112392ecc557142365e2d9862502e6b24a6d3c20369cc5462ad7",
+        "rate-limit-event-recorder.port.ts": "0afd8ed4e2d4f2c931961a7a768f56db2a5e4c4775608d77c5bb2bdd7c837804",
+        "rate-limit-observability.port.ts": "e4191b796822ca29ee19c50608a9b7b69c13dc361534c81b6ba5171e50dbc2aa",
+        "tokens.ts": "10c1f782b569e16ed57c1a966370ad9c0f2eb3069a8aae56dfc818e607f550d5"
+      }
     }
   },
   "migrations": {
@@ -122,10 +174,18 @@
     "audit-logging/audit-logging.core.postgres-drizzle/0002_audit_event_read_indexes.sql": {
       "checksum": "63161a615434a26d09fc345488a19c54b1a02e233bf7808e2d569889ae5ccbe0",
       "copiedTo": "src/db/migrations/0001_commons_audit_logging_0002_audit_event_read_indexes.sql"
+    },
+    "rate-limiting/rate-limiting.core.postgres-drizzle/0001_rate_limit_rejection.sql": {
+      "checksum": "b8298d80382c2b39f0810bd763423a700c534c9b9975146c0426c2958e3eecc6",
+      "copiedTo": "src/db/migrations/0002_commons_rate_limiting_0001_rate_limit_rejection.sql"
+    },
+    "rate-limiting/rate-limiting.core.postgres-drizzle/0002_rate_limit_rejection_windows.sql": {
+      "checksum": "c7b3c32fe7b722d3707508c01370a41f38b8dc0aee9dbace63dd8be79689efe9",
+      "copiedTo": "src/db/migrations/0003_commons_rate_limiting_0002_rate_limit_rejection_windows.sql"
     }
   },
   "source": "https://github.com/ascendra-dev/ascendra-commons.git",
-  "commit": "130cf827319c27ec37d96161a732f632b6da3775",
+  "commit": "df7555e900a286b7b58e26325735d611c657f8ef",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-20T23:42:52.365Z"
+  "syncedAt": "2026-10-21T11:28:28.278Z"
 }
