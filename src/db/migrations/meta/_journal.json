@@ -36,6 +36,20 @@
       "when": 1792591784236,
       "tag": "0004_commons_rate_limiting_0003_rate_limit_rejection_read_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792610642110,
+      "tag": "0005_commons_idempotency_key_0001_idempotency_key",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792610649259,
+      "tag": "0006_commons_idempotency_key_0002_idempotency_duplicates_and_route",
+      "breakpoints": true
     }
   ]
 }

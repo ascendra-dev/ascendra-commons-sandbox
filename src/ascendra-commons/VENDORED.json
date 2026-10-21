@@ -75,7 +75,8 @@
       "requiredBy": [
         "audit-logging/audit-logging.api",
         "authorization/authorization.core.static-map",
-        "rate-limiting/rate-limiting.api"
+        "rate-limiting/rate-limiting.api",
+        "idempotency-key/idempotency-key.api"
       ],
       "files": {
         "README.md": "c445985d3181ce32d82dac8bb016aa0bc726509843e475be4343ac77d6f2ae48",
@@ -166,6 +167,54 @@
         "rate-limit-observability.port.ts": "1860e19fa4b79a884854eb28ca369118b44efac9a2d8009023089e3502f3fe9c",
         "tokens.ts": "10c1f782b569e16ed57c1a966370ad9c0f2eb3069a8aae56dfc818e607f550d5"
       }
+    },
+    "idempotency-key/idempotency-key.core.postgres-drizzle": {
+      "files": {
+        "README.md": "92a57b8c5481068bf7b140c3eedc2cf6ee141126ce43e8ecf028a21f5e653598",
+        "duplicates/postgres-idempotency-duplicate-counter.ts": "15de3a67fc722ae26c61f5f1a3fea068e79c8ffcd3fd0db98a0da784cbd29065",
+        "index.ts": "eccdbde88b1d19089f72b6a645153016ec37390781d41b1ed1f24d82934d9fde",
+        "migrations/0001_idempotency_key.sql": "49d43638dc44de21a11fb0a81a1a51d0792d563efcfb63b6af1ce9c735d34988",
+        "migrations/0002_idempotency_duplicates_and_route.sql": "9ab91cc298d7d6af2092036dfb70a1f13028d4fa80706adcd06c28402e52681b",
+        "observability/postgres-idempotency-observability.module.ts": "e1e9768e1349f7191ed51a69d4964c9ce61d33249814a1816650d6f01ba01c76",
+        "observability/postgres-idempotency-observability.service.ts": "a7731bcd3186872f73153f65d614b0affa3063b4b64c5ccc7e8e9aa2db78b84d",
+        "persistence/idempotency-key.schema.ts": "1ed9c7fd828e5cf91410954428a4e7f749bcd09e9e5198d9f41d95001396f9a2",
+        "persistence/sql-executor.ts": "8594788310e6f96a9401a4b4c6372ec636732b6806b3094380d9adae5a2970cf",
+        "postgres-idempotency-store.module.ts": "3a7d5e30bef6da0285be79d2697dc7c06941b00a2cc0d2fb30fb6b9e40c11e5b",
+        "postgres-idempotency-store.ts": "9ef1569bb6ad514e33f0070826b0d77391ef638f2e4f473db90063285c73723b",
+        "tokens.ts": "58625df75a6e677264fa6e3e65c44f00d01cad835b7ae6053ed69822ac970504"
+      }
+    },
+    "idempotency-key/idempotency-key.api": {
+      "files": {
+        "README.md": "c36b637d08d234eaa91b205142ef878702452cd0f5511048d2ee62c9bff4bb99",
+        "dto/idempotency-api.dto.ts": "5ba5b37be18824cd91734363997bcff1358c2a1bbd8d4818596e9053bcac557d",
+        "idempotency-api.module.ts": "257e90f93b84137cc14246428422109c48383d3531a80543a573c6e4784aa657",
+        "idempotency-api.options.ts": "2202aceec98835babbbbad8c547d936d8be234ea51a49329c5e88eedb5404964",
+        "idempotency-api.service.ts": "875623cd8db2b816fe939cfb68b19865d595b693e0693684f00a832891f18ee1",
+        "idempotency.controller.ts": "14ec86e335cc4d810f0a528c8f01013bb1a97d5e058ffccef4f111e66abaaa36",
+        "index.ts": "7cb87d0926800066256c3448025616034f9a6e3213202034a041bba8ad458a27"
+      }
+    },
+    "idempotency-key/idempotency-key.core": {
+      "requiredBy": [
+        "idempotency-key/idempotency-key.core.postgres-drizzle",
+        "idempotency-key/idempotency-key.api"
+      ],
+      "files": {
+        "README.md": "1252e5027cf42e29eb009f77b6578644587a372f71e5e81e31fbf3cc6872a694",
+        "actor-scope-resolver.ts": "bc0227d4a26e83a25cdf3acddd472df6e0b59b33231bb164e2455727bc5352b7",
+        "cached-response.interface.ts": "17c8005d8f2fb12d6b04ae8e7cd20c6c264e0e57c4a532f07cc58da3471dc24c",
+        "claim-result.ts": "37912b36d6ee85dd9ae1e02cba5fa20aa7c5081d64b1f02f6b7242e883135eaa",
+        "idempotency-observability.port.ts": "9187f799bd38d002c131b07c1763183ef65f298d2aca00de36b223262821c285",
+        "idempotency-scope-resolver.port.ts": "27f2ca23932290de063b8070ea7d576a451c12a3e379a3a675d57b19cc47e94f",
+        "idempotency-store-options.ts": "6a2ef13fd811f698b0481aae8ee701e967218c8ba965cd0876d9838785c8e2ed",
+        "idempotency-store.port.ts": "ba5abeeaa35d126e36481b93dc9f1f9e85d5c42e2ec4b2b82c59d7bd3b45f70f",
+        "idempotency.interceptor.ts": "f525a7957c2310c7a4e807d4ff88ceb9fdbb3b39e1b3e126d27f2eda89ce57f4",
+        "idempotency.module.ts": "edd85b6b148197e8b639a9603915c8f728556d758b162cdd3c3b743fa4a9ed8e",
+        "index.ts": "378e2ff7dc16379bcc8e3b40dc7e1ae58590d5f7b38399e950cd1d493bdc32b4",
+        "keyset-cursor.ts": "0368bc0d66300328cfc568121b8975a68d4efd1335c502f677f5e86a6b7980fe",
+        "tokens.ts": "190b73e6bebae25f44c8db0dd2ca38b0febf537a7d67818f292e254991d368af"
+      }
     }
   },
   "migrations": {
@@ -188,10 +237,18 @@
     "rate-limiting/rate-limiting.core.postgres-drizzle/0003_rate_limit_rejection_read_indexes.sql": {
       "checksum": "75b358cff1d3f59cb0d9bcdf2c6aa721af7ec6e97eb3d90183fa56bf3f068487",
       "copiedTo": "src/db/migrations/0004_commons_rate_limiting_0003_rate_limit_rejection_read_indexes.sql"
+    },
+    "idempotency-key/idempotency-key.core.postgres-drizzle/0001_idempotency_key.sql": {
+      "checksum": "49d43638dc44de21a11fb0a81a1a51d0792d563efcfb63b6af1ce9c735d34988",
+      "copiedTo": "src/db/migrations/0005_commons_idempotency_key_0001_idempotency_key.sql"
+    },
+    "idempotency-key/idempotency-key.core.postgres-drizzle/0002_idempotency_duplicates_and_route.sql": {
+      "checksum": "9ab91cc298d7d6af2092036dfb70a1f13028d4fa80706adcd06c28402e52681b",
+      "copiedTo": "src/db/migrations/0006_commons_idempotency_key_0002_idempotency_duplicates_and_route.sql"
     }
   },
   "source": "https://github.com/ascendra-dev/ascendra-commons.git",
-  "commit": "8e80c07bb8702b560d45114dc8b33efe6497bf3b",
+  "commit": "626eb5cafca8ce64a0046975aac1ffb3190626b2",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-21T14:09:43.711Z"
+  "syncedAt": "2026-10-21T19:24:08.788Z"
 }
