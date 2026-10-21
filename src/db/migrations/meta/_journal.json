@@ -29,6 +29,13 @@
       "when": 1792581820483,
       "tag": "0003_commons_rate_limiting_0002_rate_limit_rejection_windows",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792591784236,
+      "tag": "0004_commons_rate_limiting_0003_rate_limit_rejection_read_indexes",
+      "breakpoints": true
     }
   ]
 }

@@ -10,10 +10,37 @@ import {
 } from '@nestjs/throttler';
 import { NoopRateLimitEventRecorder, RATE_LIMIT_EVENT_RECORDER, type RateLimitEventRecorder } from '../rate-limiting.core';
 
+/**
+ * What an inbound correlation id may look like: 1–128 of letters, digits, `.`, `_`, `:` and `-` — a UUID, a W3C trace
+ * id, the usual tracing formats (the same rule as audit-logging's CorrelationIdMiddleware). Anything else — overlong,
+ * spaces, markup — is the caller's own text: stored, it would sit in the log and the admin screens, and a fresh value
+ * per request would split one source's rejections into a row each. So it's dropped, and the rejection still counts.
+ */
+const CORRELATION_ID = /^[A-Za-z0-9._:-]{1,128}$/;
+
 interface MinimalRequest {
+  /** Express: the matched route, pattern and all (`/pay/:token`). */
   route?: { path?: string };
-  url?: string;
+  /** Fastify ≥ 4.10: the matched route's pattern. */
+  routeOptions?: { url?: string };
+  /** Older Fastify. */
+  routerPath?: string;
   headers: Record<string, string | string[] | undefined>;
+}
+
+/**
+ * The route *pattern* the limit was declared on — never the resolved URL, which carries real ids (a payment-link
+ * token, in `/pay/<token>`) and the query string: stored, that would put a secret in the log, and make every id its own
+ * row. Read from whichever HTTP adapter is in use; when none says (a test harness, a non-HTTP context), the handler —
+ * `PaymentLinkController.resolve` — names the route just as well, and holds nothing secret.
+ */
+function routePattern(request: MinimalRequest, context: ExecutionContext): string {
+  return (
+    request.route?.path ??
+    request.routeOptions?.url ??
+    request.routerPath ??
+    `${context.getClass().name}.${context.getHandler().name}`
+  );
 }
 
 /**
@@ -63,16 +90,14 @@ export class RecordingThrottlerGuard extends ThrottlerGuard {
     try {
       const request = context.switchToHttp().getRequest<MinimalRequest>();
       const correlationHeader = request.headers['x-correlation-id'];
+      const correlationId =
+        typeof correlationHeader === 'string' && CORRELATION_ID.test(correlationHeader) ? correlationHeader : undefined;
       await this.recorder.recordRejection({
-        // The route *pattern* (e.g. '/pay/:token'), never the resolved URL with
-        // real ids in it — request.route is set by the underlying HTTP adapter
-        // (Express/Fastify) after routing; request.url is the fallback when
-        // that isn't populated (some test harnesses, non-HTTP adapters).
-        route: request.route?.path ?? request.url ?? 'unknown',
+        route: routePattern(request, context),
         identifier: detail.tracker,
         limit: detail.limit,
         ttlMs: detail.ttl,
-        correlationId: typeof correlationHeader === 'string' ? correlationHeader : undefined,
+        correlationId,
       });
     } catch (err) {
       this.recordLogger.error(

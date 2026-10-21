@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { bigserial, index, integer, pgTable, text, timestamp, unique } from 'drizzle-orm/pg-core';
 
 /**
@@ -33,8 +34,10 @@ export const rateLimitRejectionTable = pgTable(
     unique('commons_rate_limit_rejection_window_key')
       .on(t.application, t.route, t.identifier, t.limit, t.ttlMs, t.windowStart, t.correlationId)
       .nullsNotDistinct(),
-    /** "recent rejections" — the default admin-screen query. */
-    index('commons_rate_limit_rejection_time_idx').on(t.application, t.windowStart),
+    /** The list newest-first (keyset on window_start, id), the period / volume reads and the pruner. */
+    index('commons_rate_limit_rejection_list_idx').on(t.application, t.windowStart.desc(), t.id.desc()),
+    /** A trace, and the list's correlation-id filter — partial: most rejections carry none. */
+    index('commons_rate_limit_rejection_correlation_idx').on(t.correlationId).where(sql`${t.correlationId} is not null`),
     /** `rejectionCatalog()`'s own per-route aggregate — "is this specific endpoint being hammered." */
     index('commons_rate_limit_rejection_route_idx').on(t.application, t.route, t.windowStart),
     /** "who's hitting our limits" — a lookup by identifier across routes. */
