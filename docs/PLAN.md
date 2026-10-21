@@ -142,7 +142,10 @@ Follow [NEW-MODULE.md](NEW-MODULE.md). Same recipe per module — one `node asce
 points, never a product built around it: `background-jobs` enqueues and runs real jobs, `rate-limiting` gets a
 throttled endpoint the generator hits, `notification` sends through a fake channel.
 
-- **rate-limiting** — steps 1–6 done 2026-10-21: vendored (`.core.throttler`, `.core.postgres-drizzle`, `.api`),
-  `RecordingThrottlerGuard` the first global guard, `trust proxy` 1, `rate-limit.view` platform-only, throttled
-  `src/demo` endpoints driven by `src/cli/rate-limit-history.ts`, daily retention. Probing found bad params answering
-  500 — fixed in ascendra-commons (df7555e). Next: the UI (step 7), after its `mocks.html` is reviewed.
+- **rate-limiting** — **done 2026-10-21** (all ten steps). Vendored (`.core.throttler`, `.core.postgres-drizzle`,
+  `.api`), `RecordingThrottlerGuard` the first global guard, `trust proxy` 1, `rate-limit.view` platform-only,
+  throttled `src/demo` endpoints driven by `src/cli/rate-limit-history.ts` (enumerator, brute-forcer, partner, two
+  sync jobs, a botnet past the buffer), daily 90-day prune. UI in `ascendra-commons-ui` (Overview, Rejections + trace,
+  Volume & Retention). Reviewed: probing and `EXPLAIN` here found bad params answering 500, an unvalidated
+  correlation id, the resolved-URL fallback and two missing indexes — all fixed in ascendra-commons. Guide and report:
+  `ascendra-commons/rate-limiting/GUIDE.md`, `AUDIT-REPORT.md`. Next module: `payment-link-security`.
