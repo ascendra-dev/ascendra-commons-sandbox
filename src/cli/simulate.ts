@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { DOMAIN_EVENT_EMITTER, type DomainEventEmitter } from '../ascendra-commons/domain-events/domain-events.core';
 import { parseArgs } from './args';
 import { AuditHistory } from './audit-history';
+import { IdempotencyHistory } from './idempotency-history';
 import { CUSTOMERS, FAILURE_REASONS, PAYMENT_GATEWAY, PAYMENT_METHODS, SERVICES, TENANTS } from './cast';
 import { startHttpApp } from './http-app';
 import { RateLimitHistory } from './rate-limit-history';
@@ -11,7 +12,9 @@ import { Rng } from './rng';
  *   npm run simulate -- [--every 5] [--count 0]
  *
  * Keeps the history live: every N seconds one change happens now — an invoice raised and issued, one of those paid
- * (or its payment failing), a profile edit, or now and then a burst against a throttled endpoint (rate-limiting). --count stops after that many (0 = until Ctrl+C).
+ * (or its payment failing), a profile edit, now and then a burst against a throttled endpoint (rate-limiting), or a
+ * payment through an idempotent endpoint — sometimes retried or double-clicked (idempotency-key). --count stops after
+ * that many (0 = until Ctrl+C).
  */
 async function main() {
   const args = parseArgs(process.argv.slice(2), { every: 'number', count: 'number' });
@@ -23,6 +26,8 @@ async function main() {
   const { app, baseUrl } = await startHttpApp();
   const rng = new Rng(Date.now());
   const limits = new RateLimitHistory(baseUrl, rng);
+  const claims = new IdempotencyHistory(baseUrl, rng);
+  await claims.signIn();
   const events = app.get<DomainEventEmitter>(DOMAIN_EVENT_EMITTER, { strict: false });
   // Invoices issued during this run, so a later tick can pay one.
   const open: { id: string; tenantId: string; currency: string; amount: number; status: 'issued' | 'payment_failed' }[] = [];
@@ -49,6 +54,12 @@ async function main() {
       }
       await limits.bruteForce(ip, rng.int(8, 20));
       return `rate-limit: ${ip} hammered sign-in`;
+    }
+
+    if (roll < 0.2) {
+      // A customer pays through an idempotent endpoint — the client may retry or double-click (replays, 409s).
+      await claims.payment();
+      return 'idempotency: a payment (maybe retried)';
     }
 
     if (roll < 0.5 || open.length === 0) {

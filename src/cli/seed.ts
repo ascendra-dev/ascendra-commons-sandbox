@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { sql } from 'drizzle-orm';
 import { DOMAIN_EVENT_EMITTER, type DomainEventEmitter } from '../ascendra-commons/domain-events/domain-events.core';
+import { PostgresIdempotencyDuplicateCounter } from '../ascendra-commons/idempotency-key/idempotency-key.core.postgres-drizzle';
 import {
   POSTGRES_RATE_LIMIT_EVENT_RECORDER,
   type PostgresRateLimitEventRecorder,
@@ -8,6 +9,7 @@ import {
 import { DATABASE_CONNECTION, type Database } from '../db/database.module';
 import { parseArgs } from './args';
 import { AuditHistory } from './audit-history';
+import { IdempotencyHistory } from './idempotency-history';
 import { startHttpApp } from './http-app';
 import { RateLimitHistory } from './rate-limit-history';
 import { Rng } from './rng';
@@ -17,8 +19,8 @@ const VOLUMES: Record<string, number> = { small: 0.3, normal: 1, large: 25 };
 /**
  *   npm run seed -- [--days 90] [--seed 42] [--volume small|normal|large]
  *
- * Generates audit history (see audit-history.ts) and rate-limit rejections (rate-limit-history.ts — recent only) into
- * an empty database. Same --seed → same records (only their own uuids and "now" differ). Refuses a database that
+ * Generates audit history (see audit-history.ts), rate-limit rejections (rate-limit-history.ts) and idempotency claims
+ * (idempotency-history.ts) — the last two recent only — into an empty database. Same --seed → same records (only their own uuids and "now" differ). Refuses a database that
  * already has audit records — run db:reset.
  */
 async function main() {
@@ -55,6 +57,20 @@ async function main() {
     await app.get<PostgresRateLimitEventRecorder>(POSTGRES_RATE_LIMIT_EVENT_RECORDER, { strict: false }).flush();
     const windows = await db.execute(sql`select count(*)::int as n, coalesce(sum(rejection_count), 0)::int as total from commons_rate_limit_rejection`);
     console.log(`✓ ${limits.requests} requests, ${limits.rejected} rejected → ${windows.rows[0].n} rejection windows (${windows.rows[0].total} counted)`);
+
+    console.log('Driving idempotent endpoints for idempotency claims (~10s — two cases wait out the stale window) …');
+    const claims = await new IdempotencyHistory(baseUrl, new Rng(seed)).run(volume);
+    // Write the counted replays and 409s now rather than on the next tick, so the summary sees them.
+    await app.get(PostgresIdempotencyDuplicateCounter, { strict: false }).flush();
+    const keys = await db.execute(sql`
+      select count(*)::int as n, count(*) filter (where status = 'pending')::int as pending,
+             coalesce(sum(replay_count), 0)::int as replays, coalesce(sum(conflict_count), 0)::int as conflicts,
+             count(*) filter (where reclaim_count > 0)::int as reclaimed, coalesce(sum(late_complete_no_op_count), 0)::int as ran_twice
+      from commons_idempotency_key`);
+    const k = keys.rows[0];
+    const statuses = Object.entries(claims.byStatus).map(([code, n]) => `${code}×${n}`).join(' ');
+    console.log(`✓ ${claims.requests} requests (${statuses}) → ${k.n} claims: ${k.replays} replayed, ${k.conflicts} turned away, ` +
+      `${k.pending} in progress, ${k.reclaimed} reclaimed, ${k.ran_twice} ran twice`);
   } finally {
     await app.close();
   }
