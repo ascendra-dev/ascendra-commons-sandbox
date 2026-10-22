@@ -148,4 +148,14 @@ throttled endpoint the generator hits, `notification` sends through a fake chann
   sync jobs, a botnet past the buffer), daily 90-day prune. UI in `ascendra-commons-ui` (Overview, Rejections + trace,
   Volume & Retention). Reviewed: probing and `EXPLAIN` here found bad params answering 500, an unvalidated
   correlation id, the resolved-URL fallback and two missing indexes — all fixed in ascendra-commons. Guide and report:
-  `ascendra-commons/rate-limiting/GUIDE.md`, `AUDIT-REPORT.md`. Next module: `payment-link-security`.
+  `ascendra-commons/rate-limiting/GUIDE.md`, `AUDIT-REPORT.md`. (`payment-link-security` and
+  `payment-gateway-adapter` deferred — idempotency-key went next.)
+- **idempotency-key** — **done 2026-10-22** (all ten steps). Vendored (`.core.postgres-drizzle`, `.api`),
+  `IdempotencyInterceptor` on the `src/demo` payment / invoice / refund / payout endpoints, `staleAfterSeconds` 5 (low on
+  purpose), hourly 24-hour cleanup, a `platform-support` persona without `idempotency.view-response`, claims driven by
+  `src/cli/idempotency-history.ts` (replays, 409s, a saved 422, stuck payouts, a reclaim, a run-twice). UI in
+  `ascendra-commons-ui` (Overview, Claims, Claim and Trace sheets). Reviewed: probing and `EXPLAIN` here found a list
+  cursor skipping rows (milliseconds over a microsecond column), an unbounded `Idempotency-Key` (a 500 on the payment
+  past the index row limit), 200-with-empty for a missing claim, and NUL / unknown-status inputs — all fixed in
+  ascendra-commons. Guide and report: `ascendra-commons/idempotency-key/GUIDE.md`, `AUDIT-REPORT.md`. Next module:
+  `domain-events`.
