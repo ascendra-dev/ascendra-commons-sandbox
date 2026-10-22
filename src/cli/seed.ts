@@ -1,6 +1,10 @@
 import 'reflect-metadata';
 import { sql } from 'drizzle-orm';
 import { DOMAIN_EVENT_EMITTER, type DomainEventEmitter } from '../ascendra-commons/domain-events/domain-events.core';
+import {
+  POSTGRES_EVENT_DELIVERY_RECORDER,
+  type PostgresEventDeliveryRecorder,
+} from '../ascendra-commons/domain-events/domain-events.core.postgres-drizzle';
 import { PostgresIdempotencyDuplicateCounter } from '../ascendra-commons/idempotency-key/idempotency-key.core.postgres-drizzle';
 import {
   POSTGRES_RATE_LIMIT_EVENT_RECORDER,
@@ -9,6 +13,7 @@ import {
 import { DATABASE_CONNECTION, type Database } from '../db/database.module';
 import { parseArgs } from './args';
 import { AuditHistory } from './audit-history';
+import { DomainEventHistory } from './domain-event-history';
 import { IdempotencyHistory } from './idempotency-history';
 import { startHttpApp } from './http-app';
 import { RateLimitHistory } from './rate-limit-history';
@@ -19,8 +24,9 @@ const VOLUMES: Record<string, number> = { small: 0.3, normal: 1, large: 25 };
 /**
  *   npm run seed -- [--days 90] [--seed 42] [--volume small|normal|large]
  *
- * Generates audit history (see audit-history.ts), rate-limit rejections (rate-limit-history.ts) and idempotency claims
- * (idempotency-history.ts) — the last two recent only — into an empty database. Same --seed → same records (only their own uuids and "now" differ). Refuses a database that
+ * Generates audit history (see audit-history.ts), domain-event deliveries (domain-event-history.ts — audit's own events
+ * land there too), rate-limit rejections (rate-limit-history.ts) and idempotency claims (idempotency-history.ts) — the
+ * last two recent only — into an empty database. Same --seed → same records (only their own uuids and "now" differ). Refuses a database that
  * already has audit records — run db:reset.
  */
 async function main() {
@@ -50,6 +56,17 @@ async function main() {
     const count = summary.rows.reduce((sum, r) => sum + (r.n as number), 0);
     console.log(`✓ ${count} audit records in ${((Date.now() - started) / 1000).toFixed(1)}s — ` +
       summary.rows.map((r) => `${r.entity_type} ${r.n}`).join(', '));
+
+    console.log(`Raising ${days} days of demo domain events …`);
+    const emitted = await new DomainEventHistory(app.get<DomainEventEmitter>(DOMAIN_EVENT_EMITTER, { strict: false }), new Rng(seed)).run({
+      days, volume, until: new Date(),
+    });
+    // Write the recorder's buffer now rather than on its next tick, so the summary sees it.
+    await app.get<PostgresEventDeliveryRecorder>(POSTGRES_EVENT_DELIVERY_RECORDER, { strict: false }).flush();
+    const deliveries = await db.execute(sql`
+      select status, count(*)::int as n from commons_domain_events_delivery group by 1 order by 2 desc`);
+    console.log(`✓ ${emitted.emitted} demo events → deliveries (audit's included): ` +
+      deliveries.rows.map((r) => `${r.status} ${r.n}`).join(', '));
 
     console.log('Driving throttled endpoints for rate-limit rejections …');
     const limits = await new RateLimitHistory(baseUrl, new Rng(seed)).run();

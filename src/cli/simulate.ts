@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { DOMAIN_EVENT_EMITTER, type DomainEventEmitter } from '../ascendra-commons/domain-events/domain-events.core';
 import { parseArgs } from './args';
 import { AuditHistory } from './audit-history';
+import { DomainEventHistory } from './domain-event-history';
 import { IdempotencyHistory } from './idempotency-history';
 import { CUSTOMERS, FAILURE_REASONS, PAYMENT_GATEWAY, PAYMENT_METHODS, SERVICES, TENANTS } from './cast';
 import { startHttpApp } from './http-app';
@@ -13,7 +14,8 @@ import { Rng } from './rng';
  *
  * Keeps the history live: every N seconds one change happens now — an invoice raised and issued, one of those paid
  * (or its payment failing), a profile edit, now and then a burst against a throttled endpoint (rate-limiting), or a
- * payment through an idempotent endpoint — sometimes retried or double-clicked (idempotency-key). --count stops after
+ * payment through an idempotent endpoint — sometimes retried or double-clicked (idempotency-key), or a demo domain event
+ * (an invoice and its checkout, a payout, a customer edit — domain-events). --count stops after
  * that many (0 = until Ctrl+C).
  */
 async function main() {
@@ -29,6 +31,7 @@ async function main() {
   const claims = new IdempotencyHistory(baseUrl, rng);
   await claims.signIn();
   const events = app.get<DomainEventEmitter>(DOMAIN_EVENT_EMITTER, { strict: false });
+  const demoEvents = new DomainEventHistory(events, rng);
   // Invoices issued during this run, so a later tick can pay one.
   const open: { id: string; tenantId: string; currency: string; amount: number; status: 'issued' | 'payment_failed' }[] = [];
 
@@ -60,6 +63,22 @@ async function main() {
       // A customer pays through an idempotent endpoint — the client may retry or double-click (replays, 409s).
       await claims.payment();
       return 'idempotency: a payment (maybe retried)';
+    }
+
+    if (roll < 0.3) {
+      // A demo domain event, now: usually an invoice (often paid — a two-event checkout), else a payout or a customer edit.
+      const until = new Date(Date.now() + 2 * 60 * 60 * 1000); // a checkout can land up to the following days; keep only "now"-ish
+      const kind = rng.next();
+      if (kind < 0.6) {
+        await demoEvents.invoice(t, now, until);
+        return `domain-events: ${t.name} issued an invoice`;
+      }
+      if (kind < 0.8) {
+        await demoEvents.payout(t, now, until);
+        return `domain-events: ${t.name} requested a payout`;
+      }
+      await demoEvents.customerUpdated(t, now, until);
+      return `domain-events: ${t.name} updated a customer (nobody listens)`;
     }
 
     if (roll < 0.5 || open.length === 0) {

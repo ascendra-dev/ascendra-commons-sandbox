@@ -2,7 +2,7 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { CorrelationIdMiddleware } from '../../ascendra-commons/audit-logging/audit-logging.core';
 import { auditApi, auditLogging } from './audit-logging';
 import { authorization } from './authorization';
-import { domainEvents } from './domain-events';
+import { DomainEventRetentionModule, domainEvents, domainEventsApi } from './domain-events';
 import { IdempotencyCleanupModule, idempotency, idempotencyApi } from './idempotency';
 import { RateLimitRetentionModule, rateLimiting, rateLimitingApi, throttler } from './rate-limiting';
 
@@ -13,7 +13,7 @@ import { RateLimitRetentionModule, rateLimiting, rateLimitingApi, throttler } fr
  */
 @Module({
   imports: [
-    domainEvents, authorization, auditLogging, auditApi,
+    domainEvents, domainEventsApi, DomainEventRetentionModule, authorization, auditLogging, auditApi,
     throttler, rateLimiting, rateLimitingApi, RateLimitRetentionModule,
     idempotency, idempotencyApi, IdempotencyCleanupModule,
   ],
