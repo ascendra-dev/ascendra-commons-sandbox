@@ -31,12 +31,12 @@
     },
     "domain-events/domain-events.core.in-process": {
       "files": {
-        "README.md": "058c653df8e6c184abe779be0a00de6b12dfe182c86f3deae8e445095856d0ee",
+        "README.md": "a371202f5aa7d1cc28f568449d24bdadebd4e6c1d7e7e034c4b6de1f60bff0de",
         "domain-event-listener-catalog.service.ts": "42742d3be594a5ec59add18523b1741991cea3a29366c183ad96c541a00a1d11",
-        "in-process-domain-event-emitter.module.ts": "f1e012c2180e85d175ffc4c7f374962c0b4ad8ea6eb90185f9c64fd9e82f221c",
-        "in-process-domain-event-emitter.service.ts": "14f56ea52e64325dd15a41fa974386abcfbe2581224658806081e9abcdde8747",
-        "index.ts": "851b0e9b6071fe19d61354e519dc2268e4b9823627e8d60c571c59d43581f6a9",
-        "tokens.ts": "a613dd528b94eae66f339de6a61065f5cbd4d1b0e457850f8921df03d6cf07ff"
+        "in-process-domain-event-emitter.module.ts": "f81647fc9b6a23b0a72096120d8e33732dea2e6e08573670a9ba4615be73eb97",
+        "in-process-domain-event-emitter.service.ts": "da30b3f2d588a40f426c0406ad22e8bb7c33334de4f4909dd95ad76118bfc9c5",
+        "index.ts": "c7144fe4c18d6ea1e858692161ff99c65acdec53d42f12088b0457c12cee897f",
+        "tokens.ts": "86ff3a68834e04cf504bdcc135681c24edfd9fc3840e8dfd2472f0ecc4fc2abe"
       }
     },
     "authorization/authorization.core.static-map": {
@@ -288,7 +288,7 @@
     }
   },
   "source": "/Users/zakashah/ascendra/ascendra-public/ascendra-commons (local checkout)",
-  "commit": "e254a1b1042afeb0ba9a0667dfd3ee7a19166863",
+  "commit": "07aeec0f947e6891f6b173994c3fd4af7423e746",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-22T14:24:24.702Z"
+  "syncedAt": "2026-10-22T15:34:05.186Z"
 }

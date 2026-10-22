@@ -4,7 +4,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { EVENT_DELIVERY_RECORDER, EVENT_LISTENER_CATALOG_PORT, NoopEventDeliveryRecorder } from '../domain-events.core';
 import { InProcessDomainEventEmitter } from './in-process-domain-event-emitter.service';
 import { DomainEventListenerCatalog } from './domain-event-listener-catalog.service';
-import { IN_PROCESS_DOMAIN_EVENT_EMITTER } from './tokens';
+import { DOMAIN_EVENT_CORRELATION_ID_RESOLVER, IN_PROCESS_DOMAIN_EVENT_EMITTER, type CorrelationIdResolver } from './tokens';
 
 export interface InProcessDomainEventEmitterModuleConfig {
   /**
@@ -16,6 +16,14 @@ export interface InProcessDomainEventEmitterModuleConfig {
   recorderToken?: string | symbol | (new (...args: never[]) => unknown);
   /** Whatever module(s) export the provider behind `recorderToken`. */
   imports?: DynamicModule['imports'];
+  /**
+   * The app's ambient correlation id, used when a producer calls `emit()` / `emitCritical()` without one — so events
+   * raised inside a request or job trace with it, without every producer threading the id through. Typically the same
+   * context the app's other modules read, e.g. audit-logging's `getCurrentCorrelationId` (this module never imports
+   * it). An explicit third argument always wins; a resolver that throws or returns nothing leaves the delivery
+   * without one.
+   */
+  correlationIdResolver?: CorrelationIdResolver;
 }
 
 /**
@@ -56,6 +64,9 @@ export class InProcessDomainEventEmitterModule {
       imports: [EventEmitterModule.forRoot({ global: false }), DiscoveryModule, ...(config.imports ?? [])],
       providers: [
         recorderProvider,
+        ...(config.correlationIdResolver
+          ? [{ provide: DOMAIN_EVENT_CORRELATION_ID_RESOLVER, useValue: config.correlationIdResolver }]
+          : []),
         InProcessDomainEventEmitter,
         { provide: IN_PROCESS_DOMAIN_EVENT_EMITTER, useExisting: InProcessDomainEventEmitter },
         DomainEventListenerCatalog,

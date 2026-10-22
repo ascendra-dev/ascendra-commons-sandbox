@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { DomainEvent, DomainEventEmitter, EventDeliveryAttempt, EventDeliveryRecorder } from '../domain-events.core';
 import { EVENT_DELIVERY_RECORDER, NoopEventDeliveryRecorder } from '../domain-events.core';
+import { DOMAIN_EVENT_CORRELATION_ID_RESOLVER, type CorrelationIdResolver } from './tokens';
 
 const TRANSPORT = 'in-process';
 
@@ -50,6 +51,7 @@ export class InProcessDomainEventEmitter implements DomainEventEmitter {
     // an explicit token for this exact reason; this was the one exception.
     @Inject(EventEmitter2) private readonly emitter: EventEmitter2,
     @Optional() @Inject(EVENT_DELIVERY_RECORDER) recorder?: EventDeliveryRecorder,
+    @Optional() @Inject(DOMAIN_EVENT_CORRELATION_ID_RESOLVER) private readonly correlationIdResolver?: CorrelationIdResolver,
   ) {
     // InProcessDomainEventEmitterModule.forRoot() always binds the token when
     // configured; the fallback keeps `new InProcessDomainEventEmitter(raw)`
@@ -57,8 +59,9 @@ export class InProcessDomainEventEmitter implements DomainEventEmitter {
     this.recorder = recorder ?? new NoopEventDeliveryRecorder();
   }
 
-  emit(eventName: string, event: DomainEvent, correlationId?: string): void {
+  emit(eventName: string, event: DomainEvent, explicitCorrelationId?: string): void {
     const listenerCount = this.emitter.listenerCount(eventName);
+    const correlationId = explicitCorrelationId ?? this.ambientCorrelationId();
 
     // Not awaited by design — but still routed through emitAsync and given a
     // catch, so a listener that forgot to catch its own error becomes a
@@ -117,8 +120,9 @@ export class InProcessDomainEventEmitter implements DomainEventEmitter {
     }
   }
 
-  async emitCritical(eventName: string, event: DomainEvent, correlationId?: string): Promise<void> {
+  async emitCritical(eventName: string, event: DomainEvent, explicitCorrelationId?: string): Promise<void> {
     const listenerCount = this.emitter.listenerCount(eventName);
+    const correlationId = explicitCorrelationId ?? this.ambientCorrelationId();
 
     let dispatch: Promise<unknown[]>;
     try {
@@ -179,6 +183,20 @@ export class InProcessDomainEventEmitter implements DomainEventEmitter {
         err instanceof Error ? err.stack : String(err),
       );
       throw err;
+    }
+  }
+
+  /**
+   * The app's correlation id for a call made without one — the configured resolver's, if any. Never throws: a resolver
+   * failing must not change what the caller sees; the delivery is then recorded without one.
+   */
+  private ambientCorrelationId(): string | undefined {
+    if (!this.correlationIdResolver) return undefined;
+    try {
+      return this.correlationIdResolver() || undefined;
+    } catch (err) {
+      this.logger.warn(`correlationIdResolver threw — recording the delivery without a correlation id: ${describeError(err)}`);
+      return undefined;
     }
   }
 

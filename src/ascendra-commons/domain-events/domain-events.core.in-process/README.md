@@ -42,6 +42,24 @@ the emitter behaves exactly as before. See `domain-events.core.postgres-drizzle`
 for the reference Postgres implementation, and `domain-events.api` for the
 read surface.
 
+**The app's correlation id, without threading it.** A producer may pass a correlation id as `emit()`'s third
+argument; when it doesn't, `correlationIdResolver` supplies the ambient one — the same request / job context the app's
+other modules read (this package never imports them):
+
+```typescript
+import { getCurrentCorrelationId } from '…/audit-logging/audit-logging.core';
+
+InProcessDomainEventEmitterModule.forRoot({
+  recorderToken: POSTGRES_EVENT_DELIVERY_RECORDER,
+  correlationIdResolver: getCurrentCorrelationId,
+  imports: [/* … */],
+})
+```
+
+An explicit argument always wins. A resolver that throws or returns nothing leaves the delivery without one, and the
+emit is unaffected. (audit-logging's resolver mints a fresh id outside any request or job, so a standalone emit is a
+trace of one.)
+
 This module also provides `DomainEventListenerCatalog` (bound under
 `EVENT_LISTENER_CATALOG_PORT`) — the static "what listens to what" wiring map,
 discovered from `@OnEvent()`/`@OnCriticalEvent()` decorator metadata, always
