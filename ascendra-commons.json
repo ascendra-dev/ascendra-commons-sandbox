@@ -18,6 +18,8 @@
     "idempotency-key/idempotency-key.core.postgres-drizzle",
     "idempotency-key/idempotency-key.api",
     "domain-events/domain-events.core.postgres-drizzle",
-    "domain-events/domain-events.api"
+    "domain-events/domain-events.api",
+    "background-jobs/background-jobs.core.postgres-drizzle",
+    "background-jobs/background-jobs.api"
   ]
 }

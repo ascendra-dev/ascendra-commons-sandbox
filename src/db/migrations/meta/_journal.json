@@ -64,6 +64,27 @@
       "when": 1792678036078,
       "tag": "0008_commons_domain_events_0002_domain_event_delivery_read_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792684306917,
+      "tag": "0009_commons_background_jobs_0001_job_run",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792684307249,
+      "tag": "0010_commons_background_jobs_0002_lease_lock",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792684307770,
+      "tag": "0011_commons_background_jobs_0003_job_run_read_indexes",
+      "breakpoints": true
     }
   ]
 }
