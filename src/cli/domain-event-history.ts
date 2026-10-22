@@ -17,8 +17,8 @@ import type { Rng } from './rng';
  * table): normal deliveries, a critical event, a two-event checkout trace under one correlation id, a critical
  * listener raised with emit() that sometimes throws, an event nobody listens to.
  *
- * audit-history.ts's AuditRecordRaised deliveries land in the same log — without a correlation id: audit passes its id
- * through AsyncLocalStorage, never as emit()'s third argument.
+ * audit-history.ts's AuditRecordRaised deliveries land in the same log, with their request's correlation id — the
+ * emitter's correlationIdResolver reads audit's AsyncLocalStorage (src/modules/commons/domain-events.ts).
  */
 
 export interface DomainEventHistoryOptions {

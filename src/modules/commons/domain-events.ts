@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger, Module, type OnApplicationBootstrap, type OnApplicationShutdown } from '@nestjs/common';
+import { getCurrentCorrelationId } from '../../ascendra-commons/audit-logging/audit-logging.core';
 import { DomainEventsModule } from '../../ascendra-commons/domain-events/domain-events.core';
 import {
   IN_PROCESS_DOMAIN_EVENT_EMITTER,
@@ -19,10 +20,12 @@ const application = process.env.APPLICATION ?? 'ascendra-commons-sandbox';
 /**
  * The in-process transport, with the Postgres delivery log: every `emit()` / `emitCritical()` is recorded — buffered in
  * memory, written every 10s. One instance, imported below by both `domainEvents` and the read API, because it also
- * provides the listener catalogue (`EVENT_LISTENER_CATALOG_PORT`) the API reads.
+ * provides the listener catalogue (`EVENT_LISTENER_CATALOG_PORT`) the API reads. An emit made without a correlation id
+ * takes the request's / job's — the one audit-logging's CorrelationIdMiddleware establishes — so audit's own events trace.
  */
 const inProcessEmitter = InProcessDomainEventEmitterModule.forRoot({
   recorderToken: POSTGRES_EVENT_DELIVERY_RECORDER,
+  correlationIdResolver: getCurrentCorrelationId,
   imports: [PostgresEventDeliveryRecorderModule.forRoot({ sqlExecutorToken: DATABASE_CONNECTION, application, imports: [DatabaseModule] })],
 });
 

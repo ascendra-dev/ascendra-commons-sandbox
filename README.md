@@ -169,5 +169,5 @@ past moment (`occurredAt`, what domain-events' screens count by), across `--days
 then paid — a checkout of `payment.captured` (`emitCritical()`, a critical Ledger listener) and `invoice.paid` under one
 correlation id; customer edits nobody listens to (`no_listeners`); payouts raised with `emit()` although Treasury's
 listener is critical — and one in six over the limit, so it throws and the failure is swallowed. `refund.issued` has a
-listener but is never raised. audit-history's `AuditRecordRaised` calls land in the same log, without a correlation id.
+listener but is never raised. audit-history's `AuditRecordRaised` calls land in the same log, with their request's correlation id (the emitter's `correlationIdResolver` reads audit's context), so a delivery and its audit record share one trace id.
 `normal`: 2,188 demo events + 3,810 audit → 5,998 deliveries over 90 days, 168 with no listener; pruned after 90 days.
