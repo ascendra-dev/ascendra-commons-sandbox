@@ -16,6 +16,8 @@
     "rate-limiting/rate-limiting.core.postgres-drizzle",
     "rate-limiting/rate-limiting.api",
     "idempotency-key/idempotency-key.core.postgres-drizzle",
-    "idempotency-key/idempotency-key.api"
+    "idempotency-key/idempotency-key.api",
+    "domain-events/domain-events.core.postgres-drizzle",
+    "domain-events/domain-events.api"
   ]
 }

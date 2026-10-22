@@ -50,6 +50,20 @@
       "when": 1792610649259,
       "tag": "0006_commons_idempotency_key_0002_idempotency_duplicates_and_route",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792678029762,
+      "tag": "0007_commons_domain_events_0001_domain_event_delivery",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792678036078,
+      "tag": "0008_commons_domain_events_0002_domain_event_delivery_read_indexes",
+      "breakpoints": true
     }
   ]
 }

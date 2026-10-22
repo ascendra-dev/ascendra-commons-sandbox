@@ -14,14 +14,15 @@ export type {
   EventDeliveryRecord,
   DeliveryQuery,
   DeliveryPage,
+  DeliveryPeriodQuery,
+  DeliverySummary,
   EventDeliveryCatalogEntry,
-  DeliveryStatsDay,
-  DeliveryStatsTopEvent,
-  DeliveryStats,
+  DeliveryVolume,
   EventDeliveryObservabilityPort,
 } from './event-delivery-observability.port';
 export type { EventListenerCatalogEntry, EventListenerCatalogPort } from './event-listener-catalog.port';
-export { encodeKeysetCursor, decodeKeysetCursor } from './keyset-cursor';
+export { encodeKeysetCursor, decodeKeysetCursor, InvalidDeliveryCursorError } from './keyset-cursor';
+export { calendarDays, isValidTimeZone } from './calendar-days';
 export {
   DOMAIN_EVENT_EMITTER,
   EVENT_DELIVERY_RECORDER,

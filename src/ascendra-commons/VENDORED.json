@@ -76,7 +76,8 @@
         "audit-logging/audit-logging.api",
         "authorization/authorization.core.static-map",
         "rate-limiting/rate-limiting.api",
-        "idempotency-key/idempotency-key.api"
+        "idempotency-key/idempotency-key.api",
+        "domain-events/domain-events.api"
       ],
       "files": {
         "README.md": "c445985d3181ce32d82dac8bb016aa0bc726509843e475be4343ac77d6f2ae48",
@@ -97,19 +98,22 @@
     "domain-events/domain-events.core": {
       "requiredBy": [
         "domain-events/domain-events.core.in-process",
+        "domain-events/domain-events.core.postgres-drizzle",
+        "domain-events/domain-events.api",
         "audit-logging/audit-logging.core"
       ],
       "files": {
         "README.md": "08a2983d143accae4dc5a7c3132823840133c8df63c9350217ee7a6a0d4908b0",
         "assert-domain-event-serializable.ts": "3128217a3445d5a5f381308b15bc6aeccf999f8b7a251dcc0a361997715d561b",
+        "calendar-days.ts": "8b47f99c1f1610f50cf2a0fb4752c0c46b54e33501f8805d5feab2d2eb5af6fa",
         "domain-event-emitter.port.ts": "0502bc1388aa2bc4303167202111fde069ed3dcbed8b904363008f1d67e15a84",
         "domain-event.interface.ts": "70c2820ac5278743c14cc83683e9fcd72b3b944e71f68209e7b4405f17918174",
         "domain-events.module.ts": "ba92dfd7c3981bc7bd7455be2d1c3296f699e30620d4ff84be0aea4b82ade0d6",
-        "event-delivery-observability.port.ts": "d0094e82a472741b21abc237f9072be61c747961a5f0df28b762c2b82ee95436",
+        "event-delivery-observability.port.ts": "cd3440e9ba19730c3399603f3d65cc71d52bfe207b4d3553d46698a7e8f23eaa",
         "event-delivery-recorder.port.ts": "bc08662a0f6ff6e1bc495bddf560347cf6d2cb5ec8707864320e69248f3fd8ee",
         "event-listener-catalog.port.ts": "ea0b7c895742a19ba537d48a346514ac6911d224cfc6857bc1886d5e0d23d806",
-        "index.ts": "8f162adf3fd7f59ec698bcee70a57d1ede1bdb6f7e793c70eb0bfeb9cd5eb40c",
-        "keyset-cursor.ts": "fb3171949feb64a75233237dd7e4059625baae67d988b0f61a57bc93bde65938",
+        "index.ts": "281f1cbb4f706e6397ea09fcab13541d6e0a640c94630562b2adaceec9bae34d",
+        "keyset-cursor.ts": "6de3d961841e157907458d8d68cd7d0c91c0f2f2dbbfb4046571b4610c5e781d",
         "noop-event-delivery-recorder.ts": "1733e6e990b8b84854dbaf1ec7687698b55ca3e9e06161ae9c980f2acad642c3",
         "on-critical-event.decorator.ts": "1c0e5e2852985818c10094d2e16ca9834d81ec1d79c7e1cf4a4a0375d8c0a3a5",
         "tokens.ts": "c99cf8821cc08091136d7cbb15387001e12bc4c1efc48ff79b4e4b6b0224f47c"
@@ -215,6 +219,34 @@
         "keyset-cursor.ts": "7723fa391f030b590c3a06534cee5144d1cb0101ce1e3f706ba81b7f59dc898f",
         "tokens.ts": "190b73e6bebae25f44c8db0dd2ca38b0febf537a7d67818f292e254991d368af"
       }
+    },
+    "domain-events/domain-events.core.postgres-drizzle": {
+      "files": {
+        "README.md": "8130dbfac87ce4f410f42d6dcb92a7a0bc025afbacab4d72a22ab5da0ae8b267",
+        "index.ts": "d234b765870486a1d4bf6994ebd130d91f5dac9e1455dffd2efb707996d61124",
+        "migrations/0001_domain_event_delivery.sql": "140589d6f41c7d664316084ad7b89692c63f826f57b36c59a39d08f4e0d80fa1",
+        "migrations/0002_domain_event_delivery_read_indexes.sql": "a400d175c563b2ecb3740dabed96805f9d72c6919cd6061fbcf979ee7f2c9beb",
+        "observability/postgres-event-delivery-observability.module.ts": "8c821e785fa0300eeb6d9598a38b1f7efb38b3b015cd433116ca224a80e749e7",
+        "observability/postgres-event-delivery-observability.service.ts": "95762a9921b6ff4707dfd6ace1f4c89f93869ee60f98564d219b6c915dc67182",
+        "persistence/domain-event-delivery.schema.ts": "a34232d9cf7a571f035798590a01035f5f8ef66c0de73745d5418adb69576d97",
+        "persistence/sql-executor.ts": "ad1c517fde8e0c03e89d1482ea980a5c72e15606e5797c127ff033f9d0f49b4e",
+        "recorder/postgres-event-delivery-recorder.module.ts": "c2d087b9da4cbc1115f50cc0ddaf3032cd0606034412aebdbc86a55c728611b1",
+        "recorder/postgres-event-delivery-recorder.ts": "89bdf166c2a854f17de27997cfc4795b775880f3c95e75c697a113712f9ff3f7",
+        "retention/postgres-event-delivery-retention.module.ts": "19f1df1fdd0e0ff58edbd0cc58925fd61b48af0ac09d89d795848dac95a82117",
+        "retention/postgres-event-delivery-retention.service.ts": "5326982a5e03dca5d69395cc8d364e9aa3dd85a76a4d472c2418b4ece2161776",
+        "tokens.ts": "d60a4edd75aedccab40fa7c85742f1e5a8bd7a2d26b2c521860d54dc013cf7d6"
+      }
+    },
+    "domain-events/domain-events.api": {
+      "files": {
+        "README.md": "238af5300728aa46cfdcdd72ff6ca91453ec2c5700567938c94aff7bed8856c9",
+        "domain-events-api.module.ts": "4eda970a2febb2d2dffd537a1a822d084aad5de81d6e26b53c44b6985bae8ba0",
+        "domain-events-api.options.ts": "c9684250baa8ffd696138b7ae879fcccbd775aed473c413981774e63a5503eb2",
+        "domain-events-api.service.ts": "a82c6b335eccb39e91bd8e53a86ac3d160bd83697a6d11daece26da535f876b1",
+        "domain-events.controller.ts": "8f66fca67fbadfc87b6f78bbfa062fc5685ab56a312f0226b7fadb0e42b40ed5",
+        "dto/domain-events-api.dto.ts": "78078844a64a87a88e2d76e6744054926aa9ea9550caf7933483192e8ddfd7b4",
+        "index.ts": "200c8f64893682e9b5e1dbe9a3b6cdee5c82a0d81d8d3cd55d7f886e00bc5a05"
+      }
     }
   },
   "migrations": {
@@ -245,10 +277,18 @@
     "idempotency-key/idempotency-key.core.postgres-drizzle/0002_idempotency_duplicates_and_route.sql": {
       "checksum": "9ab91cc298d7d6af2092036dfb70a1f13028d4fa80706adcd06c28402e52681b",
       "copiedTo": "src/db/migrations/0006_commons_idempotency_key_0002_idempotency_duplicates_and_route.sql"
+    },
+    "domain-events/domain-events.core.postgres-drizzle/0001_domain_event_delivery.sql": {
+      "checksum": "140589d6f41c7d664316084ad7b89692c63f826f57b36c59a39d08f4e0d80fa1",
+      "copiedTo": "src/db/migrations/0007_commons_domain_events_0001_domain_event_delivery.sql"
+    },
+    "domain-events/domain-events.core.postgres-drizzle/0002_domain_event_delivery_read_indexes.sql": {
+      "checksum": "a400d175c563b2ecb3740dabed96805f9d72c6919cd6061fbcf979ee7f2c9beb",
+      "copiedTo": "src/db/migrations/0008_commons_domain_events_0002_domain_event_delivery_read_indexes.sql"
     }
   },
   "source": "/Users/zakashah/ascendra/ascendra-public/ascendra-commons (local checkout)",
-  "commit": "480a29d63aa4688548d9339792edeca28d5e3a65",
+  "commit": "b1b3d39a5754ab8eb5aa4c3136b88bf9fad9b3f8",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-22T13:49:55.025Z"
+  "syncedAt": "2026-10-22T14:07:15.606Z"
 }
