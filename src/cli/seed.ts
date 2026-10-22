@@ -10,11 +10,14 @@ import {
   POSTGRES_RATE_LIMIT_EVENT_RECORDER,
   type PostgresRateLimitEventRecorder,
 } from '../ascendra-commons/rate-limiting/rate-limiting.core.postgres-drizzle';
+import { POSTGRES_JOB_RUN_RECORDER } from '../ascendra-commons/background-jobs/background-jobs.core.postgres-drizzle';
+import type { JobRunRecorder } from '../ascendra-commons/background-jobs/background-jobs.core';
 import { DATABASE_CONNECTION, type Database } from '../db/database.module';
 import { parseArgs } from './args';
 import { AuditHistory } from './audit-history';
 import { DomainEventHistory } from './domain-event-history';
 import { IdempotencyHistory } from './idempotency-history';
+import { JobHistory } from './job-history';
 import { startHttpApp } from './http-app';
 import { RateLimitHistory } from './rate-limit-history';
 import { Rng } from './rng';
@@ -26,7 +29,7 @@ const VOLUMES: Record<string, number> = { small: 0.3, normal: 1, large: 25 };
  *
  * Generates audit history (see audit-history.ts), domain-event deliveries (domain-event-history.ts — audit's own events
  * land there too), rate-limit rejections (rate-limit-history.ts) and idempotency claims (idempotency-history.ts) — the
- * last two recent only — into an empty database. Same --seed → same records (only their own uuids and "now" differ). Refuses a database that
+ * last two recent only — and background-job runs (job-history.ts) into an empty database. Same --seed → same records (only their own uuids and "now" differ). Refuses a database that
  * already has audit records — run db:reset.
  */
 async function main() {
@@ -88,6 +91,17 @@ async function main() {
     const statuses = Object.entries(claims.byStatus).map(([code, n]) => `${code}×${n}`).join(' ');
     console.log(`✓ ${claims.requests} requests (${statuses}) → ${k.n} claims: ${k.replays} replayed, ${k.conflicts} turned away, ` +
       `${k.pending} in progress, ${k.reclaimed} reclaimed, ${k.ran_twice} ran twice`);
+
+    console.log(`Recording ${days} days of background-job runs, then running four jobs now …`);
+    const jobs = await new JobHistory(app.get<JobRunRecorder>(POSTGRES_JOB_RUN_RECORDER, { strict: false }), db, new Rng(seed)).run(
+      { days, until: new Date() }, baseUrl);
+    const jobRuns = await db.execute(sql`
+      select count(*)::int as n, count(*) filter (where outcome = 'job_failed')::int as job_failed,
+             count(*) filter (where items_failed > 0)::int as with_failed_items, count(distinct job_name)::int as jobs
+      from commons_jobs_job_run`);
+    const j = jobRuns.rows[0];
+    console.log(`✓ ${jobs.recorded} past runs + ${jobs.manual} run now → ${j.n} runs of ${j.jobs} jobs: ` +
+      `${j.with_failed_items} with failed items, ${j.job_failed} job failures; one stale lock (statement-export)`);
   } finally {
     await app.close();
   }

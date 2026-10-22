@@ -12,4 +12,5 @@ export const AUDIT_CATALOG: AuditCatalogEntry[] = [
   { entityType: 'attachment', actions: ['uploaded', 'deleted'] },
   { entityType: 'channel_route', actions: ['route_set'] },
   { entityType: 'tenant', actions: ['created', 'plan_changed'] },
+  { entityType: 'job', actions: ['triggered'] },
 ];

@@ -1,6 +1,7 @@
 import { AuthorizationModule } from '../../ascendra-commons/authorization/authorization.core';
 import { StaticMapAuthorizerModule, STATIC_MAP_AUTHORIZER } from '../../ascendra-commons/authorization/authorization.core.static-map';
 import { AUDIT_ACTIONS } from '../../ascendra-commons/audit-logging/audit-logging.api';
+import { JOB_ACTIONS } from '../../ascendra-commons/background-jobs/background-jobs.api';
 import { DOMAIN_EVENTS_ACTIONS } from '../../ascendra-commons/domain-events/domain-events.api';
 import { IDEMPOTENCY_ACTIONS } from '../../ascendra-commons/idempotency-key/idempotency-key.api';
 import { RATE_LIMIT_ACTIONS } from '../../ascendra-commons/rate-limiting/rate-limiting.api';
@@ -11,6 +12,7 @@ export const ALL_ACTIONS: string[] = [
   ...Object.values(RATE_LIMIT_ACTIONS),
   ...Object.values(IDEMPOTENCY_ACTIONS),
   ...Object.values(DOMAIN_EVENTS_ACTIONS),
+  ...Object.values(JOB_ACTIONS),
 ];
 
 /**
@@ -19,7 +21,9 @@ export const ALL_ACTIONS: string[] = [
  * would see every tenant's traffic. `idempotency.view` too — a claim's scope is opaque to the module, so it can't be
  * limited to one tenant. `idempotency.view-response` (a claim's saved body — it can hold personal data) is the platform
  * admin's alone: platform support sees every claim but gets a 403 on its body. `domain-events.view` is platform-only too:
- * a delivery row has no tenant (the payload isn't stored), and the wiring it shows is the whole app's.
+ * a delivery row has no tenant (the payload isn't stored), and the wiring it shows is the whole app's. `job.view` is
+ * platform-only — jobs have no tenant (a run covers every tenant's due items) — and `job.run` (run a job now) the
+ * platform admin's alone: support sees every run but gets a 403 on Run now.
  */
 export const PERSONA_ACTIONS: Record<string, string[]> = {
   'platform-admin': [
@@ -28,8 +32,10 @@ export const PERSONA_ACTIONS: Record<string, string[]> = {
     IDEMPOTENCY_ACTIONS.VIEW,
     IDEMPOTENCY_ACTIONS.VIEW_RESPONSE,
     DOMAIN_EVENTS_ACTIONS.VIEW,
+    JOB_ACTIONS.VIEW,
+    JOB_ACTIONS.RUN,
   ],
-  'platform-support': [RATE_LIMIT_ACTIONS.VIEW, IDEMPOTENCY_ACTIONS.VIEW, DOMAIN_EVENTS_ACTIONS.VIEW],
+  'platform-support': [RATE_LIMIT_ACTIONS.VIEW, IDEMPOTENCY_ACTIONS.VIEW, DOMAIN_EVENTS_ACTIONS.VIEW, JOB_ACTIONS.VIEW],
   'tenant-admin': [AUDIT_ACTIONS.VIEW],
   member: [],
 };

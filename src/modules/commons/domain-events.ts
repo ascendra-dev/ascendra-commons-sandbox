@@ -1,4 +1,5 @@
-import { Inject, Injectable, Logger, Module, type OnApplicationBootstrap, type OnApplicationShutdown } from '@nestjs/common';
+import { Inject, Injectable, Logger, Module } from '@nestjs/common';
+import type { ScheduledJob } from '../../ascendra-commons/background-jobs/background-jobs.core';
 import { getCurrentCorrelationId } from '../../ascendra-commons/audit-logging/audit-logging.core';
 import { DomainEventsModule } from '../../ascendra-commons/domain-events/domain-events.core';
 import {
@@ -50,39 +51,33 @@ const RETENTION_DAYS = 90;
 const DAY = 24 * 60 * 60 * 1000;
 
 /**
- * Retention is the consumer's (the module never prunes on its own). The sandbox has no scheduler yet, so this stands
- * in for one: prune at boot, then daily. A product runs `pruneDeliveries()` from its own scheduler — a background-jobs
- * `ScheduledJob` once that module is here.
+ * Retention is the consumer's (the module never prunes on its own): a background-jobs `ScheduledJob`, scheduled daily
+ * (and at boot) in background-jobs.ts — so each prune is a run on the jobs screens. One item, the cutoff.
  */
 @Injectable()
-class DomainEventRetentionTask implements OnApplicationBootstrap, OnApplicationShutdown {
+export class DomainEventRetentionJob implements ScheduledJob<Date> {
+  readonly name = 'domain-event-retention';
   private readonly logger = new Logger('DomainEventRetention');
-  private timer?: NodeJS.Timeout;
 
   constructor(@Inject(PostgresEventDeliveryRetentionService) private readonly retention: PostgresEventDeliveryRetentionService) {}
 
-  onApplicationBootstrap() {
-    void this.prune();
-    this.timer = setInterval(() => void this.prune(), DAY);
-    this.timer.unref();
+  async findDueItems(): Promise<Date[]> {
+    return [new Date(Date.now() - RETENTION_DAYS * DAY)];
   }
 
-  onApplicationShutdown() {
-    clearInterval(this.timer);
+  async processItem(cutoff: Date): Promise<void> {
+    const pruned = await this.retention.pruneDeliveries(cutoff);
+    if (pruned > 0) this.logger.log(`Pruned ${pruned} event delivery(ies) older than ${RETENTION_DAYS} days`);
   }
 
-  private async prune() {
-    try {
-      const pruned = await this.retention.pruneDeliveries(new Date(Date.now() - RETENTION_DAYS * DAY));
-      if (pruned > 0) this.logger.log(`Pruned ${pruned} event delivery(ies) older than ${RETENTION_DAYS} days`);
-    } catch (err) {
-      this.logger.error('Domain-event retention failed', err instanceof Error ? err.stack : String(err));
-    }
+  describeItem(cutoff: Date): string {
+    return `event deliveries before ${cutoff.toISOString()}`;
   }
 }
 
 @Module({
   imports: [PostgresEventDeliveryRetentionModule.forRoot({ sqlExecutorToken: DATABASE_CONNECTION, application, imports: [DatabaseModule] })],
-  providers: [DomainEventRetentionTask],
+  providers: [DomainEventRetentionJob],
+  exports: [DomainEventRetentionJob],
 })
 export class DomainEventRetentionModule {}

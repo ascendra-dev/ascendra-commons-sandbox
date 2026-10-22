@@ -1,4 +1,5 @@
-import { Inject, Injectable, Logger, Module, type OnApplicationBootstrap, type OnApplicationShutdown } from '@nestjs/common';
+import { Inject, Injectable, Logger, Module } from '@nestjs/common';
+import type { ScheduledJob } from '../../ascendra-commons/background-jobs/background-jobs.core';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { RateLimitingThrottlerModule } from '../../ascendra-commons/rate-limiting/rate-limiting.core.throttler';
 import {
@@ -46,39 +47,33 @@ const RETENTION_DAYS = 90;
 const DAY = 24 * 60 * 60 * 1000;
 
 /**
- * Retention is the consumer's (the module never prunes on its own). The sandbox has no scheduler yet, so this stands
- * in for one: prune at boot, then daily. A product runs `pruneRejections()` from its own scheduler — a background-jobs
- * `ScheduledJob` once that module is here.
+ * Retention is the consumer's (the module never prunes on its own): a background-jobs `ScheduledJob`, scheduled daily
+ * (and at boot) in background-jobs.ts — so each prune is a run on the jobs screens. One item, the cutoff.
  */
 @Injectable()
-class RateLimitRetentionTask implements OnApplicationBootstrap, OnApplicationShutdown {
+export class RateLimitRetentionJob implements ScheduledJob<Date> {
+  readonly name = 'rate-limit-retention';
   private readonly logger = new Logger('RateLimitRetention');
-  private timer?: NodeJS.Timeout;
 
   constructor(@Inject(PostgresRateLimitRetentionService) private readonly retention: PostgresRateLimitRetentionService) {}
 
-  onApplicationBootstrap() {
-    void this.prune();
-    this.timer = setInterval(() => void this.prune(), DAY);
-    this.timer.unref();
+  async findDueItems(): Promise<Date[]> {
+    return [new Date(Date.now() - RETENTION_DAYS * DAY)];
   }
 
-  onApplicationShutdown() {
-    clearInterval(this.timer);
+  async processItem(cutoff: Date): Promise<void> {
+    const pruned = await this.retention.pruneRejections(cutoff);
+    if (pruned > 0) this.logger.log(`Pruned ${pruned} rate-limit rejection window(s) older than ${RETENTION_DAYS} days`);
   }
 
-  private async prune() {
-    try {
-      const pruned = await this.retention.pruneRejections(new Date(Date.now() - RETENTION_DAYS * DAY));
-      if (pruned > 0) this.logger.log(`Pruned ${pruned} rate-limit rejection window(s) older than ${RETENTION_DAYS} days`);
-    } catch (err) {
-      this.logger.error('Rate-limit retention failed', err instanceof Error ? err.stack : String(err));
-    }
+  describeItem(cutoff: Date): string {
+    return `rejection windows before ${cutoff.toISOString()}`;
   }
 }
 
 @Module({
   imports: [PostgresRateLimitRetentionModule.forRoot({ sqlExecutorToken: DATABASE_CONNECTION, application, imports: [DatabaseModule] })],
-  providers: [RateLimitRetentionTask],
+  providers: [RateLimitRetentionJob],
+  exports: [RateLimitRetentionJob],
 })
 export class RateLimitRetentionModule {}

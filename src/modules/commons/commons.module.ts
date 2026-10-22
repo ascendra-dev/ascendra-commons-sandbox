@@ -2,9 +2,10 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { CorrelationIdMiddleware } from '../../ascendra-commons/audit-logging/audit-logging.core';
 import { auditApi, auditLogging } from './audit-logging';
 import { authorization } from './authorization';
-import { DomainEventRetentionModule, domainEvents, domainEventsApi } from './domain-events';
-import { IdempotencyCleanupModule, idempotency, idempotencyApi } from './idempotency';
-import { RateLimitRetentionModule, rateLimiting, rateLimitingApi, throttler } from './rate-limiting';
+import { JobSchedulesModule, backgroundJobs, backgroundJobsApi } from './background-jobs';
+import { domainEvents, domainEventsApi } from './domain-events';
+import { idempotency, idempotencyApi } from './idempotency';
+import { rateLimiting, rateLimitingApi, throttler } from './rate-limiting';
 
 /**
  * Every ascendra-commons module this app uses, configured in one place — what any consuming project writes (see
@@ -13,11 +14,13 @@ import { RateLimitRetentionModule, rateLimiting, rateLimitingApi, throttler } fr
  */
 @Module({
   imports: [
-    domainEvents, domainEventsApi, DomainEventRetentionModule, authorization, auditLogging, auditApi,
-    throttler, rateLimiting, rateLimitingApi, RateLimitRetentionModule,
-    idempotency, idempotencyApi, IdempotencyCleanupModule,
+    domainEvents, domainEventsApi, authorization, auditLogging, auditApi,
+    throttler, rateLimiting, rateLimitingApi,
+    idempotency, idempotencyApi,
+    // The retention / cleanup jobs of the modules above run here too — as scheduled jobs (background-jobs.ts).
+    backgroundJobs, backgroundJobsApi, JobSchedulesModule,
   ],
-  exports: [domainEvents, authorization, rateLimiting, idempotency],
+  exports: [domainEvents, authorization, rateLimiting, idempotency, backgroundJobs],
 })
 export class CommonsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

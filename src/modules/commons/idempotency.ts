@@ -1,4 +1,5 @@
-import { Inject, Injectable, Logger, Module, type OnApplicationBootstrap, type OnApplicationShutdown } from '@nestjs/common';
+import { Inject, Injectable, Logger, Module } from '@nestjs/common';
+import type { ScheduledJob } from '../../ascendra-commons/background-jobs/background-jobs.core';
 import { sql } from 'drizzle-orm';
 import { IdempotencyModule } from '../../ascendra-commons/idempotency-key/idempotency-key.core';
 import {
@@ -41,43 +42,36 @@ const KEEP_HOURS = 24;
 const HOUR = 60 * 60 * 1000;
 
 /**
- * The cleanup is the consumer's (the module's README: a plain DELETE, safe to run concurrently). The sandbox has no
- * scheduler yet, so this stands in for one: at boot, then hourly. A product runs the same statement from its own
- * scheduler — a background-jobs `ScheduledJob` once that module is here.
+ * The cleanup is the consumer's (the module's README: a plain DELETE, safe to run concurrently): a background-jobs
+ * `ScheduledJob`, scheduled hourly (and at boot) in background-jobs.ts — so each cleanup is a run on the jobs screens.
+ * One item, the cutoff.
  */
 @Injectable()
-class IdempotencyCleanupTask implements OnApplicationBootstrap, OnApplicationShutdown {
+export class IdempotencyCleanupJob implements ScheduledJob<Date> {
+  readonly name = 'idempotency-cleanup';
   private readonly logger = new Logger('IdempotencyCleanup');
-  private timer?: NodeJS.Timeout;
 
   constructor(@Inject(DATABASE_CONNECTION) private readonly db: Database) {}
 
-  onApplicationBootstrap() {
-    void this.cleanup();
-    this.timer = setInterval(() => void this.cleanup(), HOUR);
-    this.timer.unref();
+  async findDueItems(): Promise<Date[]> {
+    return [new Date(Date.now() - KEEP_HOURS * HOUR)];
   }
 
-  onApplicationShutdown() {
-    clearInterval(this.timer);
+  async processItem(cutoff: Date): Promise<void> {
+    const { rows } = await this.db.execute(sql`
+      delete from commons_idempotency_key where created_at < ${cutoff} returning key
+    `);
+    if (rows.length > 0) this.logger.log(`Deleted ${rows.length} idempotency claim(s) older than ${KEEP_HOURS} hours`);
   }
 
-  private async cleanup() {
-    try {
-      const { rows } = await this.db.execute(sql`
-        delete from commons_idempotency_key
-        where created_at < now() - make_interval(hours => ${KEEP_HOURS})
-        returning key
-      `);
-      if (rows.length > 0) this.logger.log(`Deleted ${rows.length} idempotency claim(s) older than ${KEEP_HOURS} hours`);
-    } catch (err) {
-      this.logger.error('Idempotency cleanup failed', err instanceof Error ? err.stack : String(err));
-    }
+  describeItem(cutoff: Date): string {
+    return `idempotency claims before ${cutoff.toISOString()}`;
   }
 }
 
 @Module({
   imports: [DatabaseModule],
-  providers: [IdempotencyCleanupTask],
+  providers: [IdempotencyCleanupJob],
+  exports: [IdempotencyCleanupJob],
 })
 export class IdempotencyCleanupModule {}
