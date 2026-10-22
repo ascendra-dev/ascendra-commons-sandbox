@@ -143,12 +143,12 @@
     },
     "rate-limiting/rate-limiting.api": {
       "files": {
-        "README.md": "c5e33a5bc24b5b709ed727ad84ada61eb3e90c1c1ff628b532c8564938f97182",
+        "README.md": "2ef8b485ed7cccb5512638404b5f96a7662f58676eed4bb666c8d7e7b7b9cac5",
         "dto/rate-limiting-api.dto.ts": "c65ac23473dff27ac3433f557fbd5516c186ee084d166d435fd1c9322e9e7959",
         "index.ts": "a307fd5256e0ac7bb0039dc5858db77d147675cb0e9ad6dddd9d99c0be6dd72f",
         "rate-limiting-api.module.ts": "9fc319e2a72647c0502a49a27f89fb6c53f4073c202e41b0998c272aa745ed32",
         "rate-limiting-api.options.ts": "9aaec3656fc6501ae5c2ae89d585e012eb5109d346eb17958ebaadcb0be4290b",
-        "rate-limiting-api.service.ts": "3874522ae4d45119b9bd40c42c690cb0bb05da98eb6d20ef7bc86bdcddf7a04d",
+        "rate-limiting-api.service.ts": "b27c88195f2fb7a57449f7682ab26df352f558d43a0f2034c86d7b37ff138287",
         "rate-limiting.controller.ts": "0ad216ff3a77e68eae3a7b6c84485c43490dbbe845c67a943bab6af93fddc92d"
       }
     },
@@ -248,7 +248,7 @@
     }
   },
   "source": "/Users/zakashah/ascendra/ascendra-public/ascendra-commons (local checkout)",
-  "commit": "0e96fc189d5b95af48a376045d79f9f3fed26be2",
+  "commit": "480a29d63aa4688548d9339792edeca28d5e3a65",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-22T13:42:19.499Z"
+  "syncedAt": "2026-10-22T13:49:55.025Z"
 }

@@ -31,10 +31,19 @@ function limitParam(value: number | undefined): number | undefined {
 }
 
 /**
+ * A text param as given — a 400 if it holds a NUL byte, which Postgres can't store in `text` and rejects as an
+ * encoding error: a 500 for a malformed id.
+ */
+function textParam(name: string, value: string | undefined): string | undefined {
+  if (value?.includes('\u0000')) throw new BadRequestException(`"${name}" must not contain a NUL byte`);
+  return value;
+}
+
+/**
  * Thin orchestration over `RateLimitObservabilityPort`. No tenant scoping —
  * a rejected, unauthenticated request has no tenant to scope by; gate
  * `rate-limit.view` to an ops/security persona instead. Params are
- * validated here — a bad date, limit or cursor is a 400, never a 500. No mutation surface — rejections are write-once, recorded
+ * validated here — a bad date, limit or cursor, or a NUL byte in any text, is a 400, never a 500. No mutation surface — rejections are write-once, recorded
  * only by `RecordingThrottlerGuard`.
  */
 @Injectable()
@@ -44,9 +53,9 @@ export class RateLimitingApiService {
   async listRejections(query: RejectionQueryDto): Promise<RejectionPage> {
     try {
       return await this.observability.listRejections({
-        route: query.route,
-        identifier: query.identifier,
-        correlationId: query.correlationId,
+        route: textParam('route', query.route),
+        identifier: textParam('identifier', query.identifier),
+        correlationId: textParam('correlationId', query.correlationId),
         since: dateParam('since', query.since),
         until: dateParam('until', query.until),
         limit: limitParam(query.limit),
@@ -76,7 +85,7 @@ export class RateLimitingApiService {
   topIdentifiers(query: TopIdentifiersQueryDto): Promise<IdentifierRejectionCount[]> {
     return this.observability.topIdentifiers({
       since: dateParam('since', query.since),
-      route: query.route,
+      route: textParam('route', query.route),
       limit: limitParam(query.limit),
     });
   }
