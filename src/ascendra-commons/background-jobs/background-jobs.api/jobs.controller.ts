@@ -118,9 +118,12 @@ export class JobsController {
     return this.service.getFailedItems(name, optionalNumber(minRuns));
   }
 
-  /** Runs the job now and waits for it: 200 with the result, 404 for an unknown job, 409 while it's already running. */
+  /**
+   * Starts the job and answers once it has the lock: 202 `{ status: 'started', correlationId }` — the run goes on, and
+   * its result is read from `runs/trace/:correlationId`. 404 for an unknown job, 409 while it's already running.
+   */
   @Post(':name/run')
-  @HttpCode(200)
+  @HttpCode(202)
   @RequiresAction(JOB_ACTIONS.RUN)
   run(
     @CurrentActor() actor: Actor,

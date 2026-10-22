@@ -17,7 +17,7 @@ Opt-in NestJS controller over `JOB_OBSERVABILITY_PORT` (reads) and `JobTrigger`
 | GET | `/jobs/runs/trace/:correlationId` | `job.view` | `getRunHistory({ correlationId, order: 'asc' })` — every run from one request/job chain, oldest first. `{ data, meta }` |
 | GET | `/jobs/runs/:id` | `job.view` | `getRun(id)` — one run, full untruncated `error`. 404 if not found (or not a run id) |
 | GET | `/jobs/:name/failed-items?minRuns=` | `job.view` | `getFailedItems(name, minRuns?)` — items recurring as a failed ref across at least `minRuns` (default 2) of the job's last 50 runs. Best-effort — see doc comment |
-| POST | `/jobs/:name/run` | `job.run` | `JobTrigger.trigger(name, correlationId)` — "run now" / "retry". 200 with `completed` / `job_failed`; **404** for a job not registered for triggering; **409** while it's already running |
+| POST | `/jobs/:name/run` | `job.run` | `JobTrigger.start(name, correlationId)` — "run now" / "retry". **202** `{ status: 'started', correlationId }` once the lock is taken — the run goes on, its result read from `runs/trace/:correlationId`; **404** for a job not registered for triggering; **409** while it's already running |
 
 Every bad param — a date, `limit` / `minRuns`, an enum (`outcome`, `trigger`, `hasFailedItems`, `order`), a time
 zone, a cursor this API didn't issue, a NUL byte — is a 400 naming the param; never a 500. The controller declares
@@ -45,9 +45,13 @@ correlation ids by), the run takes the app's ambient id from
 with its own `job.triggered` audit record — else a fresh `crypto.randomUUID()`,
 so every manual run is still traceable.
 
-`trigger()` awaits the whole run. For a long job, the vertical's own controller
-can fire-and-forget instead; this endpoint always awaits (the advisory lock
-still stops a double-click starting a second run).
+The endpoint never waits for the run. It answers 202 as soon as the job has taken
+its lock (`JobTrigger.start()`), so a long job can't hold the request past a
+proxy's timeout — the screen then follows the run in the history by the returned
+`correlationId` (`GET /jobs/runs/trace/:correlationId`; the row appears when the
+run finishes). The lock still stops a double-click starting a second run (409).
+A process that dies mid-run records nothing: the screen gives up after a while,
+and the Lock Inspector shows the lock it left (`expired`).
 
 ## Truncated `error` on list rows
 

@@ -18,7 +18,7 @@ only `IdempotentJobRunner`'s internals swap.
 | `IdempotentJobRunner` | Acquire the lock → `findDueItems()` → `processItem()` per item with per-item failure isolation → release → record. A lock-not-acquired return is *not* a run. |
 | `JobRunRecorder` (port) + `NoopJobRunRecorder` | Best-effort run telemetry — **must not throw** (opposite posture to `audit-logging`). No-op by default. |
 | `JobRunSummary` | One per lock-acquiring run — `outcome`, `itemsDue/Processed/Failed`, `failedItemRefs` (capped 50), `error?`, `correlationId?`. |
-| `ScheduledJobRegistry` + `JobTrigger` | Resolve a job by *name* (what a UI sends) → run it out of schedule. `JobTriggerResult`: `unknown_job` / `already_running` / `completed` / `job_failed`. |
+| `ScheduledJobRegistry` + `JobTrigger` | Resolve a job by *name* (what a UI sends) → run it out of schedule. `start()` answers once the lock is taken (`JobStartResult`: `unknown_job` / `already_running` / `started`) and lets the run go on — what an HTTP endpoint uses; `trigger()` awaits the run (`JobTriggerResult`: … / `completed` / `job_failed`) — for a script or a test. |
 | `JobObservabilityPort` + DTOs (`JobRunRecord`, `JobStatus`, `RunHistoryQuery/Page`) | The run-history + dashboard reads — a stack adapter implements it, `background-jobs.api` serves it. |
 | `parseCadence` / `humanizeDuration`, `encodeKeysetCursor` | Stack-agnostic helpers the observability adapter reuses. |
 | `BackgroundJobsModule.forRoot({ advisoryLockToken, jobRunRecorderToken?, jobs?, imports })` | Binds the tokens + provides the runner / trigger / registry. Schedules nothing. |

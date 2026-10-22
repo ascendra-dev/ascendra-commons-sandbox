@@ -251,7 +251,7 @@
     },
     "background-jobs/background-jobs.core.postgres-drizzle": {
       "files": {
-        "README.md": "000dca48792e0822f3c7e151501c4bf58e1c2ee070b0272bdaf74f972eb3b8f9",
+        "README.md": "b302ff9d0057622f2b0d3a9a6c26a092151b426cc734ae8f23c8116b2f7d1b04",
         "index.ts": "c8128055b774f1aa708f3aeb88755d4a69613616da1d435ddcdbf9bfd91e4e79",
         "lock/lease-lock.schema.ts": "f26e8baffd166121369cb7fe93f52ae313ce8d9531b26445a85b91a09cc2250c",
         "lock/postgres-advisory-lock.module.ts": "4c2332ef7dd3216365e7b746fb8fb24a44aa6d29106b2915542149ae65bee4b3",
@@ -263,12 +263,13 @@
         "migrations/0001_job_run.sql": "5a7526e6fd86055c63d3a18c39e42356ec020e60bb2e90db2374ef7a29de253c",
         "migrations/0002_lease_lock.sql": "fa236d8c9fd9e2a83b98be1cfffe668f0b831260255816f71230a017ea5cf413",
         "migrations/0003_job_run_read_indexes.sql": "d9f5cfd4006f4e823035468fb7b6898c747e068ad3dae7cfbeb4ee8f36294a63",
+        "migrations/0004_job_run_manual_index.sql": "1f838cb328b4ed15b4a4460899992605ceeb5144c201d038435efefc24d2df0b",
         "observability/postgres-job-observability.module.ts": "99c2d09bbfc07299259d0bc3aee06b42073de8c3cb8aa86499a5c108463f5316",
         "observability/postgres-job-observability.service.ts": "7ee317c0e0348504ad503112aa397778ebf688363f6611a098bc2fb86d11c4fa",
         "persistence/sql-executor.ts": "35af1ec8cbcfbeb3deafee82e41771f55d2aaf0ce9f2f1e1eeec05e961ed1911",
         "pruner/job-run-pruner.job.ts": "4409a61e9f1ed89d75ed027cc622fdf37e1990fac4d6a7716c8cbf4e9749fb2d",
         "pruner/job-run-pruner.module.ts": "06e474dff15abe65d23c74a1173b92b1ba33a17e4f9384e6049a9f0ce1fd5c7c",
-        "run-recorder/job-run.schema.ts": "4b6b7f2434a6fc36d21b97febdedee5163c8717055fdfe02505c74076ac0ba7a",
+        "run-recorder/job-run.schema.ts": "330e5ec42cb2e01468711a502ac19e6b8f12b1854e642c18d1b4e5a0500398f5",
         "run-recorder/postgres-job-run-recorder.module.ts": "4f4d90f488ab92e11017601cb15f3a26dd6ff3fad7b9446414d7faf2ad9521c3",
         "run-recorder/postgres-job-run-recorder.ts": "14a5fdc7ed19bb6e4803b8bbb16fb8edc4828bc182913ef00c1a67cf9d0793b3",
         "tokens.ts": "d1d6354d69cf2d2d45e7ea8c5c98cccf1465405d5282c34539100ea7aa36fc16"
@@ -276,14 +277,14 @@
     },
     "background-jobs/background-jobs.api": {
       "files": {
-        "README.md": "3b55b9ae8b71ed627dea5a31a798f342f81f1b5fedfd349dadf2f1c452a093ea",
+        "README.md": "25038195733d7fb3d32506af1e0b60f712e32c971a79c560ab138614f26a43a8",
         "dto/jobs-api.dto.ts": "bb7a56a292d2690ab63e06fe211700b1be35a7ca912c50ff38b5d15bd00bebd3",
         "index.ts": "5af0784863a51358e09eaf1185ddc7c4d3d039cd1c3caa620632abd13d848019",
         "job-audit.port.ts": "43c1497ae089daa456efa81afab0982e30d2d1684d2ad0a8595c41b1b05bdc21",
         "jobs-api.module.ts": "573115b093c17876eacde2ef8a3a81833051ddea08eb6ff844c6440641c37cc7",
         "jobs-api.options.ts": "8d350817817c71d54f3d5dfb993afcce00f84dbc5193d77588a1e7f8b3c09eb7",
-        "jobs-api.service.ts": "725c66b4ad32072108f212f21285994954d500e2dd8091def713c4304aac146f",
-        "jobs.controller.ts": "14c115196f2e4b5561e1aeca9bb3b5ae98c4bab6b2b4e4c8ce64f01009da2118",
+        "jobs-api.service.ts": "17ab00fd0f4bd640350fc4c46fa86a0511421ad8267bc545087bb75defce90ae",
+        "jobs.controller.ts": "045beb1eb81d30085470b22bd6a20bc77b04396548eddbc7f865d4b92c7af3f5",
         "tokens.ts": "d90fbe5f300e83ec8c972f9db8ecf200b9c7c8b0a48a369458b4bdf5060952b3"
       }
     },
@@ -293,18 +294,18 @@
         "background-jobs/background-jobs.api"
       ],
       "files": {
-        "README.md": "37f298c6bad938379f08e79a68e7023aa46deb428e473857de7a6291ff21f29e",
+        "README.md": "889b00f691276a366f3da372332fb23afc3f7dabb7ac54f72111784f05a8080a",
         "advisory-lock.port.ts": "6241eaa61c06819c750b659fc869cdd26146c957e34907a4f33eecc41a7f8341",
         "background-jobs.module.ts": "8e904963f7f4ea2b571ca4479fe2fed651bd0f25aee0d4719bc074a7ae39f5c4",
         "cadence.ts": "cf8ce327e16ac705fa474e24eb89fa8e6ed2bd049afb77acb2425af55070fb78",
         "calendar-days.ts": "04e165ed6a5ca3469f51a91867850af18eb33952547d4eca6bd6a54451a8f8e7",
-        "idempotent-job-runner.service.ts": "ede1e6ef0b00686306b9d13b0006275df0fb739ae005c6e76aded7092d338ba6",
-        "index.ts": "0fd5e5789a16505ea51819f8282faa921c46d4079e05eb12bf3a05e5ace47420",
+        "idempotent-job-runner.service.ts": "81d29a336ee34bd61c20d6fd0ab7f7d8f676e6de496654ad08290706678e13b0",
+        "index.ts": "bf5dc6e819b0da06012960ca663887627e4979fa3b4aa4ab0c4c21bc96508194",
         "job-lock-inspector.port.ts": "46164bc65cd10e048c220992fe589d02e0cceea09ddd3b3ba119a0de886d01b3",
         "job-observability.port.ts": "3910b66dec9af6426fcedf80305b02f75e45e20b1b7ea97526964402495267ed",
         "job-observability.types.ts": "70e2f7315609dfd6c7690a833d71fd48ef3dcbcd8995aecc191ee0a27646a042",
         "job-run-recorder.port.ts": "a1fbe294fdec0fdef4b6a02fec1e82d3148fc8ef151b4fe028a210dd57b5841a",
-        "job-trigger.ts": "74da690e671f0dafa4194cc3aed67bb8ac960857900661bf951771bc4fbf2080",
+        "job-trigger.ts": "9bd1905df9768fc842f34679e483a287342c8844a09e3bc193536d3f758bc9f6",
         "keyset-cursor.ts": "9728146ef3ff13c8f9e36dd6658a192bb54f17ae5c349a69eb5173dc31a5e224",
         "noop-job-run-recorder.ts": "4b1dc0d793637cffdb9bde0e6b4f45cb043d23b23dd87bf4f5a71b0ddb21f53b",
         "scheduled-job-registry.ts": "c5accf0112d4b9a7c08e74e3f67bef2b7ffed9fa3d687e859d2a77150cbd6dff",
@@ -361,10 +362,14 @@
     "background-jobs/background-jobs.core.postgres-drizzle/0003_job_run_read_indexes.sql": {
       "checksum": "d9f5cfd4006f4e823035468fb7b6898c747e068ad3dae7cfbeb4ee8f36294a63",
       "copiedTo": "src/db/migrations/0011_commons_background_jobs_0003_job_run_read_indexes.sql"
+    },
+    "background-jobs/background-jobs.core.postgres-drizzle/0004_job_run_manual_index.sql": {
+      "checksum": "1f838cb328b4ed15b4a4460899992605ceeb5144c201d038435efefc24d2df0b",
+      "copiedTo": "src/db/migrations/0012_commons_background_jobs_0004_job_run_manual_index.sql"
     }
   },
   "source": "/Users/zakashah/ascendra/ascendra-public/ascendra-commons (local checkout)",
-  "commit": "f6a96d05f80cd3636ebaced8945f6261941ff8e4",
+  "commit": "aaffe5bd4c2a60882d2db97c0d525cf6d995a1ba",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-22T15:54:16.246Z"
+  "syncedAt": "2026-10-22T19:40:47.040Z"
 }

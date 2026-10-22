@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IdempotentJobRunner } from './idempotent-job-runner.service';
 import { ScheduledJobRegistry } from './scheduled-job-registry';
 
@@ -18,6 +18,17 @@ export type JobTriggerResult =
   | { status: 'job_failed'; error: string };
 
 /**
+ * `start()`'s answer — given as soon as it's known whether the job runs, never after the run. A started run's result
+ * lands in the run history, tagged with the correlation id it was started with.
+ */
+export type JobStartResult =
+  | { status: 'unknown_job' }
+  /** The lock was held — a scheduled fire or another trigger is already running this job. */
+  | { status: 'already_running' }
+  /** The lock is taken and the run is under way. */
+  | { status: 'started' };
+
+/**
  * An out-of-schedule, admin-initiated run of a job by name — the hook behind a
  * "run now" / "retry" button on a run-history admin screen.
  *
@@ -28,17 +39,19 @@ export type JobTriggerResult =
  * and the runner can't turn one back into an item to process alone. Per-item
  * retry state is a Model 2 concern.
  *
- * `trigger()` awaits the whole run. For a job that can take a while, the
- * consumer's controller should not hold the HTTP request open — fire it and
- * return `202`, then let the admin screen poll the run history:
- * `void jobTrigger.trigger(name)`. The advisory lock still prevents a
- * double-click from starting a second run.
+ * `trigger()` awaits the whole run — for a script or a test. Behind an HTTP
+ * endpoint use `start()`: it answers once the lock is taken (or found held), so
+ * a long job never holds the request open past a proxy's timeout, and the
+ * screen follows the run in the history by its correlation id. Either way the
+ * lock stops a double-click from starting a second run.
  *
  * Gate the endpoint with the app's own `Authorizer` — a manual job run is a
  * privileged operation. This service does no authorization of its own.
  */
 @Injectable()
 export class JobTrigger {
+  private readonly logger = new Logger(JobTrigger.name);
+
   constructor(
     // Explicit @Inject even though the token is the class itself — this library's
     // build/test setup does not emit `design:paramtypes`, so every constructor
@@ -70,6 +83,44 @@ export class JobTrigger {
       // findDueItems() threw — run() recorded the job_failed summary, then rethrew.
       return { status: 'job_failed', error: err instanceof Error ? (err.stack ?? err.message) : String(err) };
     }
+  }
+
+  /**
+   * Starts the job and answers as soon as it's known whether it runs: `started` once the lock is taken, before any
+   * work; `already_running` if the lock is held; `unknown_job` if no job has the name. The run goes on after this
+   * resolves, and is recorded like any other — a `findDueItems()` failure as `job_failed` — so its result is read
+   * from the run history (`getTrace(correlationId)`). Rejects only if the lock itself couldn't be asked for.
+   *
+   * @param correlationId  tags the run, so the caller can find it in the history — pass one, or it can't.
+   */
+  start(jobName: string, correlationId?: string): Promise<JobStartResult> {
+    const job = this.registry.get(jobName);
+    if (!job) return Promise.resolve({ status: 'unknown_job' });
+
+    return new Promise((resolve, reject) => {
+      let started = false;
+      this.runner
+        .run(job, {
+          trigger: 'manual',
+          correlationId,
+          onStarted: () => {
+            started = true;
+            resolve({ status: 'started' });
+          },
+        })
+        .then((summary) => {
+          if (!summary) resolve({ status: 'already_running' });
+        })
+        .catch((err) => {
+          // Before the start: the lock couldn't be asked for — the caller's error. After it: findDueItems() threw,
+          // and the run is already recorded as job_failed — nobody is awaiting this promise any more, so log it.
+          if (!started) return reject(err);
+          this.logger.warn(
+            `Job "${jobName}", started by hand, failed — recorded as job_failed`,
+            err instanceof Error ? err.stack : String(err),
+          );
+        });
+    });
   }
 
   /** The job names a UI can offer to trigger. */

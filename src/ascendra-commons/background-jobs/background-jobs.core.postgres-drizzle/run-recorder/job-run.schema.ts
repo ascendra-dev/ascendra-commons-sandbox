@@ -56,6 +56,10 @@ export const jobRunTable = pgTable(
     index('commons_jobs_job_run_failing_idx')
       .on(t.application, t.startedAt.desc(), t.id.desc())
       .where(sql`${t.outcome} = 'job_failed' or ${t.itemsFailed} > 0`),
+    /** The runs list filtered to manual runs — partial: most runs are scheduled. */
+    index('commons_jobs_job_run_manual_idx')
+      .on(t.application, t.startedAt.desc(), t.id.desc())
+      .where(sql`${t.trigger} = 'manual'`),
     /** A trace — partial: only manual runs carry a correlation id. */
     index('commons_jobs_job_run_correlation_idx').on(t.correlationId).where(sql`${t.correlationId} is not null`),
   ],

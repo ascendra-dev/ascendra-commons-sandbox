@@ -85,6 +85,13 @@
       "when": 1792684307770,
       "tag": "0011_commons_background_jobs_0003_job_run_read_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792698047515,
+      "tag": "0012_commons_background_jobs_0004_job_run_manual_index",
+      "breakpoints": true
     }
   ]
 }

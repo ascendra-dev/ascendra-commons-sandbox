@@ -13,7 +13,6 @@ import {
   type JobObservabilityPort,
   type JobRunRecord,
   type JobStatus,
-  type JobTriggerResult,
   type RunHistoryPage,
   type RunSummary,
   type RunVolume,
@@ -46,6 +45,15 @@ const BOOLEANS = ['true', 'false'] as const;
 export interface JobLocksView {
   supported: boolean;
   locks: JobLockView[];
+}
+
+/**
+ * `POST /jobs/:name/run`'s answer — the run is under way. Its result lands in the run history: follow it with
+ * `GET /jobs/runs/trace/:correlationId`.
+ */
+export interface JobStartedView {
+  status: 'started';
+  correlationId: string;
 }
 
 /** One dashboard row, plus whether `POST /jobs/:name/run` can run it (it's in `BackgroundJobsModule.forRoot({ jobs })`). */
@@ -158,22 +166,24 @@ export class JobsApiService {
   }
 
   /**
-   * Runs the job now and waits for it. An unknown job is a 404 and a job already running a 409 — neither is a run, so
-   * neither is recorded; a `job_failed` result is a 200 (the run happened, and is in the history). Every attempt is
-   * audited, refused ones included.
+   * Starts the job and answers once it has taken the lock — never after the run, so a long job can't hold the request
+   * past a proxy's timeout. The run goes on and is recorded like any other; its result is read from the history by the
+   * returned correlation id (`getTrace()`). An unknown job is a 404 and a job already running a 409 — neither is a run,
+   * so neither is recorded. Every attempt is audited, refused ones included (`result`: started / unknown_job /
+   * already_running — the run's own outcome is the history's).
    *
    * @param headerCorrelationId  the inbound `X-Correlation-Id`, as sent. The run is tagged for `getTrace()` with it
    *   when well-formed, else with the app's ambient id (`correlationIdResolver`), else a fresh one — every manual run
    *   is traceable.
    */
-  async trigger(actor: Actor, jobName: string, headerCorrelationId?: string): Promise<JobTriggerResult> {
+  async trigger(actor: Actor, jobName: string, headerCorrelationId?: string): Promise<JobStartedView> {
     textParam('name', jobName);
     const correlationId = wellFormed(headerCorrelationId) ? headerCorrelationId : (this.ambientCorrelationId() ?? randomUUID());
-    const result = await this.jobTrigger.trigger(jobName, correlationId);
+    const result = await this.jobTrigger.start(jobName, correlationId);
     await this.audit.record({ action: 'job.triggered', actorId: actor.id, jobName, result: result.status });
     if (result.status === 'unknown_job') throw new NotFoundException(`No job "${jobName}" can be run — it isn't registered for triggering`);
     if (result.status === 'already_running') throw new ConflictException(`Job "${jobName}" is already running — try again when it finishes`);
-    return result;
+    return { status: 'started', correlationId };
   }
 
   private ambientCorrelationId(): string | undefined {
@@ -192,9 +202,17 @@ export class JobsApiService {
     return run;
   }
 
-  getFailedItems(jobName: string, minRuns?: number): Promise<FailedItemSummary[]> {
+  /**
+   * A job no one has heard of is a 404, not an empty list — "nothing keeps failing" and "no such job" read the same
+   * otherwise. Only an empty answer pays for the check (the dashboard read), so the common case stays one query.
+   */
+  async getFailedItems(jobName: string, minRuns?: number): Promise<FailedItemSummary[]> {
     textParam('name', jobName);
-    return this.observability.getFailedItems(jobName, positiveIntParam('minRuns', minRuns));
+    const items = await this.observability.getFailedItems(jobName, positiveIntParam('minRuns', minRuns));
+    if (items.length === 0 && !(await this.listJobStatus()).some((job) => job.name === jobName)) {
+      throw new NotFoundException(`No job "${jobName}" — it hasn't run, declares no cadence and can't be run now`);
+    }
+    return items;
   }
 
   /** Which job locks are held now, and which a dead holder left behind. Read-only — no force-release. */

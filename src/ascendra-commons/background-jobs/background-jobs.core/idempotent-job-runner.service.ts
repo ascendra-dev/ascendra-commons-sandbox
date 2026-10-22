@@ -21,6 +21,13 @@ export interface JobRunOptions {
    * Recorded on the run summary for a cross-module trace.
    */
   correlationId?: string;
+  /**
+   * Called once the lock is taken, before `findDueItems()` — the moment this is
+   * a run. `JobTrigger.start()` answers its caller here and lets the run go on.
+   * Never called when the lock was held (`run()` resolves `null`). A throw from
+   * it is logged and ignored: it can't stop the run it announces.
+   */
+  onStarted?: () => void;
 }
 
 /**
@@ -57,6 +64,7 @@ export class IdempotentJobRunner {
     const lockKey = `scheduler:${job.name}`;
     const acquired = await this.lock.tryAcquire(lockKey);
     if (!acquired) return null; // another instance already owns this job — including a rolling deploy's overlap window. Not a run; not recorded.
+    this.announceStart(job, options);
 
     const startedAt = new Date();
     let itemsDue = 0;
@@ -137,6 +145,14 @@ export class IdempotentJobRunner {
         `Scheduled job "${summary.jobName}" ran, but recording its run failed`,
         err instanceof Error ? err.stack : String(err),
       );
+    }
+  }
+
+  private announceStart(job: ScheduledJob<unknown>, options?: JobRunOptions): void {
+    try {
+      options?.onStarted?.();
+    } catch (err) {
+      this.logger.error(`Scheduled job "${job.name}": its onStarted callback threw`, err instanceof Error ? err.stack : String(err));
     }
   }
 

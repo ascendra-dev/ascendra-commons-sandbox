@@ -12,7 +12,7 @@ export { IdempotentJobRunner } from './idempotent-job-runner.service';
 export type { JobRunOptions } from './idempotent-job-runner.service';
 export { ScheduledJobRegistry } from './scheduled-job-registry';
 export { JobTrigger } from './job-trigger';
-export type { JobTriggerResult } from './job-trigger';
+export type { JobStartResult, JobTriggerResult } from './job-trigger';
 
 export type { JobObservabilityPort } from './job-observability.port';
 export type {
