@@ -47,9 +47,12 @@ export class DomainEventHistory {
   ) {}
 
   async run(options: DomainEventHistoryOptions): Promise<DomainEventTotals> {
-    const start = options.until.getTime() - options.days * DAY;
+    // Real UTC calendar days ending today — counted back from "now" instead, the last day would end at this hour and
+    // today's working hours would hold no events, leaving the newest deliveries all audit's.
+    const today = new Date(options.until);
+    const todayMidnight = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
     for (let day = 0; day < options.days; day++) {
-      const midnight = start + day * DAY;
+      const midnight = todayMidnight - (options.days - 1 - day) * DAY;
       const weekend = [0, 6].includes(new Date(midnight).getUTCDay());
       for (const tenant of TENANTS) {
         const invoices = Math.round(tenant.dailyInvoices * options.volume * (weekend ? 0.3 : 1) * (0.6 + this.rng.next() * 0.8));
