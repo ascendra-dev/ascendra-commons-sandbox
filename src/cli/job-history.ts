@@ -156,14 +156,30 @@ export class JobHistory {
       body: JSON.stringify({ actorId: 'platform.admin@ascendra.test' }),
     });
     const { token } = (await res.json()) as { token: string };
+    const headers = { authorization: `Bearer ${token}` };
     for (const name of ['invoice-reminders', 'payout-sweep', 'kyc-expiry-scan', 'webhook-retry']) {
       const run = await fetch(`${baseUrl}/jobs/${name}/run`, {
         method: 'POST',
-        headers: { authorization: `Bearer ${token}`, 'x-correlation-id': this.rng.uuid() },
+        headers: { ...headers, 'x-correlation-id': this.rng.uuid() },
       });
-      if (run.status !== 200) throw new Error(`POST /jobs/${name}/run answered ${run.status}`);
+      if (run.status !== 202) throw new Error(`POST /jobs/${name}/run answered ${run.status}`);
+      // 202 = started: the run finishes after the answer. Wait for its row, as the screen does, so the seed ends with
+      // every run recorded (and the next Run now never meets this one's lock).
+      const { correlationId } = (await run.json()) as { correlationId: string };
+      await this.recorded(baseUrl, headers, name, correlationId);
       this.totals.manual += 1;
     }
+  }
+
+  /** Polls the run's trace until its row is there — a demo job takes well under the 30s this allows. */
+  private async recorded(baseUrl: string, headers: Record<string, string>, name: string, correlationId: string): Promise<void> {
+    for (let i = 0; i < 60; i++) {
+      const res = await fetch(`${baseUrl}/jobs/runs/trace/${encodeURIComponent(correlationId)}`, { headers });
+      const { data } = (await res.json()) as { data: unknown[] };
+      if (data.length > 0) return;
+      await new Promise((r) => setTimeout(r, 500));
+    }
+    throw new Error(`Run now on ${name} was never recorded (correlation ${correlationId})`);
   }
 
   private summary(profile: Profile, at: number, trigger: JobRunTrigger): JobRunSummary {
