@@ -29,6 +29,14 @@ const CLAIM_COLUMNS = sql.raw(
 );
 
 /**
+ * `created_at` exactly, for the next page's cursor: the driver's `Date` keeps milliseconds, the column microseconds.
+ * Rendered in UTC with a fixed format, so the session's `DateStyle` / `TimeZone` can't change it.
+ */
+const CURSOR_TIMESTAMP = sql.raw(
+  `to_char(created_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') as cursor_at`,
+);
+
+/**
  * Reference `IdempotencyObservabilityPort` for Postgres — one library-owned
  * `SELECT` with a dynamic `WHERE`, keyset-paginated newest-first, plus one
  * aggregate query for `claimHealthSummary()`. Read-only — no
@@ -77,30 +85,34 @@ export class PostgresIdempotencyObservabilityService implements IdempotencyObser
     // A cursor that doesn't decode was never issued here — silently starting from the top would repeat page one.
     if (query.cursor && !cursor) throw new InvalidIdempotencyCursorError(`Unrecognized cursor "${query.cursor}"`);
     if (cursor) {
+      // The leading `<=` is redundant logically but lets the scan start at the boundary (an Index Cond); the OR alone
+      // is only a Filter, read from the newest row down on every page.
+      const boundary = sql`${cursor.timestamp}::timestamptz`;
       conds.push(
-        sql`(created_at < ${cursor.timestamp}
-          or (created_at = ${cursor.timestamp} and (key, scope) < (${cursor.key}, ${cursor.scope})))`,
+        sql`created_at <= ${boundary}
+          and (created_at < ${boundary} or (key, scope) < (${cursor.key}, ${cursor.scope}))`,
       );
     }
 
     const where = conds.length > 0 ? sql`where ${sql.join(conds, sql` and `)}` : sql``;
 
-    const rows = (
-      await this.db.execute(sql`
-        select ${CLAIM_COLUMNS}
-        from commons_idempotency_key
-        ${where}
-        order by created_at desc, key desc, scope desc
-        limit ${limit + 1}
-      `)
-    ).rows.map(mapRow);
+    const { rows } = await this.db.execute(sql`
+      select ${CLAIM_COLUMNS}, ${CURSOR_TIMESTAMP}
+      from commons_idempotency_key
+      ${where}
+      order by created_at desc, key desc, scope desc
+      limit ${limit + 1}
+    `);
 
     if (rows.length > limit) {
-      const claims = rows.slice(0, limit);
-      const last = claims[claims.length - 1];
-      return { claims, nextCursor: encodeKeysetCursor(last.createdAt, last.key, last.scope) };
+      const page = rows.slice(0, limit);
+      const last = page[page.length - 1];
+      return {
+        claims: page.map(mapRow),
+        nextCursor: encodeKeysetCursor(String(last.cursor_at), String(last.key), String(last.scope)),
+      };
     }
-    return { claims: rows };
+    return { claims: rows.map(mapRow) };
   }
 
   async claimHealthSummary(query: ClaimHealthQuery = {}): Promise<ClaimHealthSummary> {

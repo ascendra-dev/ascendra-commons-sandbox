@@ -4,6 +4,7 @@
  * service parses dates.
  */
 export interface ClaimQueryDto {
+  /** Validated by the service — anything else is a 400. */
   status?: 'pending' | 'completed';
   scope?: string;
   route?: string;

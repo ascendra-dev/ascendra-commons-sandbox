@@ -1,4 +1,4 @@
-import { CallHandler, ConflictException, ExecutionContext, HttpException, Inject, Injectable, Logger, NestInterceptor } from '@nestjs/common';
+import { BadRequestException, CallHandler, ConflictException, ExecutionContext, HttpException, Inject, Injectable, Logger, NestInterceptor } from '@nestjs/common';
 import { HTTP_CODE_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 import { Observable, catchError, from, map, of, switchMap, throwError } from 'rxjs';
@@ -16,6 +16,13 @@ interface MinimalRequest {
   /** Fastify < 4. */
   routerPath?: string;
 }
+
+/**
+ * An `Idempotency-Key` it will claim: 1–255 printable ASCII characters (a UUID is the usual choice; 255 is Stripe's
+ * limit). The key is half the primary key, so an unbounded one is a stored, indexed, caller-controlled string — and
+ * past ~2.7 KB of incompressible text Postgres can't index the row at all, a 500 on the request it was protecting.
+ */
+const IDEMPOTENCY_KEY = /^[\x20-\x7E]{1,255}$/;
 
 /** A correlation id worth storing — the header is caller-controlled, so anything else is dropped rather than recorded. */
 const CORRELATION_ID = /^[A-Za-z0-9._:-]{1,128}$/;
@@ -55,6 +62,9 @@ export class IdempotencyInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest<MinimalRequest>();
     const key = request.headers['idempotency-key'];
     if (!key || typeof key !== 'string') return next.handle(); // endpoint doesn't require it, or client omitted it
+    if (!IDEMPOTENCY_KEY.test(key)) {
+      throw new BadRequestException('"Idempotency-Key" must be 1–255 printable ASCII characters — a UUID is the usual choice');
+    }
 
     // Same header (`x-correlation-id`) audit-logging's own CorrelationIdMiddleware reads —
     // reused by convention, not by dependency: this module stays self-contained (no import

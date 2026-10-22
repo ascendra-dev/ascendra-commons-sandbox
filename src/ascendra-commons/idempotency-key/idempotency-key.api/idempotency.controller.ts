@@ -86,7 +86,7 @@ export class IdempotencyController {
     return this.service.getClaim(key, scope);
   }
 
-  /** The saved response body — its own action, since it can hold personal data. Null unless the claim is completed. */
+  /** The saved response body — its own action, since it can hold personal data. 404 unless the claim is kept and completed. */
   @Get(':scope/:key/response')
   @RequiresAction(IDEMPOTENCY_ACTIONS.VIEW_RESPONSE)
   response(@Param('scope') scope: string, @Param('key') key: string) {
