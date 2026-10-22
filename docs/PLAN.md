@@ -157,5 +157,13 @@ throttled endpoint the generator hits, `notification` sends through a fake chann
   `ascendra-commons-ui` (Overview, Claims, Claim and Trace sheets). Reviewed: probing and `EXPLAIN` here found a list
   cursor skipping rows (milliseconds over a microsecond column), an unbounded `Idempotency-Key` (a 500 on the payment
   past the index row limit), 200-with-empty for a missing claim, and NUL / unknown-status inputs — all fixed in
-  ascendra-commons. Guide and report: `ascendra-commons/idempotency-key/GUIDE.md`, `AUDIT-REPORT.md`. Next module:
-  `domain-events`.
+  ascendra-commons. Guide and report: `ascendra-commons/idempotency-key/GUIDE.md`, `AUDIT-REPORT.md`.
+- **domain-events** — **done 2026-10-22** (all ten steps). Vendored `.core.postgres-drizzle` and `.api` (the core and
+  in-process transport were already here, for audit); the in-process emitter records through the buffered Postgres
+  recorder, one emitter instance shared with the read API (it provides the listener catalogue), `domain-events.view`
+  for platform admin and support, a daily 90-day prune. Demo events and listeners in `src/demo/demo-events.ts` (a
+  critical listener raised with `emit()`, an event nobody listens to, a listener whose event never fires), raised with
+  backdated `occurredAt` by `src/cli/domain-event-history.ts`. UI in `ascendra-commons-ui` (Overview, Deliveries +
+  trace, Wiring, Volume & Retention). Reviewed: probing here found one malformed event sinking a whole buffered batch —
+  fixed in ascendra-commons. Guide and report: `ascendra-commons/domain-events/GUIDE.md`, `AUDIT-REPORT.md`. Next
+  module: `background-jobs`.

@@ -41,10 +41,10 @@ you). Tokens last 12 hours.
 
 | Dev user | Persona | Tenant | Sees |
 |---|---|---|---|
-| `platform.admin@ascendra.test` — Platform Admin | `platform-admin` | — | every tenant's records, the rate-limit log, and idempotency claims with their saved responses |
-| `support@ascendra.test` — Platform Support | `platform-support` | — | the rate-limit log and idempotency claims — but a 403 on a saved response (`idempotency.view-response`) |
+| `platform.admin@ascendra.test` — Platform Admin | `platform-admin` | — | every tenant's records, the rate-limit log, idempotency claims with their saved responses, and domain-event deliveries |
+| `support@ascendra.test` — Platform Support | `platform-support` | — | the rate-limit log, idempotency claims (a 403 on a saved response — `idempotency.view-response`) and domain-event deliveries |
 | `admin@acme.test` / `admin@globex.test` / `admin@meridian.test` | `tenant-admin` | their own | their tenant's records only; no `rate-limit.view` (a rejection has no tenant) |
-| `member@acme.test` — Acme Member | `member` | `tenant_acme` | nothing: no `audit.view`, `rate-limit.view` or `idempotency.view` — every read API answers 403 |
+| `member@acme.test` — Acme Member | `member` | `tenant_acme` | nothing: no `audit.view`, `rate-limit.view`, `idempotency.view` or `domain-events.view` — every read API answers 403 |
 
 What each persona may do is authorization's config — `PERSONA_ACTIONS` in `src/modules/commons/authorization.ts`.
 
@@ -67,11 +67,13 @@ curl localhost:3010/audit/events -H "Authorization: Bearer <token>"
 | `GET /rate-limits/rejections/catalog`, `/rejections/top-identifiers` | `rate-limit.view` | Rejections per route; the sources with the most. |
 | `GET /idempotency-keys`, `/trace/:correlationId`, `/health`, `/routes`, `/:scope/:key` | `idempotency.view` | Claims (filtered, paged), one request's claims, the Overview's numbers, per-endpoint counts, one claim. |
 | `GET /idempotency-keys/:scope/:key/response` | `idempotency.view-response` | A claim's saved response — what a retry is replayed (it can hold personal data). |
+| `GET /domain-events/deliveries`, `/deliveries/trace/:correlationId` | `domain-events.view` | The delivery log (one row per emit), one request's events. |
+| `GET /domain-events/deliveries/summary`, `/deliveries/catalog`, `/deliveries/volume`, `/listener-catalog` | `domain-events.view` | The Overview's numbers, per-event counts, 30-day volume, and the listeners the app declares. |
 | `GET /demo/pay/:token`, `POST /demo/login`, `GET /demo/quotes` | public, throttled (20 / 5 / 10 a minute) | Sandbox-only stand-ins for what `@Throttle()` protects — the rate-limit generator's targets. |
 | `POST /demo/payments`, `/demo/invoices/:id/send`, `/demo/refunds`, `/demo/payouts` | token, `Idempotency-Key` | Sandbox-only stand-ins for what `IdempotencyInterceptor` protects — a refund can fail with a saved `422`, a payout times out (left in progress); `X-Demo-Delay-Ms` slows the "gateway". |
 
 The audit endpoints are `audit-logging.api`'s, the rate-limit ones `rate-limiting.api`'s, the claim ones
-`idempotency-key.api`'s — their READMEs have the details. Every route is throttled (600 a minute per caller, behind one trusted proxy — `src/configure-app.ts`); a 429
+`idempotency-key.api`'s, the delivery ones `domain-events.api`'s — their READMEs have the details. Every route is throttled (600 a minute per caller, behind one trusted proxy — `src/configure-app.ts`); a 429
 is recorded by rate-limiting's guard, which runs before sign-in. A tenant admin's results are always
 scoped to their own tenant; a platform admin may pass `tenantId`.
 
@@ -100,7 +102,7 @@ Nothing here is sandbox-specific:
 | `ascendra-commons.js` | The script, copied in by `init`; `update` keeps it current. |
 | `ascendra-commons.json` | The packages asked for, and where migrations go (`drizzle-kit` → `src/db/migrations`). |
 | `src/ascendra-commons/` | The vendored packages — never edit them here. `VENDORED.json` records the commit and a checksum per file. |
-| `src/modules/commons/` | Every commons module configured in one place: `domain-events.ts`, `authorization.ts` (persona → actions), `audit-logging.ts` (+ `audit-catalog.ts`), `rate-limiting.ts` (the limits, the recorder, the read API, retention), `idempotency.ts` (the store, a deliberately
+| `src/modules/commons/` | Every commons module configured in one place: `domain-events.ts` (the in-process emitter with the delivery recorder, the read API, a daily 90-day prune), `authorization.ts` (persona → actions), `audit-logging.ts` (+ `audit-catalog.ts`), `rate-limiting.ts` (the limits, the recorder, the read API, retention), `idempotency.ts` (the store, a deliberately
 low `staleAfterSeconds`, the read API, the hourly 24-hour cleanup), and `CommonsModule`, which `AppModule` imports. |
 | `drizzle.config.ts`, `src/db/` | drizzle-kit as the migration tool; `DatabaseModule` provides `DATABASE_CONNECTION`, the executor the Postgres adapters write through. |
 
@@ -114,7 +116,7 @@ A new migration from an update lands in `src/db/migrations/`, registered in driz
 applies it. Adding a module: `add` it, then one new file in `src/modules/commons/` imported by `CommonsModule`. Change a
 module in `ascendra-commons`, never here: `update` refuses to overwrite a local edit.
 
-What *is* sandbox-only: `src/cli/` (the data generators), `src/demo/` (throttled and idempotent stand-in endpoints), `src/auth/` dev sign-in (dev tokens and personas, standing in
+What *is* sandbox-only: `src/cli/` (the data generators), `src/demo/` (throttled and idempotent stand-in endpoints, demo domain events and listeners), `src/auth/` dev sign-in (dev tokens and personas, standing in
 for a real identity provider), `docker-compose.yml`, and `scripts/db-reset.js`.
 
 ## The sample data
@@ -161,3 +163,11 @@ signed in as each tenant's admin (so a claim's scope is that tenant); retries re
 `normal` volume: 472 requests → 400 claims, 56 replayed, 14 turned away, 3 in progress, 2 reclaimed, 1 ran twice.
 Recent only, and short-lived: claims are deleted after 24 hours (at boot and hourly), so re-seed before a review;
 `simulate` keeps adding payments.
+
+`src/cli/domain-event-history.ts` raises demo events (src/demo/demo-events.ts) through the app's own emitter, each at a
+past moment (`occurredAt`, what domain-events' screens count by), across `--days`: invoices issued (two listeners), most
+then paid — a checkout of `payment.captured` (`emitCritical()`, a critical Ledger listener) and `invoice.paid` under one
+correlation id; customer edits nobody listens to (`no_listeners`); payouts raised with `emit()` although Treasury's
+listener is critical — and one in six over the limit, so it throws and the failure is swallowed. `refund.issued` has a
+listener but is never raised. audit-history's `AuditRecordRaised` calls land in the same log, without a correlation id.
+`normal`: 2,188 demo events + 3,810 audit → 5,998 deliveries over 90 days, 168 with no listener; pruned after 90 days.
