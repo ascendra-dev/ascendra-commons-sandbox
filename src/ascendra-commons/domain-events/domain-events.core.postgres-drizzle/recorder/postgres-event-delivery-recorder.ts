@@ -22,6 +22,19 @@ const ROWS_PER_INSERT = 1_000;
  */
 const CORRELATION_ID = /^[A-Za-z0-9._:-]{1,128}$/;
 
+/**
+ * A time the INSERT can take: the event's own `occurredAt` when it's a real date — or a string / number that parses as
+ * one, as it is once an event has been through JSON — else when it was recorded. Never undefined or an Invalid Date:
+ * one such value fails the whole multi-row INSERT, and every good delivery in the batch with it.
+ */
+function occurredAtOf(value: unknown, recordedAt: Date): Date {
+  const date = value instanceof Date ? value : typeof value === 'string' || typeof value === 'number' ? new Date(value) : null;
+  return date && !Number.isNaN(date.getTime()) ? date : recordedAt;
+}
+
+/** Text Postgres can store: a NUL byte fails the INSERT (and the batch). Error messages, in `reason`, can carry one. */
+const text = (value: unknown, fallback: string) => (value == null || value === '' ? fallback : String(value).replaceAll('\u0000', ''));
+
 interface BufferedDelivery {
   eventName: string;
   method: EventDeliveryAttempt['method'];
@@ -71,15 +84,17 @@ export class PostgresEventDeliveryRecorder implements EventDeliveryRecorder, OnM
       this.dropped += 1;
       return;
     }
+    // Normalized here, one delivery at a time — a malformed attempt must cost only itself, never the batch it lands in.
+    const deliveredAt = new Date();
     this.buffer.push({
-      eventName: attempt.eventName,
-      method: attempt.method,
-      transport: attempt.transport,
-      occurredAt: attempt.occurredAt,
-      deliveredAt: new Date(),
-      listenerCount: attempt.listenerCount,
+      eventName: text(attempt.eventName, '(unnamed)'),
+      method: attempt.method === 'emitCritical' ? 'emitCritical' : 'emit',
+      transport: text(attempt.transport, 'unknown'),
+      occurredAt: occurredAtOf(attempt.occurredAt, deliveredAt),
+      deliveredAt,
+      listenerCount: Number.isInteger(attempt.listenerCount) && attempt.listenerCount >= 0 ? attempt.listenerCount : 0,
       status: attempt.status,
-      reason: attempt.reason ?? null,
+      reason: attempt.reason == null ? null : text(attempt.reason, ''),
       correlationId: attempt.correlationId && CORRELATION_ID.test(attempt.correlationId) ? attempt.correlationId : null,
     });
   }

@@ -231,7 +231,7 @@
         "persistence/domain-event-delivery.schema.ts": "a34232d9cf7a571f035798590a01035f5f8ef66c0de73745d5418adb69576d97",
         "persistence/sql-executor.ts": "ad1c517fde8e0c03e89d1482ea980a5c72e15606e5797c127ff033f9d0f49b4e",
         "recorder/postgres-event-delivery-recorder.module.ts": "c2d087b9da4cbc1115f50cc0ddaf3032cd0606034412aebdbc86a55c728611b1",
-        "recorder/postgres-event-delivery-recorder.ts": "89bdf166c2a854f17de27997cfc4795b775880f3c95e75c697a113712f9ff3f7",
+        "recorder/postgres-event-delivery-recorder.ts": "a4e4cd09556b7965eddb5a99a4f53d640220d63dd8eae286a4107a4df1a3f4a9",
         "retention/postgres-event-delivery-retention.module.ts": "19f1df1fdd0e0ff58edbd0cc58925fd61b48af0ac09d89d795848dac95a82117",
         "retention/postgres-event-delivery-retention.service.ts": "5326982a5e03dca5d69395cc8d364e9aa3dd85a76a4d472c2418b4ece2161776",
         "tokens.ts": "d60a4edd75aedccab40fa7c85742f1e5a8bd7a2d26b2c521860d54dc013cf7d6"
@@ -288,7 +288,7 @@
     }
   },
   "source": "/Users/zakashah/ascendra/ascendra-public/ascendra-commons (local checkout)",
-  "commit": "b1b3d39a5754ab8eb5aa4c3136b88bf9fad9b3f8",
+  "commit": "e254a1b1042afeb0ba9a0667dfd3ee7a19166863",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-22T14:07:15.606Z"
+  "syncedAt": "2026-10-22T14:24:24.702Z"
 }
