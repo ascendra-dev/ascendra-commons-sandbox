@@ -12,8 +12,13 @@ import {
 } from '../ascendra-commons/rate-limiting/rate-limiting.core.postgres-drizzle';
 import { POSTGRES_JOB_RUN_RECORDER } from '../ascendra-commons/background-jobs/background-jobs.core.postgres-drizzle';
 import type { JobRunRecorder } from '../ascendra-commons/background-jobs/background-jobs.core';
+import {
+  POSTGRES_ACCESS_DENIAL_RECORDER,
+  type PostgresAccessDenialRecorder,
+} from '../ascendra-commons/authorization/authorization.core.permission-table.postgres-drizzle';
 import { DATABASE_CONNECTION, type Database } from '../db/database.module';
 import { parseArgs } from './args';
+import { AccessHistory } from './access-history';
 import { AuditHistory } from './audit-history';
 import { DomainEventHistory } from './domain-event-history';
 import { IdempotencyHistory } from './idempotency-history';
@@ -29,7 +34,8 @@ const VOLUMES: Record<string, number> = { small: 0.3, normal: 1, large: 25 };
  *
  * Generates audit history (see audit-history.ts), domain-event deliveries (domain-event-history.ts — audit's own events
  * land there too), rate-limit rejections (rate-limit-history.ts) and idempotency claims (idempotency-history.ts) — the
- * last two recent only — and background-job runs (job-history.ts) into an empty database. Same --seed → same records (only their own uuids and "now" differ). Refuses a database that
+ * last two recent only — background-job runs (job-history.ts) and people with their access (access-history.ts) into an
+ * empty database. Same --seed → same records (only their own uuids and "now" differ). Refuses a database that
  * already has audit records — run db:reset.
  */
 async function main() {
@@ -102,6 +108,25 @@ async function main() {
     const j = jobRuns.rows[0];
     console.log(`✓ ${jobs.recorded} past runs + ${jobs.manual} run now → ${j.n} runs of ${j.jobs} jobs: ` +
       `${j.with_failed_items} with failed items, ${j.job_failed} job failures; one stale lock (statement-export)`);
+
+    console.log('Creating people and their access — roles, delegations, the catalog, 30 days of denied requests …');
+    const denialRecorder = app.get<PostgresAccessDenialRecorder>(POSTGRES_ACCESS_DENIAL_RECORDER, { strict: false });
+    const access = await new AccessHistory(baseUrl, db, denialRecorder, new Rng(seed)).run(new Date());
+    // Write the recorder's buffer now rather than on its next tick, so the summary sees it.
+    await denialRecorder.flush();
+    const roles = await db.execute(sql`
+      select count(*)::int as n, count(*) filter (where expires_at <= now())::int as expired,
+             count(*) filter (where expires_at > now())::int as expiring, count(distinct user_id)::int as users
+      from commons_authz_user_role`);
+    const lent = await db.execute(sql`
+      select count(*) filter (where revoked_at is null and expires_at > now())::int as active,
+             count(*) filter (where revoked_at is not null)::int as revoked,
+             count(*) filter (where revoked_at is null and expires_at <= now())::int as expired
+      from commons_authz_delegation`);
+    const denied = await db.execute(sql`select count(*)::int as n, coalesce(sum(denial_count), 0)::int as total from commons_authz_denial`);
+    const r = roles.rows[0], l = lent.rows[0], d = denied.rows[0];
+    console.log(`✓ ${access.people} people; ${r.n} role assignments for ${r.users} users (${r.expiring} with an expiry, ${r.expired} expired); ` +
+      `delegations ${l.active} active, ${l.revoked} revoked, ${l.expired} expired; ${d.total} denied requests in ${d.n} windows`);
   } finally {
     await app.close();
   }

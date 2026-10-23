@@ -3,6 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthorizationGuard } from '../ascendra-commons/authorization/authorization.core';
 import { RecordingThrottlerGuard } from '../ascendra-commons/rate-limiting/rate-limiting.core.throttler';
 import { CommonsModule } from '../modules/commons/commons.module';
+import { DemoUsersModule } from '../demo/demo-users';
 import { DevAuthController } from './dev-auth.controller';
 import { DevAuthGuard } from './dev-auth.guard';
 import { DevTokenService } from './dev-token.service';
@@ -18,7 +19,7 @@ const isProduction = process.env.NODE_ENV === 'production';
  * `@NoActionRequired` fails with a 500.
  */
 @Module({
-  imports: [CommonsModule],
+  imports: [CommonsModule, DemoUsersModule],
   controllers: [MeController, ...(isProduction ? [] : [DevAuthController])],
   providers: [
     DevTokenService,

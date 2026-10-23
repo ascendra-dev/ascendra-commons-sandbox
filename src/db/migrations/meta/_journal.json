@@ -92,6 +92,41 @@
       "when": 1792698047515,
       "tag": "0012_commons_background_jobs_0004_job_run_manual_index",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792741105710,
+      "tag": "0013_commons_authorization_0001_authorization",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1792741924605,
+      "tag": "0014_commons_authorization_0002_authorization_scope_expiry_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1792742368607,
+      "tag": "0015_commons_authorization_0003_authorization_access_denials",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1792742378011,
+      "tag": "0016_demo_user",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792742736374,
+      "tag": "0017_commons_authorization_0004_authorization_denial_window_key",
+      "breakpoints": true
     }
   ]
 }

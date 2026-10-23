@@ -13,4 +13,7 @@ export const AUDIT_CATALOG: AuditCatalogEntry[] = [
   { entityType: 'channel_route', actions: ['route_set'] },
   { entityType: 'tenant', actions: ['created', 'plan_changed'] },
   { entityType: 'job', actions: ['triggered'] },
+  { entityType: 'user_role', actions: ['assigned', 'revoked'] },
+  { entityType: 'delegation', actions: ['granted', 'revoked'] },
+  { entityType: 'action_catalog', actions: ['described'] },
 ];

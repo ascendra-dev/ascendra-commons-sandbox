@@ -1,7 +1,8 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { CorrelationIdMiddleware } from '../../ascendra-commons/audit-logging/audit-logging.core';
 import { auditApi, auditLogging } from './audit-logging';
-import { authorization } from './authorization';
+import { AuthorizationCacheMiddleware } from '../../ascendra-commons/authorization/authorization.core.permission-table';
+import { AuthzBootstrapModule, authorization, authorizationApi } from './authorization';
 import { JobSchedulesModule, backgroundJobs, backgroundJobsApi } from './background-jobs';
 import { domainEvents, domainEventsApi } from './domain-events';
 import { idempotency, idempotencyApi } from './idempotency';
@@ -14,7 +15,7 @@ import { rateLimiting, rateLimitingApi, throttler } from './rate-limiting';
  */
 @Module({
   imports: [
-    domainEvents, domainEventsApi, authorization, auditLogging, auditApi,
+    domainEvents, domainEventsApi, authorization, authorizationApi, AuthzBootstrapModule, auditLogging, auditApi,
     throttler, rateLimiting, rateLimitingApi,
     idempotency, idempotencyApi,
     // The retention / cleanup jobs of the modules above run here too — as scheduled jobs (background-jobs.ts).
@@ -26,5 +27,7 @@ export class CommonsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     // The correlation id audit records are grouped by in a trace — on every request.
     consumer.apply(CorrelationIdMiddleware).forRoutes('*');
+    // One permission lookup per request, however many checks it makes (the guard, GET /me, a service's own can()).
+    consumer.apply(AuthorizationCacheMiddleware).forRoutes('*');
   }
 }

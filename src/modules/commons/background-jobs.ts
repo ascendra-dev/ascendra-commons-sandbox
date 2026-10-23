@@ -31,6 +31,7 @@ import {
 import { DomainEventRetentionJob, DomainEventRetentionModule, domainEvents } from './domain-events';
 import { IdempotencyCleanupJob, IdempotencyCleanupModule } from './idempotency';
 import { RateLimitRetentionJob, RateLimitRetentionModule } from './rate-limiting';
+import { AccessDenialRetentionJob, AccessDenialRetentionModule } from './authorization';
 
 const application = process.env.APPLICATION ?? 'ascendra-commons-sandbox';
 
@@ -49,6 +50,7 @@ export const JOB_CADENCES: Record<string, string> = {
   'rate-limit-retention': '1d',
   'domain-event-retention': '1d',
   'idempotency-cleanup': '1h',
+  'access-denial-retention': '1d',
 };
 
 /** Run history kept for 90 days — what `JobRunPrunerJob` trims to. */
@@ -75,6 +77,7 @@ export const backgroundJobs = BackgroundJobsModule.forRoot({
     RateLimitRetentionJob,
     DomainEventRetentionJob,
     IdempotencyCleanupJob,
+    AccessDenialRetentionJob,
   ],
   imports: [
     PostgresLeaseLockModule.forRoot({ sqlExecutorToken: DATABASE_CONNECTION, application, imports: [DatabaseModule] }),
@@ -84,6 +87,7 @@ export const backgroundJobs = BackgroundJobsModule.forRoot({
     RateLimitRetentionModule,
     DomainEventRetentionModule,
     IdempotencyCleanupModule,
+    AccessDenialRetentionModule,
   ],
 });
 
@@ -150,10 +154,11 @@ class JobSchedules implements OnApplicationBootstrap {
     @Inject(RateLimitRetentionJob) private readonly rateLimitRetention: RateLimitRetentionJob,
     @Inject(DomainEventRetentionJob) private readonly domainEventRetention: DomainEventRetentionJob,
     @Inject(IdempotencyCleanupJob) private readonly idempotencyCleanup: IdempotencyCleanupJob,
+    @Inject(AccessDenialRetentionJob) private readonly accessDenialRetention: AccessDenialRetentionJob,
   ) {}
 
   onApplicationBootstrap() {
-    for (const job of [this.jobRunPruner, this.rateLimitRetention, this.domainEventRetention, this.idempotencyCleanup]) {
+    for (const job of [this.jobRunPruner, this.rateLimitRetention, this.domainEventRetention, this.idempotencyCleanup, this.accessDenialRetention]) {
       void this.run(job, 'bootstrap');
     }
   }
@@ -166,6 +171,7 @@ class JobSchedules implements OnApplicationBootstrap {
   @Cron('20 3 * * *') rateLimitRetentionRun() { return this.run(this.rateLimitRetention); }
   @Cron('25 3 * * *') domainEventRetentionRun() { return this.run(this.domainEventRetention); }
   @Cron('45 * * * *') idempotencyCleanupRun() { return this.run(this.idempotencyCleanup); }
+  @Cron('30 3 * * *') accessDenialRetentionRun() { return this.run(this.accessDenialRetention); }
 
   /** A job-level failure rejects `run()` (it's recorded first) — logged here, so a broken job never crashes the scheduler. */
   private async run(job: ScheduledJob<unknown>, trigger: JobRunTrigger = 'scheduled') {
@@ -178,7 +184,7 @@ class JobSchedules implements OnApplicationBootstrap {
 }
 
 @Module({
-  imports: [ScheduleModule.forRoot(), backgroundJobs, DemoJobsModule, jobRunPruner, RateLimitRetentionModule, DomainEventRetentionModule, IdempotencyCleanupModule],
+  imports: [ScheduleModule.forRoot(), backgroundJobs, DemoJobsModule, jobRunPruner, RateLimitRetentionModule, DomainEventRetentionModule, IdempotencyCleanupModule, AccessDenialRetentionModule],
   providers: [JobSchedules],
 })
 export class JobSchedulesModule {}
