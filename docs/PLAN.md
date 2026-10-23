@@ -165,5 +165,15 @@ throttled endpoint the generator hits, `notification` sends through a fake chann
   critical listener raised with `emit()`, an event nobody listens to, a listener whose event never fires), raised with
   backdated `occurredAt` by `src/cli/domain-event-history.ts`. UI in `ascendra-commons-ui` (Overview, Deliveries +
   trace, Wiring, Volume & Retention). Reviewed: probing here found one malformed event sinking a whole buffered batch —
-  fixed in ascendra-commons. Guide and report: `ascendra-commons/domain-events/GUIDE.md`, `AUDIT-REPORT.md`. Next
-  module: `background-jobs`.
+  fixed in ascendra-commons. Guide and report: `ascendra-commons/domain-events/GUIDE.md`, `AUDIT-REPORT.md`.
+- **background-jobs** — **done 2026-10-23** (all ten steps). Vendored `.core.postgres-drizzle` and `.api`; the lease
+  lock (listable — the Lock Inspector), the Postgres run recorder, declared cadences, `job.view` for platform admin and
+  support, `job.run` for admin only, Run now audited through domain-events and traced with the request's correlation
+  id. A `@Cron` per job in `src/modules/commons/background-jobs.ts` — the other modules' retention timers became
+  `ScheduledJob`s, so their prunes show on the dashboard. Demo jobs, one per dashboard case, in `src/demo/demo-jobs.ts`;
+  history by `src/cli/job-history.ts` (the past through the real recorder, then real Run nows over HTTP). UI in
+  `ascendra-commons-ui` (Overview, Runs + run and trace sheets, Job with Run now, Locks, Volume & Retention). Reviewed:
+  probing here found Run now holding the request for the whole run (a 15-second job; behind a proxy's timeout an error
+  for a run that finishes), an unknown job's failed items answering `[]`, and the manual-runs filter with no index —
+  all fixed in ascendra-commons. Guide and report: `ascendra-commons/background-jobs/GUIDE.md`, `AUDIT-REPORT.md`. The
+  small observability modules are all built — next: extract their screens' shared pieces.

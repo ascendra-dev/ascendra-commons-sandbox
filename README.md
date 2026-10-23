@@ -41,10 +41,10 @@ you). Tokens last 12 hours.
 
 | Dev user | Persona | Tenant | Sees |
 |---|---|---|---|
-| `platform.admin@ascendra.test` — Platform Admin | `platform-admin` | — | every tenant's records, the rate-limit log, idempotency claims with their saved responses, and domain-event deliveries |
-| `support@ascendra.test` — Platform Support | `platform-support` | — | the rate-limit log, idempotency claims (a 403 on a saved response — `idempotency.view-response`) and domain-event deliveries |
+| `platform.admin@ascendra.test` — Platform Admin | `platform-admin` | — | every tenant's records, the rate-limit log, idempotency claims with their saved responses, domain-event deliveries, and background jobs — including Run now |
+| `support@ascendra.test` — Platform Support | `platform-support` | — | the rate-limit log, idempotency claims (a 403 on a saved response — `idempotency.view-response`), domain-event deliveries and background jobs — but Run now is a 403 (`job.run`) |
 | `admin@acme.test` / `admin@globex.test` / `admin@meridian.test` | `tenant-admin` | their own | their tenant's records only; no `rate-limit.view` (a rejection has no tenant) |
-| `member@acme.test` — Acme Member | `member` | `tenant_acme` | nothing: no `audit.view`, `rate-limit.view`, `idempotency.view` or `domain-events.view` — every read API answers 403 |
+| `member@acme.test` — Acme Member | `member` | `tenant_acme` | nothing: no `audit.view`, `rate-limit.view`, `idempotency.view`, `domain-events.view` or `job.view` — every read API answers 403 |
 
 What each persona may do is authorization's config — `PERSONA_ACTIONS` in `src/modules/commons/authorization.ts`.
 
@@ -69,11 +69,14 @@ curl localhost:3010/audit/events -H "Authorization: Bearer <token>"
 | `GET /idempotency-keys/:scope/:key/response` | `idempotency.view-response` | A claim's saved response — what a retry is replayed (it can hold personal data). |
 | `GET /domain-events/deliveries`, `/deliveries/trace/:correlationId` | `domain-events.view` | The delivery log (one row per emit), one request's events. |
 | `GET /domain-events/deliveries/summary`, `/deliveries/catalog`, `/deliveries/volume`, `/listener-catalog` | `domain-events.view` | The Overview's numbers, per-event counts, 30-day volume, and the listeners the app declares. |
+| `GET /jobs`, `/jobs/alerts`, `/jobs/locks`, `/jobs/:name/failed-items` | `job.view` | Every job's health (last run, failures in a row, cadence, overdue), the ones needing attention, the lease locks (held, or left by a dead process), a job's chronic failed items. |
+| `GET /jobs/runs`, `/runs/summary`, `/runs/volume`, `/runs/trace/:correlationId`, `/runs/:id` | `job.view` | The run history across jobs, the Overview's numbers, 30-day volume, a Run now's run, one run with its full stack. |
+| `POST /jobs/:name/run` | `job.run` | Run now — 202 `{ status, correlationId }` once the job has its lock (404 unknown, 409 already running); audited as `job · triggered`. |
 | `GET /demo/pay/:token`, `POST /demo/login`, `GET /demo/quotes` | public, throttled (20 / 5 / 10 a minute) | Sandbox-only stand-ins for what `@Throttle()` protects — the rate-limit generator's targets. |
 | `POST /demo/payments`, `/demo/invoices/:id/send`, `/demo/refunds`, `/demo/payouts` | token, `Idempotency-Key` | Sandbox-only stand-ins for what `IdempotencyInterceptor` protects — a refund can fail with a saved `422`, a payout times out (left in progress); `X-Demo-Delay-Ms` slows the "gateway". |
 
 The audit endpoints are `audit-logging.api`'s, the rate-limit ones `rate-limiting.api`'s, the claim ones
-`idempotency-key.api`'s, the delivery ones `domain-events.api`'s — their READMEs have the details. Every route is throttled (600 a minute per caller, behind one trusted proxy — `src/configure-app.ts`); a 429
+`idempotency-key.api`'s, the delivery ones `domain-events.api`'s, the job ones `background-jobs.api`'s — their READMEs have the details. Every route is throttled (600 a minute per caller, behind one trusted proxy — `src/configure-app.ts`); a 429
 is recorded by rate-limiting's guard, which runs before sign-in. A tenant admin's results are always
 scoped to their own tenant; a platform admin may pass `tenantId`.
 
@@ -103,7 +106,7 @@ Nothing here is sandbox-specific:
 | `ascendra-commons.json` | The packages asked for, and where migrations go (`drizzle-kit` → `src/db/migrations`). |
 | `src/ascendra-commons/` | The vendored packages — never edit them here. `VENDORED.json` records the commit and a checksum per file. |
 | `src/modules/commons/` | Every commons module configured in one place: `domain-events.ts` (the in-process emitter with the delivery recorder, the read API, a daily 90-day prune), `authorization.ts` (persona → actions), `audit-logging.ts` (+ `audit-catalog.ts`), `rate-limiting.ts` (the limits, the recorder, the read API, retention), `idempotency.ts` (the store, a deliberately
-low `staleAfterSeconds`, the read API, the hourly 24-hour cleanup), and `CommonsModule`, which `AppModule` imports. |
+low `staleAfterSeconds`, the read API, the hourly 24-hour cleanup), `background-jobs.ts` (the lease lock, the run recorder, the cadences, the read API with the Lock Inspector, a `@Cron` per job — the other modules' retention tasks are jobs too), and `CommonsModule`, which `AppModule` imports. |
 | `drizzle.config.ts`, `src/db/` | drizzle-kit as the migration tool; `DatabaseModule` provides `DATABASE_CONNECTION`, the executor the Postgres adapters write through. |
 
 ```sh
@@ -116,7 +119,7 @@ A new migration from an update lands in `src/db/migrations/`, registered in driz
 applies it. Adding a module: `add` it, then one new file in `src/modules/commons/` imported by `CommonsModule`. Change a
 module in `ascendra-commons`, never here: `update` refuses to overwrite a local edit.
 
-What *is* sandbox-only: `src/cli/` (the data generators), `src/demo/` (throttled and idempotent stand-in endpoints, demo domain events and listeners), `src/auth/` dev sign-in (dev tokens and personas, standing in
+What *is* sandbox-only: `src/cli/` (the data generators), `src/demo/` (throttled and idempotent stand-in endpoints, demo domain events and listeners, demo jobs), `src/auth/` dev sign-in (dev tokens and personas, standing in
 for a real identity provider), `docker-compose.yml`, and `scripts/db-reset.js`.
 
 ## The sample data
@@ -171,3 +174,12 @@ correlation id; customer edits nobody listens to (`no_listeners`); payouts raise
 listener is critical — and one in six over the limit, so it throws and the failure is swallowed. `refund.issued` has a
 listener but is never raised. audit-history's `AuditRecordRaised` calls land in the same log, with their request's correlation id (the emitter's `correlationIdResolver` reads audit's context), so a delivery and its audit record share one trace id.
 `normal`: 2,188 demo events + 3,810 audit → 5,998 deliveries over 90 days, 168 with no listener; pruned after 90 days.
+
+`src/cli/job-history.ts` gives each demo job (src/demo/demo-jobs.ts) one dashboard case, and its history: every past
+fire of each job's schedule written through the real `PostgresJobRunRecorder` (the runner stamps the real clock, so the
+past can't be run) — `kyc-expiry-scan` broken for 5 days (its due-items query throws), `payout-sweep` carrying one
+failing payout for 12 days, `statement-export` overdue since its last run died holding the lock (an expired row on
+Locks), `webhook-retry` with no declared cadence (inferred), `ledger-recon` declared but never run, the rest healthy.
+Then real runs over HTTP: Run now as the platform admin through the real runner, each followed to its row by its
+correlation id. `search-reindex` (manual only, ~15 s) is there to see a held lock and a 409. `normal`: ~15,900 runs
+over 90 days; pruned after 90 days by `job-run-pruner`, itself a job.
