@@ -12,7 +12,7 @@ import type { AuthzAuditEmitter } from '../authz-audit.port';
 import type { AssignRoleBody, BulkAssignBody, RevokeRoleQuery } from '../dto/authz-api.dto';
 import { AuthzAccessScope } from '../shared/access-scope';
 import { mapErrors } from '../shared/errors';
-import { futureDateParam, idListParam, idParam, textParam } from '../shared/params';
+import { booleanParam, futureDateParam, idListParam, idParam, textParam } from '../shared/params';
 import { AUTHZ_AUDIT_EMITTER } from '../tokens';
 
 /** A role, and whether this actor may assign it in a tenant — `reason` says why not. */
@@ -188,6 +188,6 @@ function tenantBody(value: unknown): string | null | undefined {
 
 /** A revoke's tenant from the query: `?tenantId=t1`, `?global=true` (the all-tenant assignment), or neither. */
 function tenantQuery(query: RevokeRoleQuery | undefined): string | null | undefined {
-  if (query?.global === 'true') return null;
+  if (booleanParam('global', query?.global)) return null;
   return idParam('tenantId', query?.tenantId, true);
 }

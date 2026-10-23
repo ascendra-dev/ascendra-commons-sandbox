@@ -67,6 +67,13 @@ export function enumParam<T extends string>(name: string, value: string | undefi
   return value as T;
 }
 
+/** A flag — `true` or `false`; absent is `false`. Anything else (`1`, `TRUE`) is a 400, never a silently ignored filter. */
+export function booleanParam(name: string, value: unknown): boolean {
+  if (value === undefined || value === '' || value === 'false') return false;
+  if (value === 'true') return true;
+  throw new BadRequestException(`"${name}" must be true or false`);
+}
+
 /** `'7d'` or `'7'` → 7 (1–365); default 7. */
 export function withinDaysParam(value: string | undefined): number {
   if (value === undefined || value === '') return 7;

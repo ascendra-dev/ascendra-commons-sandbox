@@ -17,7 +17,7 @@ import type { AuthzApiOptions } from '../authz-api.options';
 import type { AssignmentListQuery, DelegationListQuery, ExplainAccessQuery, WhoCanQuery } from '../dto/authz-api.dto';
 import { AuthzAccessScope } from '../shared/access-scope';
 import { mapErrors } from '../shared/errors';
-import { cursorList, enumParam, idParam, positiveIntParam, withinDaysParam } from '../shared/params';
+import { booleanParam, cursorList, enumParam, idParam, positiveIntParam, withinDaysParam } from '../shared/params';
 import { AUTHZ_API_OPTIONS } from '../tokens';
 
 const ASSIGNMENT_STATUSES: readonly AssignmentStatus[] = ['active', 'expired'];
@@ -57,8 +57,9 @@ export class AuthzObservabilityApiService {
 
   async listAssignments(actor: Actor, query: AssignmentListQuery) {
     const platform = await this.scope.isPlatform(actor);
-    if (query.global === 'true' && !platform) throw new ForbiddenException('All-tenant assignments are the platform admins’.');
-    const tenantId = query.global === 'true' ? null : await this.scope.readTenant(actor, idParam('tenantId', query.tenantId, true));
+    const global = booleanParam('global', query.global);
+    if (global && !platform) throw new ForbiddenException('All-tenant assignments are the platform admins’.');
+    const tenantId = global ? null : await this.scope.readTenant(actor, idParam('tenantId', query.tenantId, true));
     const page = await mapErrors(() =>
       this.port.listUserRoleAssignments({
         userId: idParam('userId', query.userId, true),

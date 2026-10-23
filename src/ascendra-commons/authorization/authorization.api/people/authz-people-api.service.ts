@@ -10,7 +10,7 @@ import {
 } from '../../authorization.core.permission-table';
 import { AuthzAccessScope } from '../shared/access-scope';
 import { mapErrors } from '../shared/errors';
-import { cursorList, idParam, positiveIntParam, textParam } from '../shared/params';
+import { booleanParam, cursorList, idParam, positiveIntParam, textParam } from '../shared/params';
 import { AUTHZ_USER_DIRECTORY } from '../tokens';
 import type { AuthzDirectoryUser, AuthzUserDirectory } from './user-directory.port';
 
@@ -68,10 +68,11 @@ export class AuthzPeopleApiService {
     const search = textParam('search', query.search, 200) || undefined;
     const limit = Math.min(positiveIntParam('limit', query.limit) ?? DEFAULT_USER_LIMIT, MAX_USER_LIMIT);
     const roleId = idParam('roleId', query.roleId, true);
-    if (roleId && query.roleless === 'true') throw new BadRequestException('"roleId" and "roleless" exclude each other');
+    const roleless = booleanParam('roleless', query.roleless);
+    if (roleId && roleless) throw new BadRequestException('"roleId" and "roleless" exclude each other');
     if (roleId) return this.holders(directory, roleId, tenantId, search);
 
-    if (query.roleless !== 'true') {
+    if (!roleless) {
       const page = await mapErrors(() => directory.listUsers({ tenantId, search, limit, cursor: query.cursor }));
       return cursorList(await this.withRoles(page.users, tenantId), page.nextCursor);
     }
