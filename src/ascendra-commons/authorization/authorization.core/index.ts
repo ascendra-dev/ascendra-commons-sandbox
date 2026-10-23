@@ -22,4 +22,5 @@ export { computeActionAvailability } from './action-availability';
 export { AuthorizationModule } from './authorization.module';
 export type { AuthorizationModuleConfig } from './authorization.module';
 
-export { AUTHORIZER } from './tokens';
+export { AUTHORIZER, ACCESS_DENIAL_RECORDER } from './tokens';
+export type { AccessDenial, AccessDenialRecorder } from './access-denial-recorder.port';

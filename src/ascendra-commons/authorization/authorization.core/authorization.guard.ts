@@ -1,9 +1,10 @@
-import { CanActivate, ExecutionContext, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Inject, Injectable, Optional, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Actor } from './actor.type';
 import { Authorizer } from './authorizer.port';
 import { ACTION_METADATA_KEY, NO_ACTION_REQUIRED_KEY } from './requires-action.decorator';
-import { AUTHORIZER } from './tokens';
+import type { AccessDenialRecorder } from './access-denial-recorder.port';
+import { ACCESS_DENIAL_RECORDER, AUTHORIZER } from './tokens';
 import { AUTHORIZATION_CHECKED } from './authorization-enforced.guard';
 
 /**
@@ -22,6 +23,35 @@ export class AuthorizationNotDeclaredError extends Error {
     );
     this.name = 'AuthorizationNotDeclaredError';
   }
+}
+
+/** A correlation id worth recording — the rule audit-logging, rate-limiting and the rest use. */
+const CORRELATION_ID = /^[A-Za-z0-9._:-]{1,128}$/;
+
+interface GuardedRequest {
+  actor?: Actor;
+  method?: string;
+  headers?: Record<string, string | string[] | undefined>;
+  /** Express: the matched route's pattern. */
+  route?: { path?: string };
+  /** Fastify ≥ 4.10. */
+  routeOptions?: { url?: string };
+  /** Older Fastify. */
+  routerPath?: string;
+  [AUTHORIZATION_CHECKED]?: boolean;
+}
+
+/**
+ * The route *pattern* — never the resolved URL, which carries ids (and, for a payment link, a secret). When no HTTP
+ * adapter says, the handler names the route just as well.
+ */
+function routePattern(request: GuardedRequest, context: ExecutionContext): string {
+  return (
+    request.route?.path ??
+    request.routeOptions?.url ??
+    request.routerPath ??
+    `${context.getClass().name}.${context.getHandler().name}`
+  );
 }
 
 /**
@@ -55,6 +85,7 @@ export class AuthorizationGuard implements CanActivate {
   constructor(
     @Inject(Reflector) private readonly reflector: Reflector,
     @Inject(AUTHORIZER) private readonly authorizer: Authorizer,
+    @Optional() @Inject(ACCESS_DENIAL_RECORDER) private readonly denials?: AccessDenialRecorder,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -69,7 +100,7 @@ export class AuthorizationGuard implements CanActivate {
       throw new AuthorizationNotDeclaredError(`${controller.name}.${handler.name}()`);
     }
     // Marked once let through, for AuthorizationEnforcedGuard: a library controller checks this guard ran at all.
-    const request = context.switchToHttp().getRequest<{ actor?: Actor; [AUTHORIZATION_CHECKED]?: boolean }>();
+    const request = context.switchToHttp().getRequest<GuardedRequest>();
     if (decision.kind === 'no-action-required') {
       request[AUTHORIZATION_CHECKED] = true;
       return true;
@@ -84,12 +115,33 @@ export class AuthorizationGuard implements CanActivate {
     }
 
     if (!(await this.authorizer.can(actor, decision.action))) {
+      this.recordDenial(request, context, actor, decision.action);
       // Names the missing action: the caller can see what they lack (the frontend already knows every action name
       // from GET /me), instead of a bare "Forbidden resource".
       throw new ForbiddenException(`You don't have permission for this — it needs "${decision.action}".`);
     }
     request[AUTHORIZATION_CHECKED] = true;
     return true;
+  }
+
+  /** Best-effort and synchronous — a recorder's failure must never change the 403, nor delay it. */
+  private recordDenial(request: GuardedRequest, context: ExecutionContext, actor: Actor, action: string): void {
+    if (!this.denials) return;
+    try {
+      const header = request.headers?.['x-correlation-id'];
+      const correlationId = typeof header === 'string' && CORRELATION_ID.test(header) ? header : undefined;
+      this.denials.recordDenial({
+        actorId: actor.id,
+        tenantId: actor.tenantId,
+        action,
+        method: request.method ?? 'GET',
+        route: routePattern(request, context),
+        correlationId,
+        at: new Date(),
+      });
+    } catch {
+      // Recording is telemetry; the answer is the 403.
+    }
   }
 
   private declarationFor(

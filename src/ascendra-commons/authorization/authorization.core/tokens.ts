@@ -11,3 +11,6 @@
  * `authorizerToken`, it is bound to the throwing `MissingAuthorizer` stub.
  */
 export const AUTHORIZER = Symbol('AUTHORIZER');
+
+/** An optional `AccessDenialRecorder` — every 403 the guard answers. Bound by `AuthorizationModule.forRoot({ denialRecorderToken })`. */
+export const ACCESS_DENIAL_RECORDER = Symbol('ACCESS_DENIAL_RECORDER');

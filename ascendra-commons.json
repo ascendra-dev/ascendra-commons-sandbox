@@ -11,7 +11,6 @@
     "audit-logging/audit-logging.core.postgres-drizzle",
     "audit-logging/audit-logging.api",
     "domain-events/domain-events.core.in-process",
-    "authorization/authorization.core.static-map",
     "rate-limiting/rate-limiting.core.throttler",
     "rate-limiting/rate-limiting.core.postgres-drizzle",
     "rate-limiting/rate-limiting.api",
@@ -20,6 +19,8 @@
     "domain-events/domain-events.core.postgres-drizzle",
     "domain-events/domain-events.api",
     "background-jobs/background-jobs.core.postgres-drizzle",
-    "background-jobs/background-jobs.api"
+    "background-jobs/background-jobs.api",
+    "authorization/authorization.core.permission-table.postgres-drizzle",
+    "authorization/authorization.api"
   ]
 }

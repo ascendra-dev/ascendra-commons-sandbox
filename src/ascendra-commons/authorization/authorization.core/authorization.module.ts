@@ -1,7 +1,7 @@
-import { DynamicModule, Module } from '@nestjs/common';
+import { DynamicModule, Module, type Provider } from '@nestjs/common';
 import { AuthorizationGuard } from './authorization.guard';
 import { MissingAuthorizer } from './missing-authorizer';
-import { AUTHORIZER } from './tokens';
+import { ACCESS_DENIAL_RECORDER, AUTHORIZER } from './tokens';
 
 export interface AuthorizationModuleConfig {
   /**
@@ -26,6 +26,11 @@ export interface AuthorizationModuleConfig {
    * module's own providers or imports — not the wider application graph.
    */
   imports?: DynamicModule['imports'];
+  /**
+   * Optional. The token an `AccessDenialRecorder` is provided under by a module in `imports` — e.g.
+   * `POSTGRES_ACCESS_DENIAL_RECORDER`. Every 403 the guard answers is handed to it.
+   */
+  denialRecorderToken?: string | symbol | (new (...args: never[]) => unknown);
 }
 
 /**
@@ -43,9 +48,12 @@ export interface AuthorizationModuleConfig {
 @Module({})
 export class AuthorizationModule {
   static forRoot(config: AuthorizationModuleConfig = {}): DynamicModule {
-    const providers = config.authorizerToken
+    const providers: Provider[] = config.authorizerToken
       ? [{ provide: AUTHORIZER, useExisting: config.authorizerToken }, AuthorizationGuard]
       : [MissingAuthorizer, { provide: AUTHORIZER, useExisting: MissingAuthorizer }, AuthorizationGuard];
+    if (config.denialRecorderToken) {
+      providers.push({ provide: ACCESS_DENIAL_RECORDER, useExisting: config.denialRecorderToken });
+    }
 
     return {
       module: AuthorizationModule,
