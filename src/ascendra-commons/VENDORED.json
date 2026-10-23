@@ -341,7 +341,7 @@
         "authz-api.options.ts": "a3130aeaaa0310ec837dd09b3a45bd2bb6cb68113bca55da4785536c9f77fb4c",
         "authz-audit.port.ts": "259ee7527b69f3aa0f6f5a3ef469e76ecdaf31f2d0f908ea570db117b2ed66cf",
         "current-actor.decorator.ts": "90d88db75cb99841d8b7660f3c9123f65f7b1d0e4018f25bfdd4b30e29ecb5d6",
-        "delegation/authz-delegation-api.service.ts": "b0ebaeb518c0804abef2d55f3ba590f63efc94fb3baaa0f7b95c8a1ca3f8a244",
+        "delegation/authz-delegation-api.service.ts": "f68dd7c383074b8ddb5367517477c5c16880e0f6e70605698baae24f6ecad074",
         "delegation/authz-delegation.controller.ts": "03937b1ef6b7325ee7175151deb24aff34f121e3c14d839743ebf12bd53eacfc",
         "denials/authz-denials-api.service.ts": "e15dce9608f2d456499c33e4a4f7f70934e28872558a43a3062e06a10cce2bce",
         "denials/authz-denials.controller.ts": "ec3bb11ff8175dd342c4326047f9432330ea83a628dd3bb7ec5d3c310a70d09e",
@@ -457,7 +457,7 @@
     }
   },
   "source": "/Users/zakashah/ascendra/ascendra-public/ascendra-commons (local checkout)",
-  "commit": "7636f83ad15d83d366dd5df161cd971451479d6b",
+  "commit": "d10c7e5dd1001e3338bd0a668e6d1af16b923deb",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-23T08:15:16.203Z"
+  "syncedAt": "2026-10-23T08:31:09.051Z"
 }

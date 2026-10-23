@@ -5,6 +5,7 @@ import {
   AUTHZ_OBSERVABILITY_PORT,
   type AuthzObservabilityPort,
   type DelegationRecord,
+  type DelegationView,
   type DelegationService,
 } from '../../authorization.core.permission-table';
 import { AUTHZ_ACTIONS } from '../authz-api.options';
@@ -101,7 +102,16 @@ export class AuthzDelegationApiService {
     });
   }
 
-  listMine(actor: Actor) {
-    return this.delegation.listDelegations(actor);
+  /**
+   * What the actor lent and was lent in their tenant, newest first — the ledger's own view (with `lapsedActions`), so
+   * "My access" shows what no longer grants, as the console does. A tenant-less actor lends nothing.
+   */
+  async listMine(actor: Actor): Promise<{ granted: DelegationView[]; received: DelegationView[] }> {
+    if (actor.tenantId === null) return { granted: [], received: [] };
+    const { delegations } = await this.observability.listDelegations({ userId: actor.id, tenantId: actor.tenantId, limit: 200 });
+    return {
+      granted: delegations.filter((d) => d.granterId === actor.id),
+      received: delegations.filter((d) => d.granteeId === actor.id),
+    };
   }
 }
