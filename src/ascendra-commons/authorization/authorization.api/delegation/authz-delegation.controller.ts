@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Query, UseGuards } from '@nestjs/common';
-import { AuthorizationEnforcedGuard, CurrentActor, RequiresAction, type Actor } from '../../authorization.core';
+import { AuthorizationEnforcedGuard, CurrentActor, NoActionRequired, RequiresAction, type Actor } from '../../authorization.core';
 import { AUTHZ_ACTIONS } from '../authz-api.options';
 import type { CreateDelegationBody, DelegationListQuery } from '../dto/authz-api.dto';
 import { AuthzObservabilityApiService } from '../observability/authz-observability-api.service';
@@ -31,9 +31,12 @@ export class AuthzDelegationController {
     return this.reads.listDelegations(actor, query, query.within ?? '7d');
   }
 
-  /** What you lent and what you were lent, in your tenant. */
+  /**
+   * What you lent and what you were lent, in your tenant — no action needed: whoever was lent something sees by whom,
+   * and whoever lost the right to lend still sees what they lent.
+   */
   @Get('mine')
-  @RequiresAction(AUTHZ_ACTIONS.MANAGE_DELEGATIONS)
+  @NoActionRequired()
   mine(@CurrentActor() actor: Actor) {
     return this.service.listMine(actor);
   }
@@ -51,9 +54,13 @@ export class AuthzDelegationController {
     return this.service.create(actor, body);
   }
 
+  /**
+   * Revoke — no action needed at the gate: its grantee may give it back and its granter take it back (even after losing
+   * the right to lend); anyone else needs to manage roles in its tenant. The service decides.
+   */
   @Delete(':id')
   @HttpCode(204)
-  @RequiresAction(AUTHZ_ACTIONS.MANAGE_DELEGATIONS)
+  @NoActionRequired()
   revoke(@CurrentActor() actor: Actor, @Param('id') id: string) {
     return this.service.revoke(actor, id);
   }

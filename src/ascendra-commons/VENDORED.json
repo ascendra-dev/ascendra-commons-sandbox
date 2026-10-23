@@ -334,7 +334,7 @@
     },
     "authorization/authorization.api": {
       "files": {
-        "README.md": "8c80d6f4541e409e4ce31c6596e7d7db309b153ce3132ea3618aa8b94fe17620",
+        "README.md": "e59f8bf9696f1575445999837ee99911de2df5514a043ed2572b79d9673be6d2",
         "admin/authz-admin-api.service.ts": "87d8e6ba0f4ad348ba9e76a18e68b994fd18ddd94d75194fd674153a08b36c36",
         "admin/authz-admin.controller.ts": "5d217d9e916e271fddb6a8b0e96614426e0dee32cee42e1016164dfda5cb69a4",
         "authorization-api.module.ts": "aafc9510d9587e84a9100357e7bbc9151190fa7fa78b6f0bdfe484ae135d0b41",
@@ -342,7 +342,7 @@
         "authz-audit.port.ts": "259ee7527b69f3aa0f6f5a3ef469e76ecdaf31f2d0f908ea570db117b2ed66cf",
         "current-actor.decorator.ts": "90d88db75cb99841d8b7660f3c9123f65f7b1d0e4018f25bfdd4b30e29ecb5d6",
         "delegation/authz-delegation-api.service.ts": "f68dd7c383074b8ddb5367517477c5c16880e0f6e70605698baae24f6ecad074",
-        "delegation/authz-delegation.controller.ts": "03937b1ef6b7325ee7175151deb24aff34f121e3c14d839743ebf12bd53eacfc",
+        "delegation/authz-delegation.controller.ts": "5f441dc7dc97acc6c05378d546df7b8f3ff568931a9f157e3c9bdb8c726cd11d",
         "denials/authz-denials-api.service.ts": "e15dce9608f2d456499c33e4a4f7f70934e28872558a43a3062e06a10cce2bce",
         "denials/authz-denials.controller.ts": "ec3bb11ff8175dd342c4326047f9432330ea83a628dd3bb7ec5d3c310a70d09e",
         "dto/authz-api.dto.ts": "4a8e85317c68e41bec1f5682323ab8386f1e8aa96b9ddf5f8978375a1c04ddbe",
@@ -457,7 +457,7 @@
     }
   },
   "source": "/Users/zakashah/ascendra/ascendra-public/ascendra-commons (local checkout)",
-  "commit": "f8c824195c1d61798d347efe79b7f86e1c3fec0f",
+  "commit": "f676bd3cdb2215ec034d7dee409d41dd8d988a48",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-23T08:59:32.369Z"
+  "syncedAt": "2026-10-23T09:17:27.368Z"
 }

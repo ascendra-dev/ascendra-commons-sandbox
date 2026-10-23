@@ -22,8 +22,8 @@ own `Authorizer`.
 | DELETE | `/authz/assignments` | `authz.assign_roles` | `revokeRole` (actor-scoped) |
 | PATCH | `/authz/actions/:name` | `authz.manage_catalog` | `setActionDescription` |
 | POST | `/authz/delegations` | `authz.manage_delegations` | `delegate` (granter = actor) |
-| DELETE | `/authz/delegations/:id` | `authz.manage_delegations` | `revokeDelegation` |
-| GET | `/authz/delegations/mine` | `authz.manage_delegations` | `listDelegations(actor)` |
+| DELETE | `/authz/delegations/:id` | signed in — its granter or grantee; else `authz.assign_roles` in its tenant, or a platform admin | `revokeDelegation` |
+| GET | `/authz/delegations/mine` | signed in | `listDelegations(actor)` |
 
 Gate names are fixed (`@RequiresAction` is applied at class-definition time). A
 vertical whose catalog uses different names grants its admin role these too, or
