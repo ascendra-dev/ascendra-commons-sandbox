@@ -114,6 +114,19 @@ export const PERSONA_ACTIONS: Record<string, string[]> = {
 /** Every role the app ships: the personas' and the stand-in product roles (src/demo/demo-access.ts). */
 export const ROLE_ACTIONS: Record<string, string[]> = { ...PERSONA_ACTIONS, ...DEMO_ROLES };
 
+/** What each role is for — what the console shows beside it. Part of the role's definition, so it ships with it. */
+export const ROLE_DESCRIPTIONS: Record<string, string> = {
+  'platform-admin': 'Runs the platform: every tenant, its operations and who can do what',
+  'platform-support': "Reads every tenant's operations and access; changes nothing",
+  'tenant-admin': "Runs the tenant: its people's roles, its audit log, every product action",
+  member: 'Signed in, nothing more — can lend what it is lent',
+  viewer: 'Sees invoices, customers and payouts',
+  'billing-clerk': 'Drafts and sends invoices, records payments',
+  'support-agent': 'Looks after customers; refunds payments',
+  'finance-approver': 'Approves payouts and refunds, voids invoices, exports reports',
+  auditor: 'Reads invoices, payouts and customers; exports reports',
+};
+
 const authzStore = () => [
   PostgresPermissionTableModule.forRoot({ sqlExecutorToken: DATABASE_CONNECTION, imports: [DatabaseModule] }),
 ];
@@ -204,6 +217,10 @@ class AuthzBootstrap implements OnApplicationBootstrap {
     const executor = this.db as unknown as SqlExecutor;
     await syncActions(executor, ACTION_CATALOG);
     await seedRolesFromPersonaMap(executor, ROLE_ACTIONS);
+    // The seed helper writes a placeholder description on insert; the app's own wording ships with the roles.
+    for (const [role, description] of Object.entries(ROLE_DESCRIPTIONS)) {
+      await this.db.execute(sql`update commons_authz_role set description = ${description} where id = ${role}`);
+    }
     for (const actor of DEV_ACTORS) {
       // The directory knows the dev users too (a product's users table would).
       await this.db.execute(sql`

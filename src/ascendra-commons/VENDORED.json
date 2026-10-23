@@ -311,7 +311,7 @@
       "files": {
         "README.md": "722bcc4981262db493482e7343251360eff7d9f0fa64318033907210d3290f6f",
         "admin/postgres-authz-admin.service.ts": "7a4cc9a5faa6b490a4945a41f995d5f6d28fcdd8ccbfe1d1df4c8bc1ae469d29",
-        "admin/postgres-authz-observability.service.ts": "863c3deea7d22382c07e864aab07996815513038a27ceb399a80532273d3c27c",
+        "admin/postgres-authz-observability.service.ts": "6acdb8c8f7d2f439e8669184fdc2693bac5f995bf2b30bcb33171a2f0929ce6d",
         "authorizer/postgres-permission.repository.ts": "cd3bc2522e0efacba9160e0c7b8ecb0e11a00fca19d2caa8bafec69d2497ae30",
         "delegation/postgres-delegation.repository.ts": "6a4fcd1b62d29150dc94c7e77daebc756ef4a6604f9aec492fb7e25e1d03e174",
         "denials/postgres-access-denial-observability.service.ts": "cb5437221c999d06cc2db7f393e8aa073f8ad6f24e39309e838357677eacf0a5",
@@ -347,10 +347,10 @@
         "denials/authz-denials.controller.ts": "ec3bb11ff8175dd342c4326047f9432330ea83a628dd3bb7ec5d3c310a70d09e",
         "dto/authz-api.dto.ts": "4a8e85317c68e41bec1f5682323ab8386f1e8aa96b9ddf5f8978375a1c04ddbe",
         "index.ts": "d1acbc3e710d44202250018c3164d1970c16418f864512cbdaecb365580b2bb4",
-        "observability/authz-observability-api.service.ts": "4c3640e186b7d19495040bd16889d8f2e6590714ae1e93424479d0507d89778c",
+        "observability/authz-observability-api.service.ts": "afc947896be89ee39ee6490affe7f4024f429ff4b1a5e59957b7efe3dd9e3c8e",
         "observability/authz-observability.controller.ts": "f52b74454bdc58d77a3d7b3bc85848c1a954074d0b52e50a818912a1d48f2a3d",
-        "people/authz-people-api.service.ts": "c2c4c504b7b3857a5ab097c44d3ce9899e92a4c8e19ca89c382d01f2597005ea",
-        "people/authz-people.controller.ts": "0f6cee8b45a9e2a717e86c94b4efd5eef3b6f2ca54522fd4b0e2e457c7494b2b",
+        "people/authz-people-api.service.ts": "63b68d2165a1402d88884df9354204ea555ccb736de9e11db24c1717249c39ce",
+        "people/authz-people.controller.ts": "c0279214a793c78bf3b697280b51b4e8d2dd3b722b055f05d2df25244998a071",
         "people/user-directory.port.ts": "e9be81c5147b56359c8ea1bc1b01c311fcb226bc2aeea6aa9cb8ff794444b879",
         "shared/access-scope.ts": "fd33f6dbe97d4a7c8bc9d06d9e0c89fcfe7f6ad622072cadc3d9e3e0d81f7f10",
         "shared/errors.ts": "af3b0cb532aa2b6f3af74af71da189a56207511d0b77b6a890fc8eaa7a5ea292",
@@ -380,7 +380,7 @@
         "ports/permission-repository.port.ts": "db8191bf9e0712e5fc0c89f956d919e388d8a9f81ae3c64648cc20593cc36d6b",
         "resolution/permission-resolver.ts": "69c81dd402aff489a541613284a7f1c6882878488c3989a7a786ac2603f410c6",
         "tokens.ts": "8f63ee33defae2dbb4797a9834881951f1736b15ba724667fc417415e48033be",
-        "types/authz-admin.types.ts": "22c9ea7515e9ccf78f0d4acc990b2fa7367ffc97cbb9611cc5db0f1892a2b5b0",
+        "types/authz-admin.types.ts": "8c0c95cebcf508de209bd5d44a7796665c3441c76d1af255ccbc397cc7d07060",
         "types/delegation.types.ts": "134d12123668cfb1c933744ce77e44024682c589fbfc97f1dd3cef5ee9d8b2f3",
         "types/resolved-permissions.ts": "97843c0ec2ac1df6a289f45e03dafc92764fb957fed1363171281932edfd7a29"
       }
@@ -457,7 +457,7 @@
     }
   },
   "source": "/Users/zakashah/ascendra/ascendra-public/ascendra-commons (local checkout)",
-  "commit": "03807d6de257e7f2f7a7804dfea128c175ea22e9",
+  "commit": "7636f83ad15d83d366dd5df161cd971451479d6b",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-23T08:05:36.027Z"
+  "syncedAt": "2026-10-23T08:15:16.203Z"
 }

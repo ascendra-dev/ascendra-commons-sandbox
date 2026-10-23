@@ -97,6 +97,8 @@ export interface DelegationQuery {
   userId?: string;
   tenantId?: string;
   status?: DelegationStatus;
+  /** Only active delegations lending at least one action their granter no longer holds. */
+  lapsed?: boolean;
   /** Only unrevoked delegations expiring within this many days from now (`GET /authz/delegations/expiring`). Combine with other filters as needed. */
   expiringWithinDays?: number;
   /** Default 50, capped at 200. */

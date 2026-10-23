@@ -256,6 +256,10 @@ export class PostgresAuthzObservabilityService implements AuthzObservabilityPort
     if (query.status === 'active') conds.push(sql`d.revoked_at is null and d.expires_at > now()`);
     else if (query.status === 'revoked') conds.push(sql`d.revoked_at is not null`);
     else if (query.status === 'expired') conds.push(sql`d.revoked_at is null and d.expires_at <= now()`);
+    if (query.lapsed) {
+      conds.push(sql`d.revoked_at is null and d.expires_at > now()
+        and exists (select 1 from unnest(d.actions) as la(action) where not ${granterStillHolds('d', sql`la.action`)})`);
+    }
     if (query.expiringWithinDays !== undefined) {
       conds.push(
         sql`d.revoked_at is null and d.expires_at > now() and d.expires_at <= now() + (${query.expiringWithinDays} * interval '1 day')`,

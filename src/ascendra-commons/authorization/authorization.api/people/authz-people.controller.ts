@@ -12,12 +12,15 @@ import { AuthzPeopleApiService } from './authz-people-api.service';
 export class AuthzPeopleController {
   constructor(@Inject(AuthzPeopleApiService) private readonly service: AuthzPeopleApiService) {}
 
-  /** `{ data, meta: { nextCursor } }` — users by name, each with their active roles. `?tenantId`, `?search`. */
+  /**
+   * `{ data, meta: { nextCursor } }` — users by name, each with their active roles. `?tenantId`, `?search`,
+   * `?roleId` (that role's holders) or `?roleless=true` (people holding none).
+   */
   @Get('users')
   @RequiresAction(AUTHZ_ACTIONS.VIEW)
   users(
     @CurrentActor() actor: Actor,
-    @Query() query: { tenantId?: string; search?: string; limit?: string; cursor?: string },
+    @Query() query: { tenantId?: string; search?: string; limit?: string; cursor?: string; roleId?: string; roleless?: string },
   ) {
     return this.service.listUsers(actor, query);
   }

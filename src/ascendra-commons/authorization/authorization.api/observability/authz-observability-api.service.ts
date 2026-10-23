@@ -2,11 +2,11 @@ import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nest
 import type { Actor } from '../../authorization.core';
 import {
   AUTHZ_OBSERVABILITY_PORT,
+  type DelegationStatus,
   type AccessExplanation,
   type ActionView,
   type AssignmentStatus,
   type AuthzObservabilityPort,
-  type DelegationStatus,
   type DelegationView,
   type RoleDetail,
   type RoleView,
@@ -21,7 +21,8 @@ import { cursorList, enumParam, idParam, positiveIntParam, withinDaysParam } fro
 import { AUTHZ_API_OPTIONS } from '../tokens';
 
 const ASSIGNMENT_STATUSES: readonly AssignmentStatus[] = ['active', 'expired'];
-const DELEGATION_STATUSES: readonly DelegationStatus[] = ['active', 'expired', 'revoked'];
+/** `lapsed` — active, but lending something the granter no longer holds. */
+const DELEGATION_STATUSES = ['active', 'expired', 'revoked', 'lapsed'] as const;
 
 /**
  * The console's reads over `AuthzObservabilityPort`. Every one is tenant-scoped for anyone but a platform admin —
@@ -80,7 +81,7 @@ export class AuthzObservabilityApiService {
         granteeId: idParam('granteeId', query.granteeId, true),
         userId: idParam('userId', query.userId, true),
         tenantId,
-        status: enumParam('status', query.status, DELEGATION_STATUSES),
+        ...delegationStatus(enumParam('status', query.status, DELEGATION_STATUSES)),
         expiringWithinDays: expiringWithin === undefined ? undefined : withinDaysParam(expiringWithin),
         limit: positiveIntParam('limit', query.limit),
         cursor: query.cursor,
@@ -119,4 +120,8 @@ export class AuthzObservabilityApiService {
   actionCatalogHealth() {
     return this.port.actionCatalogHealth(this.options.actionCatalog);
   }
+}
+
+function delegationStatus(status: (typeof DELEGATION_STATUSES)[number] | undefined): { status?: DelegationStatus; lapsed?: boolean } {
+  return status === 'lapsed' ? { status: 'active', lapsed: true } : { status };
 }
