@@ -234,8 +234,9 @@ export class PostgresNotificationObservabilityService implements NotificationObs
         where ${where}
         group by notification_type, status
       `),
-      this.db.execute<{ day: string; count: number }>(sql`
-        select to_char(attempted_at at time zone ${timeZone}, 'YYYY-MM-DD') as day, count(*)::int as count
+      this.db.execute<{ day: string; count: number; failed: number }>(sql`
+        select to_char(attempted_at at time zone ${timeZone}, 'YYYY-MM-DD') as day, count(*)::int as count,
+               (count(*) filter (where status in ('failed', 'bounced')))::int as failed
         from commons_notification_delivery
         where ${where}
         group by 1
@@ -253,7 +254,7 @@ export class PostgresNotificationObservabilityService implements NotificationObs
       `),
     ]);
 
-    const counted = new Map(byDay.rows.map((r) => [String(r.day), Number(r.count)]));
+    const counted = new Map(byDay.rows.map((r) => [String(r.day), { count: Number(r.count), failed: Number(r.failed) }]));
     return {
       since,
       until,
@@ -268,7 +269,7 @@ export class PostgresNotificationObservabilityService implements NotificationObs
         count: Number(r.count),
       })),
       // Every day of a day window, a quiet one at 0; a rolling window lists the days it touched.
-      byDay: (days ?? [...counted.keys()]).map((day) => ({ day, count: counted.get(day) ?? 0 })),
+      byDay: (days ?? [...counted.keys()]).map((day) => ({ day, ...(counted.get(day) ?? { count: 0, failed: 0 }) })),
       byReason: byReason.rows.map((r) => ({
         status: r.status as DeliveryReasonCount['status'],
         reason: r.reason,

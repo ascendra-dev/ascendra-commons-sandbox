@@ -99,6 +99,8 @@ export interface DeliveryDayCount {
   /** Calendar day in the query's time zone, `YYYY-MM-DD`. */
   day: string;
   count: number;
+  /** Of `count`, failed or bounced — the per-day chart's top segment. */
+  failed: number;
 }
 
 /**
