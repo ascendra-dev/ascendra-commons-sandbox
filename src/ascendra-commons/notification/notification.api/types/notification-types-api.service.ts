@@ -24,6 +24,8 @@ export interface NotificationTypeSummary {
   declared: boolean;
   description: string | null;
   audience: string | null;
+  /** Always sent — a user can't turn it off in their preferences. */
+  required: boolean;
   variables: NotificationVariableDefinition[];
   /** The deployment default's channels — `null` when there's no default route. */
   defaultChannels: NotificationChannel[] | null;
@@ -96,6 +98,7 @@ export class NotificationTypesApiService {
       declared: type !== undefined,
       description: type?.description ?? null,
       audience: type?.audience ?? null,
+      required: type?.required === true,
       variables: type?.variables ?? [],
     };
   }

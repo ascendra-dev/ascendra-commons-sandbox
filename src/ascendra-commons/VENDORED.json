@@ -458,7 +458,7 @@
         "test-send/notification-test-send.controller.ts": "191a669855ec01bd5f01b44be5bf65f717610a5f6e19f66c5911e8ffd7893b65",
         "tokens.ts": "0db6dba644a6722755f9dd035f6eba50827efc07522dc40c0294d3752010f66b",
         "types/notification-type-catalog.ts": "0203d353cb7c7184896955a48e85ea7a9c8a2ee1c3460fadc7143643466b8984",
-        "types/notification-types-api.service.ts": "6db3e1b531872e95d5060c6dd0aa9b36925750814cd771ba5594903feee1ee30",
+        "types/notification-types-api.service.ts": "b7d73b968ec603318a29da45d84cfd9e3debb18bc0d0f4d25939507384d039f0",
         "types/notification-types.controller.ts": "82a1bfae132bb143dae5fd398decbe5a23c0afd8d7585b33be3fd2a725ebdafb"
       }
     },
@@ -634,7 +634,7 @@
     }
   },
   "source": "https://github.com/ascendra-dev/ascendra-commons.git",
-  "commit": "1a4b9fa2e9f4cd108f5bc2da3250ee9d1f66367f",
+  "commit": "b217b0625c01d8154099f70bdfe8da13866a8a17",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-25T23:34:42.623Z"
+  "syncedAt": "2026-10-25T23:52:27.871Z"
 }
