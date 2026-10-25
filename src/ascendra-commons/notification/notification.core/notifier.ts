@@ -173,6 +173,8 @@ export class Notifier {
       correlationId: request.correlationId,
       test: request.test ?? false,
       retryOf: request.retryOf,
+      // The rendered message and its variables; a failed send keeps its variables too (no body) — what a retry rebuilds
+      // the message from. A skipped one sent nothing to keep.
       content: result.rendered
         ? {
             subject: result.rendered.subject ?? null,
@@ -180,7 +182,9 @@ export class Notifier {
             isHtml: result.rendered.isHtml ?? false,
             variables: request.variables,
           }
-        : undefined,
+        : result.status === 'failed'
+          ? { subject: null, body: null, isHtml: false, variables: request.variables }
+          : undefined,
     }));
     try {
       await this.deliveryRecorder.recordAttempts(attempts);

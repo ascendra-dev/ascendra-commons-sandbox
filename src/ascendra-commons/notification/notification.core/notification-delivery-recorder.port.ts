@@ -9,7 +9,8 @@ import type { NotificationChannel } from './notification.types';
  */
 export interface DeliveryContent {
   subject: string | null;
-  body: string;
+  /** The rendered message — `null` for a send that failed before rendering (its variables are still kept, for a retry). */
+  body: string | null;
   isHtml: boolean;
   variables: Record<string, string | number>;
 }

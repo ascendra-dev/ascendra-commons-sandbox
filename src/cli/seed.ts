@@ -25,6 +25,18 @@ import { IdempotencyHistory } from './idempotency-history';
 import { JobHistory } from './job-history';
 import { startHttpApp } from './http-app';
 import { RateLimitHistory } from './rate-limit-history';
+import { NotificationHistory } from './notification-history';
+import {
+  NOTIFICATION_RECIPIENT_HASHER,
+  NOTIFIER,
+  type NotificationRecipientHasher,
+  type Notifier,
+} from '../ascendra-commons/notification/notification.core';
+import {
+  POSTGRES_NOTIFICATION_DELIVERY_RECORDER,
+  PostgresNotificationRetentionService,
+  type PostgresNotificationDeliveryRecorder,
+} from '../ascendra-commons/notification/notification.core.database.postgres-drizzle';
 import { Rng } from './rng';
 
 const VOLUMES: Record<string, number> = { small: 0.3, normal: 1, large: 25 };
@@ -127,6 +139,32 @@ async function main() {
     const r = roles.rows[0], l = lent.rows[0], d = denied.rows[0];
     console.log(`✓ ${access.people} people; ${r.n} role assignments for ${r.users} users (${r.expiring} with an expiry, ${r.expired} expired); ` +
       `delegations ${l.active} active, ${l.revoked} revoked, ${l.expired} expired; ${d.total} denied requests in ${d.n} windows`);
+
+    console.log(`Configuring notifications and recording ${days} days of deliveries, then sending a few now …`);
+    const notified = await new NotificationHistory(
+      baseUrl,
+      db,
+      app.get<PostgresNotificationDeliveryRecorder>(POSTGRES_NOTIFICATION_DELIVERY_RECORDER, { strict: false }),
+      app.get(PostgresNotificationRetentionService, { strict: false }),
+      app.get<Notifier>(NOTIFIER, { strict: false }),
+      app.get<NotificationRecipientHasher>(NOTIFICATION_RECIPIENT_HASHER, { strict: false }),
+      new Rng(seed),
+    ).run({ days, until: new Date() });
+    const sent = await db.execute(sql`
+      select count(*)::int as n,
+             count(*) filter (where status = 'delivered')::int as delivered, count(*) filter (where status = 'bounced')::int as bounced,
+             count(*) filter (where status = 'failed')::int as failed, count(*) filter (where status = 'skipped')::int as skipped,
+             count(*) filter (where is_test)::int as tests, count(*) filter (where content is not null)::int as with_content
+      from commons_notification_delivery`);
+    const side = await db.execute(sql`
+      select (select count(*)::int from commons_notification_suppression) as suppressed,
+             (select count(*)::int from commons_notification_inbox) as inbox,
+             (select count(*)::int from commons_notification_dedupe) as dedupe,
+             (select count(*)::int from commons_notification_preference) as prefs`);
+    const n = sent.rows[0], x = side.rows[0];
+    console.log(`✓ ${notified.recorded} past attempts + ${notified.liveSends} sent now, ${notified.callbacks} provider callbacks → ` +
+      `${n.n} deliveries: ${n.delivered} delivered, ${n.bounced} bounced, ${n.failed} failed, ${n.skipped} skipped, ${n.tests} test sends ` +
+      `(${n.with_content} still holding content); ${x.suppressed} suppressed, ${x.inbox} inbox items, ${x.dedupe} dedupe key, ${x.prefs} preference`);
   } finally {
     await app.close();
   }
