@@ -58,7 +58,10 @@ export class NotificationTestSendApiService {
 
     if (!platform) await this.assertReachable(actor, recipient);
 
-    return this.notifier.notify({ recipient, notificationType, variables, tenantId, test: true });
+    const result = await this.notifier.notify({ recipient, notificationType, variables, tenantId, test: true });
+    // The result links to the row in the log — written now, not at the recorder's next flush.
+    await this.notifier.flushDeliveryLog();
+    return result;
   }
 
   /** Anyone but a platform admin: themselves, or a user in their own tenant — never a raw address. */

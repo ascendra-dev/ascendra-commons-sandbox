@@ -76,4 +76,9 @@ export interface DeliveryStatusUpdate {
 export interface NotificationDeliveryRecorder {
   recordAttempts(attempts: DeliveryAttempt[]): Promise<void>;
   updateDeliveryStatus(update: DeliveryStatusUpdate): Promise<void>;
+  /**
+   * Optional — a recorder that buffers writes what it holds. `Notifier.flushDeliveryLog()` calls it after a send an
+   * admin is waiting to see in the log (a retry, a test send). Never throws.
+   */
+  flush?(): Promise<void>;
 }

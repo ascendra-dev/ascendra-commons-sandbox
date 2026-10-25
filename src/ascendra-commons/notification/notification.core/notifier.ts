@@ -245,6 +245,19 @@ export class Notifier {
   }
 
   /**
+   * Writes what the delivery recorder still buffers — for a send someone is about to look up in the log (a retry, a
+   * test send), which a buffered recorder would otherwise write a moment later. A no-op for a recorder that doesn't
+   * buffer. Never throws — the log is best-effort, like recording itself.
+   */
+  async flushDeliveryLog(): Promise<void> {
+    try {
+      await this.deliveryRecorder.flush?.();
+    } catch (err) {
+      this.logger.error('flushing the delivery log failed', err instanceof Error ? err.stack : String(err));
+    }
+  }
+
+  /**
    * Does the credential a send on `channel` for `tenantId` would use work? Reads it the way a send does (the tenant's
    * own, the platform's for a tenantless send or as the fallback) and asks the channel's sender to check it — at most
    * 10 s. Never throws.

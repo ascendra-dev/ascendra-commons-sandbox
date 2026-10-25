@@ -51,6 +51,9 @@ export class NotificationRetryApiService {
       retryOf: delivery.id,
       correlationId: delivery.correlationId ?? undefined,
     });
+    // Written now, not at a buffered recorder's next flush: the retried row names its retry (retriedBy) at once — on
+    // the screen, and to a second retry, which is refused instead of resending.
+    await this.notifier.flushDeliveryLog();
     await this.audit.record({
       action: 'notification.delivery_retried',
       actorId: actor.id,
