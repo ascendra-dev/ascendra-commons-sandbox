@@ -54,6 +54,11 @@ export interface DeliveryHistoryQuery {
   status?: DeliveryRecord['status'];
   /** Join to the same id in audit / job-run history for a cross-module trace. */
   correlationId?: string;
+  /**
+   * A reason's code — `template_not_found` matches `template_not_found` and `template_not_found: …`; what the stats'
+   * `byReason` counts (a bounce is filtered by status instead).
+   */
+  reason?: string;
   /** `true` = test sends only, `false` = real sends only; omitted = both. */
   test?: boolean;
   since?: Date;

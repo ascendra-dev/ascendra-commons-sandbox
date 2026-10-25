@@ -90,6 +90,7 @@ export class NotificationObservabilityApiService {
         recipientKey: this.recipientKeyFilter(query.recipientKey, query.recipientAddress),
         status: enumParam('status', query.status, STATUSES),
         correlationId: correlationIdParam('correlationId', query.correlationId),
+        reason: reasonCodeParam(query.reason),
         test: query.test === undefined || query.test === '' ? undefined : flagParam('test', query.test),
         since: dateParam('since', query.since),
         until: dateParam('until', query.until),
@@ -184,4 +185,13 @@ function timeZoneParam(tz?: string): string {
   if (tz === undefined || tz === '') return 'UTC';
   if (tz.length > 64 || !isValidTimeZone(tz)) throw new BadRequestException('"tz" must be an IANA time zone, e.g. Asia/Dubai');
   return tz;
+}
+
+/** A reason's code, as the stats name it — lowercase words joined by underscores. */
+function reasonCodeParam(value: unknown): string | undefined {
+  if (value === undefined || value === null || value === '') return undefined;
+  if (typeof value !== 'string' || !/^[a-z][a-z0-9_]{0,63}$/.test(value)) {
+    throw new BadRequestException('"reason" must be a reason code, like template_not_found');
+  }
+  return value;
 }

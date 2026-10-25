@@ -63,6 +63,7 @@ export class PostgresNotificationObservabilityService implements NotificationObs
     if (query.recipientKey !== undefined) conds.push(sql`recipient_key = ${query.recipientKey}`);
     if (query.status !== undefined) conds.push(sql`status = ${query.status}`);
     if (query.correlationId !== undefined) conds.push(sql`correlation_id = ${query.correlationId}`);
+    if (query.reason !== undefined) conds.push(sql`(reason = ${query.reason} or starts_with(reason, ${`${query.reason}:`}))`);
     if (query.test !== undefined) conds.push(sql`is_test = ${query.test}`);
     if (query.since) conds.push(sql`attempted_at >= ${query.since}`);
     if (query.until) conds.push(sql`attempted_at < ${query.until}`);

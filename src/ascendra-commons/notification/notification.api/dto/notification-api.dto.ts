@@ -18,6 +18,8 @@ export interface DeliveryHistoryQueryDto {
   recipientAddress?: string;
   status?: string;
   correlationId?: string;
+  /** A reason's code — `template_not_found`. */
+  reason?: string;
   /** `'true'` = test sends only, `'false'` = real sends only. */
   test?: string;
   since?: string;

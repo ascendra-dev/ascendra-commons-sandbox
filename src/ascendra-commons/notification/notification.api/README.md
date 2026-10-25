@@ -9,7 +9,7 @@ tokens.
 
 | Method | Path | Gate | → |
 |---|---|---|---|
-| GET | `/notifications/deliveries` | `notification.view` | `getDeliveryHistory` — filtered, keyset-paginated, `{ data, meta: { nextCursor } }` |
+| GET | `/notifications/deliveries` | `notification.view` | `getDeliveryHistory` — filtered (type, channel, tenant, recipient, status, reason code, correlation id, test, range), keyset-paginated, `{ data, meta: { nextCursor } }` |
 | GET | `/notifications/deliveries/:id` | `notification.view` | one delivery's metadata (404 for another tenant's) |
 | GET | `/notifications/deliveries/:id/content` | `notification.view_content` | the stored rendered message (404 if not stored) — **every read audited** |
 | POST | `/notifications/deliveries/:id/retry` | `notification.retry` | resend a failed / bounced delivery on its channel — a user recipient with stored variables only; linked (`retryOf`), audited |
