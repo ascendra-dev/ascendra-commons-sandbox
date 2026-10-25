@@ -8,6 +8,8 @@ export type { NotificationTenantDirectory } from './notification-tenant-director
 export { NOTIFICATION_AUDIT_EMITTER, NOTIFICATION_API_OPTIONS, NOTIFICATION_TENANT_DIRECTORY } from './tokens';
 export type { NotificationTypeSummary, NotificationTypeDetail } from './types/notification-types-api.service';
 export type { MyPreferences } from './preferences/notification-preferences-api.service';
+export type { DeliveryView } from './observability/notification-observability-api.service';
+export type { SuppressionEntry } from './suppressions/notification-suppressions-api.service';
 
 export type {
   DeliveryHistoryQueryDto,

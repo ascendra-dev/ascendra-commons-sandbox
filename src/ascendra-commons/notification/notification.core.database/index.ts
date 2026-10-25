@@ -18,6 +18,7 @@ export type {
   DeliveryChannelStatusCount,
   DeliveryTypeStatusCount,
   DeliveryDayCount,
+  DeliveryReasonCount,
   DeliveryVolume,
   DeliveryVolumeDay,
   CoverageGap,

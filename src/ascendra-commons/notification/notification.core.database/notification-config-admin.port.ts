@@ -44,9 +44,14 @@ export interface NotificationConfigAdminPort {
   deleteProviderCredential(input: DeleteProviderCredentialInput): Promise<void>;
   listProviderCredentials(scope?: ConfigScope): Promise<ProviderCredentialView[]>;
 
-  /** The suppression list, newest first — `scope`: that tenant's entries only. */
+  /**
+   * The suppression list, newest first. An entry applies to the whole app (a dead address is dead for every tenant);
+   * `scope` narrows it to the entries that tenant is affected by — filed under it, or for a recipient it has sent to on
+   * that channel.
+   */
   listSuppressions(query: SuppressionListQuery, scope?: ConfigScope): Promise<SuppressionPage>;
-  getSuppression(id: string): Promise<SuppressionView | null>;
+  /** One entry — `null` when it doesn't exist, or `scope`'s tenant isn't affected by it. */
+  getSuppression(id: string, scope?: ConfigScope): Promise<SuppressionView | null>;
   /** Removes one entry — the recipient is sent to again (at once in this process). */
   deleteSuppression(id: string): Promise<void>;
 }

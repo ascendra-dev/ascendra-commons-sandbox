@@ -8,12 +8,26 @@ import { Injectable } from '@nestjs/common';
  * phone for SMSNotificationSender) — one resolver, reused by both, since
  * resolving "this user's contact info" is one concern, not two.
  */
-export interface UserContactResolver {
+/** What the app knows about a user — the contact details a sender needs, and (optionally) what the console shows. */
+export interface UserContact {
+  email?: string;
+  phone?: string;
   /**
-   * `tenantId` is optional: when the resolver reports it, `notification.api`'s test send lets a tenant admin pick a
-   * colleague in their own tenant; when it doesn't, a tenant admin may test-send to themselves only.
+   * Optional: when the resolver reports it, `notification.api`'s test send lets a tenant admin pick a colleague in
+   * their own tenant; when it doesn't, a tenant admin may test-send to themselves only.
    */
-  findById(id: string): Promise<{ email?: string; phone?: string; tenantId?: string | null } | null>;
+  tenantId?: string | null;
+  /** Optional: the console shows a user recipient by this name instead of their id. */
+  name?: string;
+}
+
+export interface UserContactResolver {
+  findById(id: string): Promise<UserContact | null>;
+  /**
+   * Optional — many users in one call, for the console naming a page of deliveries. Unknown ids are left out.
+   * Without it, `notification.api` asks `findById` for each (at most a page's worth).
+   */
+  findByIds?(ids: readonly string[]): Promise<Array<UserContact & { id: string }>>;
 }
 
 /**
@@ -26,7 +40,7 @@ export interface UserContactResolver {
  */
 @Injectable()
 export class NullUserContactResolver implements UserContactResolver {
-  async findById(): Promise<{ email?: string; phone?: string; tenantId?: string | null } | null> {
+  async findById(): Promise<UserContact | null> {
     return null;
   }
 }

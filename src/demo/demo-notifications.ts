@@ -13,6 +13,7 @@ import {
   type NotificationSender,
   type NotificationTypeDefinition,
   type ProviderConfig,
+  type UserContact,
   type UserContactResolver,
 } from '../ascendra-commons/notification/notification.core';
 import type { NotificationTenantDirectory } from '../ascendra-commons/notification/notification.api';
@@ -220,18 +221,40 @@ export class FakeWhatsappSender extends FakeProviderSender {
   protected readonly channel = 'whatsapp' as const;
 }
 
+interface ContactRow {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  tenant_id: string | null;
+}
+
+const toContact = (r: ContactRow): UserContact & { id: string } => ({
+  id: r.id,
+  name: r.name,
+  email: r.email,
+  phone: r.phone ?? undefined,
+  tenantId: r.tenant_id,
+});
+
 /**
- * notification's `UserContactResolver` over `demo_user` — an email, a phone, and the tenant (so a tenant admin's test
- * send can reach a colleague, and nobody else).
+ * notification's `UserContactResolver` over `demo_user` — an email, a phone, the tenant (so a tenant admin's test send
+ * can reach a colleague, and nobody else) and the name the console shows; a page of them in one query.
  */
 @Injectable()
 export class DemoContactResolver implements UserContactResolver {
   constructor(@Inject(DATABASE_CONNECTION) private readonly db: Database) {}
 
-  async findById(id: string): Promise<{ email?: string; phone?: string; tenantId: string | null } | null> {
-    const { rows } = await this.db.execute(sql`select email, phone, tenant_id from demo_user where id = ${id}`);
-    const row = rows[0] as { email: string; phone: string | null; tenant_id: string | null } | undefined;
-    return row ? { email: row.email, phone: row.phone ?? undefined, tenantId: row.tenant_id } : null;
+  async findById(id: string): Promise<UserContact | null> {
+    const { rows } = await this.db.execute(sql`select id, name, email, phone, tenant_id from demo_user where id = ${id}`);
+    return rows[0] ? toContact(rows[0] as unknown as ContactRow) : null;
+  }
+
+  async findByIds(ids: readonly string[]): Promise<Array<UserContact & { id: string }>> {
+    if (ids.length === 0) return [];
+    const { rows } = await this.db.execute(sql`
+      select id, name, email, phone, tenant_id from demo_user where id in (${sql.join(ids.map((id) => sql`${id}`), sql`, `)})`);
+    return (rows as unknown as ContactRow[]).map(toContact);
   }
 }
 

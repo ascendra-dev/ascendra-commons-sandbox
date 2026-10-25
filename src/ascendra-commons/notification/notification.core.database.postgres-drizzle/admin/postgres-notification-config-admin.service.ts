@@ -192,20 +192,20 @@ export class PostgresNotificationConfigAdminService implements NotificationConfi
 
   async listSuppressions(query: SuppressionListQuery, scope?: ConfigScope): Promise<SuppressionPage> {
     const limit = Math.min(Math.max(1, query.limit ?? 50), 200);
-    const conds = [sql`application = ${this.application}`];
-    if (scope) conds.push(sql`tenant_id = ${scope.tenantId}`);
+    const conds = [sql`s.application = ${this.application}`];
+    if (scope) conds.push(affects(scope.tenantId));
     if (query.cursor) {
       const cursor = decodeKeysetCursor(query.cursor);
       if (!cursor) throw new InvalidDeliveryCursorError(`Unrecognized cursor "${query.cursor}"`);
       const ts = sql`${cursor.timestamp}::timestamptz`;
-      conds.push(sql`last_at <= ${ts} and (last_at < ${ts} or id < ${cursor.id}::bigint)`);
+      conds.push(sql`s.last_at <= ${ts} and (s.last_at < ${ts} or s.id < ${cursor.id}::bigint)`);
     }
     const { rows } = await this.db.execute<SuppressionRow & { last_at_key: string }>(sql`
-      select id, channel, recipient_key, tenant_id, reason, detail, first_at, last_at, event_count,
-             to_char(last_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') as last_at_key
-      from commons_notification_suppression
+      select s.id, s.channel, s.recipient_key, s.tenant_id, s.reason, s.detail, s.first_at, s.last_at, s.event_count,
+             to_char(s.last_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') as last_at_key
+      from commons_notification_suppression s
       where ${sql.join(conds, sql` and `)}
-      order by last_at desc, id desc
+      order by s.last_at desc, s.id desc
       limit ${limit + 1}
     `);
     if (rows.length > limit) {
@@ -216,11 +216,12 @@ export class PostgresNotificationConfigAdminService implements NotificationConfi
     return { suppressions: rows.map(toSuppression) };
   }
 
-  async getSuppression(id: string): Promise<SuppressionView | null> {
+  async getSuppression(id: string, scope?: ConfigScope): Promise<SuppressionView | null> {
     if (!isDeliveryId(id)) return null;
     const { rows } = await this.db.execute<SuppressionRow>(sql`
-      select id, channel, recipient_key, tenant_id, reason, detail, first_at, last_at, event_count
-      from commons_notification_suppression where application = ${this.application} and id = ${id}::bigint
+      select s.id, s.channel, s.recipient_key, s.tenant_id, s.reason, s.detail, s.first_at, s.last_at, s.event_count
+      from commons_notification_suppression s
+      where s.application = ${this.application} and s.id = ${id}::bigint and ${scope ? affects(scope.tenantId) : sql`true`}
     `);
     return rows[0] ? toSuppression(rows[0]) : null;
   }
@@ -260,6 +261,17 @@ function toSuppression(r: SuppressionRow): SuppressionView {
     lastAt: asDate(r.last_at),
     eventCount: Number(r.event_count),
   };
+}
+
+/**
+ * A suppression (alias `s`) a tenant is affected by: filed under it, or for a recipient it has sent to on that channel
+ * — every send of its to them is skipped too. On the delivery log's recipient-key index.
+ */
+function affects(tenantId: string) {
+  return sql`(s.tenant_id = ${tenantId} or exists (
+    select 1 from commons_notification_delivery d
+    where d.application = s.application and d.recipient_key = s.recipient_key and d.channel = s.channel and d.tenant_id = ${tenantId}
+  ))`;
 }
 
 /** The deployment defaults plus one tenant's rows — or every row when unscoped. */

@@ -26,7 +26,7 @@ export { SMSNotificationSender } from './sms-notification-sender';
 export { InAppNotificationSender } from './in-app-notification-sender';
 export type { InboxItemInput, NotificationInbox } from './notification-inbox.port';
 
-export type { UserContactResolver } from './user-contact-resolver';
+export type { UserContact, UserContactResolver } from './user-contact-resolver';
 export { NullUserContactResolver } from './user-contact-resolver';
 
 export { Notifier, NotificationDeliveryError } from './notifier';

@@ -13,11 +13,11 @@ tokens.
 | GET | `/notifications/deliveries/:id` | `notification.view` | one delivery's metadata (404 for another tenant's) |
 | GET | `/notifications/deliveries/:id/content` | `notification.view_content` | the stored rendered message (404 if not stored) — **every read audited** |
 | POST | `/notifications/deliveries/:id/retry` | `notification.retry` | resend a failed / bounced delivery on its channel — a user recipient with stored variables only; linked (`retryOf`), audited |
-| GET | `/notifications/stats` | `notification.view` | counts by channel/type/day over `?window=` — `24h` rolling, `7d` / `30d` whole calendar days in `?tz=`; test sends left out |
+| GET | `/notifications/stats` | `notification.view` | counts by channel, type, day and failure reason over `?window=` — `24h` rolling, `7d` / `30d` whole calendar days in `?tz=`; test sends left out |
 | GET | `/notifications/volume` | `notification.view` + platform admin | per-day rows over 30 days in `?tz=`, the table's size and age, rows still holding content |
 | GET | `/notifications/config/coverage-gaps` | `notification.view` | holes in routing/templates/credentials — a default route is checked for every tenant (`tenantDirectoryToken`, else the tenants the config names) |
-| GET | `/notifications/suppressions` | `notification.view` | recipients a channel stopped sending to (hard bounce, complaint) — tenant-scoped, `{ data, meta }` |
-| DELETE | `/notifications/suppressions/:id` | `notification.manage_config` | send to them again — audited |
+| GET | `/notifications/suppressions` | `notification.view` | recipients a channel stopped sending to (hard bounce, complaint) — an entry applies app-wide; a tenant admin sees every one its sends are affected by, each with `removable`; `{ data, meta }` |
+| DELETE | `/notifications/suppressions/:id` | `notification.manage_config` | send to them again — audited; one another tenant's bounce filed is a 403 for a tenant admin (the platform's to remove) |
 | GET | `/notifications/preferences/me` | signed in | my types, the channels each reaches me on, on or off — `required` ones always on |
 | PUT | `/notifications/preferences/me` | signed in | `{ notificationType, channel, enabled }` (either may be `*`) — my own rule only |
 | GET | `/notifications/inbox` | signed in | my in-app inbox, newest first — `?unread=true`, `{ data, meta }` |
@@ -37,6 +37,10 @@ tokens.
 
 **Declared types.** Once the app declares its types, a route or template for an undeclared type is a 400, a template
 using a variable the type doesn't have is a 400, and a preview or test send fills the type's sample values.
+
+**Recipient names.** Deliveries and suppressions carry `recipientName` for a user recipient when the app's
+`UserContactResolver` returns a `name` (one `findByIds` call per page when it has one); a guest has none — its address
+is never stored.
 
 A caller's mistake is a 400 naming what to fix — never a 500 (bad dates, numbers, enums, cursors, bodies).
 

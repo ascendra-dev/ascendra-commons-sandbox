@@ -99,6 +99,16 @@ export interface DeliveryDayCount {
   count: number;
 }
 
+/**
+ * Sends that didn't reach anyone, by why — the reason's code (`provider_auth_failed`, not the provider's full text), or
+ * `bounced` for a provider's bounce.
+ */
+export interface DeliveryReasonCount {
+  status: 'failed' | 'skipped' | 'bounced';
+  reason: string;
+  count: number;
+}
+
 /** One calendar day of the Volume & Retention chart. */
 export interface DeliveryVolumeDay {
   /** `YYYY-MM-DD` in the requested time zone. */
@@ -128,6 +138,8 @@ export interface DeliveryStats {
   byChannel: DeliveryChannelStatusCount[];
   byType: DeliveryTypeStatusCount[];
   byDay: DeliveryDayCount[];
+  /** Failed, skipped and bounced sends by reason — most first. */
+  byReason: DeliveryReasonCount[];
 }
 
 /** A hole in the routing/template/credential config, for a "config health" panel. */

@@ -1,11 +1,18 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import type { Actor } from '../../../authorization/authorization.core';
-import { NOTIFICATION_CHANNELS, NOTIFICATION_RECIPIENT_HASHER, type NotificationRecipientHasher } from '../../notification.core';
+import {
+  NOTIFICATION_CHANNELS,
+  NOTIFICATION_RECIPIENT_HASHER,
+  USER_CONTACT_RESOLVER,
+  type NotificationRecipientHasher,
+  type UserContactResolver,
+} from '../../notification.core';
+import { recipientNames } from '../shared/recipient-names';
 import {
   InvalidDeliveryCursorError,
   isValidTimeZone,
   NOTIFICATION_OBSERVABILITY_PORT,
-  type DeliveryHistoryPage,
+  type DeliveryRecord,
   type NotificationObservabilityPort,
 } from '../../notification.core.database';
 import { correlationIdParam, dateParam, enumParam, flagParam, idParam, textParam } from '../shared/params';
@@ -14,6 +21,9 @@ import type { NotificationTenantDirectory } from '../notification-tenant-directo
 import type { NotificationAuditEmitter } from '../notification-audit.port';
 import type { NotificationApiOptions } from '../notification-api.options';
 import type { DeliveryHistoryQueryDto, DeliveryStatsQueryDto } from '../dto/notification-api.dto';
+
+/** A delivery row, with its user recipient's name when the app's resolver knows it. */
+export type DeliveryView = DeliveryRecord & { recipientName: string | null };
 
 const DEFAULT_WINDOW = '7d';
 const WINDOW_RE = /^(\d+)(h|d)$/;
@@ -42,7 +52,14 @@ export class NotificationObservabilityApiService {
     @Inject(NOTIFICATION_AUDIT_EMITTER) private readonly audit: NotificationAuditEmitter,
     @Optional() @Inject(NOTIFICATION_TENANT_DIRECTORY) private readonly tenants?: NotificationTenantDirectory,
     @Optional() @Inject(NOTIFICATION_RECIPIENT_HASHER) private readonly hasher: NotificationRecipientHasher | null = null,
+    @Optional() @Inject(USER_CONTACT_RESOLVER) private readonly users: UserContactResolver | null = null,
   ) {}
+
+  /** Each delivery with its user recipient's name (the app's resolver) — `null` for a guest or an unknown user. */
+  private async named(deliveries: DeliveryRecord[]): Promise<DeliveryView[]> {
+    const names = await recipientNames(this.users, deliveries.map((d) => d.recipientRef));
+    return deliveries.map((d) => ({ ...d, recipientName: names.get(d.recipientRef) ?? null }));
+  }
 
   /**
    * `recipientKey` as given, or `recipientAddress` hashed the way Notifier keys it — an email (it has an @) or a phone
@@ -59,13 +76,13 @@ export class NotificationObservabilityApiService {
     return raw.includes('@') ? this.hasher.hashEmail(raw) : this.hasher.hashPhone(raw);
   }
 
-  async getDeliveryHistory(actor: Actor, query: DeliveryHistoryQueryDto): Promise<DeliveryHistoryPage> {
+  async getDeliveryHistory(actor: Actor, query: DeliveryHistoryQueryDto): Promise<{ deliveries: DeliveryView[]; nextCursor?: string }> {
     const tenantId = await this.resolveTenantFilter(actor, idParam('tenantId', query.tenantId, true));
     if (query.limit !== undefined && (!Number.isInteger(query.limit) || query.limit < 1)) {
       throw new BadRequestException('"limit" must be a positive whole number');
     }
     try {
-      return await this.port.getDeliveryHistory({
+      const page = await this.port.getDeliveryHistory({
         notificationType: idParam('notificationType', query.notificationType, true),
         channel: enumParam('channel', query.channel, NOTIFICATION_CHANNELS),
         tenantId,
@@ -79,6 +96,7 @@ export class NotificationObservabilityApiService {
         limit: query.limit,
         cursor: query.cursor || undefined,
       });
+      return { deliveries: await this.named(page.deliveries), nextCursor: page.nextCursor };
     } catch (err) {
       if (err instanceof InvalidDeliveryCursorError) throw new BadRequestException(err.message);
       throw err;
@@ -92,7 +110,7 @@ export class NotificationObservabilityApiService {
     if (!(await this.options.isPlatformAdmin(actor)) && record.tenantId !== actor.tenantId) {
       throw new NotFoundException('no such delivery');
     }
-    return record;
+    return (await this.named([record]))[0];
   }
 
   /**

@@ -15,6 +15,7 @@ import {
   type DeliveryRecord,
   type DeliveryStats,
   type DeliveryStatsQuery,
+  type DeliveryReasonCount,
   type DeliveryVolume,
   type NotificationObservabilityPort,
 } from '../../notification.core.database';
@@ -217,7 +218,7 @@ export class PostgresNotificationObservabilityService implements NotificationObs
     if (query.tenantId !== undefined) conds.push(sql`tenant_id = ${query.tenantId}`);
     const where = sql.join(conds, sql` and `);
 
-    const [byChannel, byType, byDay] = await Promise.all([
+    const [byChannel, byType, byDay, byReason] = await Promise.all([
       this.db.execute<{ channel: string; status: string; count: number }>(sql`
         select channel, status, count(*)::int as count
         from commons_notification_delivery
@@ -237,6 +238,16 @@ export class PostgresNotificationObservabilityService implements NotificationObs
         group by 1
         order by 1
       `),
+      // The reason's code — the part before a provider's own text ("provider_auth_failed: 401 …"); a bounce is one group.
+      this.db.execute<{ status: string; reason: string; count: number }>(sql`
+        select status,
+               case when status = 'bounced' then 'bounced' else coalesce(nullif(trim(split_part(reason, ':', 1)), ''), 'unknown') end as reason,
+               count(*)::int as count
+        from commons_notification_delivery
+        where ${where} and status in ('failed', 'skipped', 'bounced')
+        group by 1, 2
+        order by 3 desc, 2
+      `),
     ]);
 
     const counted = new Map(byDay.rows.map((r) => [String(r.day), Number(r.count)]));
@@ -255,6 +266,11 @@ export class PostgresNotificationObservabilityService implements NotificationObs
       })),
       // Every day of a day window, a quiet one at 0; a rolling window lists the days it touched.
       byDay: (days ?? [...counted.keys()]).map((day) => ({ day, count: counted.get(day) ?? 0 })),
+      byReason: byReason.rows.map((r) => ({
+        status: r.status as DeliveryReasonCount['status'],
+        reason: r.reason,
+        count: Number(r.count),
+      })),
     };
   }
 
