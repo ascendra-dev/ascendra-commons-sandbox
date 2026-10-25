@@ -71,6 +71,7 @@
         "background-jobs/background-jobs.api",
         "authorization/authorization.core.permission-table.postgres-drizzle",
         "authorization/authorization.api",
+        "notification/notification.api",
         "authorization/authorization.core.permission-table"
       ],
       "files": {
@@ -384,6 +385,132 @@
         "types/delegation.types.ts": "134d12123668cfb1c933744ce77e44024682c589fbfc97f1dd3cef5ee9d8b2f3",
         "types/resolved-permissions.ts": "97843c0ec2ac1df6a289f45e03dafc92764fb957fed1363171281932edfd7a29"
       }
+    },
+    "notification/notification.core.database.postgres-drizzle": {
+      "files": {
+        "README.md": "3875ea040a190b710654da8f23eaab2acb42fc4cc4daa6ee5a343ae8a3aa99a1",
+        "admin/postgres-notification-admin.module.ts": "c26f272d254fa1afce01a5de3260988cad4ff6091ac45bf15e9087bd028e588f",
+        "admin/postgres-notification-config-admin.service.ts": "4cbcd0269321f4a84096ecb1053a6320d67f7bb7aabe86b1dd4d080348f0a0bb",
+        "admin/postgres-notification-observability.service.ts": "0e6f53ff993b66e3e736188b2dc9c41d65194f94c52610bbec413e2c0945a8e8",
+        "config/postgres-notification-config.module.ts": "80072ae5e503a78d622cc5bf1ddbe999e1ce0e23b5135fc77c7473a5b5cb7144",
+        "config/postgres-notification-config.ts": "ceb48616d0e5c76e0805e05f641e3c8dca6dd8dc8455c3f35915bc25118a8ea9",
+        "dedupe/postgres-notification-dedupe.module.ts": "5bdcb076ac4b43f48edf56e599e6c9fdca9d0421dc3ec72fb20bc49e0875d21f",
+        "dedupe/postgres-notification-deduplicator.ts": "dc42738c7372544643cbacd0741c1996ba40bc26ea881e54e74f940a5356dc73",
+        "delivery-log/postgres-notification-delivery-recorder.module.ts": "dd6ad056f5a3837649976045e9dea69722f960a170db829826cdac6e2fc00470",
+        "delivery-log/postgres-notification-delivery-recorder.ts": "e0c59e259e93fd478653c703c8923b6a8cea4c7dd7ac53a9cf385dbf1dbe081b",
+        "inbox/postgres-notification-inbox.module.ts": "1be1652ceee90d3635ecf75176388a3e6758eed546b21207076092ac1aaa60da",
+        "inbox/postgres-notification-inbox.ts": "df6c79fdb2c1de6acf77def6236e51516d6c76faf0220ca6e6922fb6e08b4c61",
+        "index.ts": "572ea06cd7bfb1abfb9862a43ed3db5a3a2e1d8e43d45813543dedb073eb21d5",
+        "migrations/0001_config.sql": "e3ce15a9ef40d226565658be5a16157521c690b96611c301f265c9f44b8a84c9",
+        "migrations/0002_delivery.sql": "4d49258d3ae667cc53845b8fc80557f765cde8c204afd8dd7ccb9d7bfb97b3f5",
+        "migrations/0003_delivery_test_flag.sql": "3fbafeada9254cdb58428034ddf061028d6e918e398eeb959f8678002113ef81",
+        "migrations/0004_platform_credential.sql": "098a25c2151671c37f0c3896f9a468698066755121ef672ed0eee2070ad34cf0",
+        "migrations/0005_delivery_read_indexes.sql": "22bbffdd9945cdf40e7a8183af40a48197770e6838bbe86b4887446bd336df2f",
+        "migrations/0006_delivery_recipient_key.sql": "cdc7d17b47aa606a2ace74da863c0eda0cee95e8c2b692772b3247400230fa14",
+        "migrations/0007_suppression.sql": "b322767e5e5c6080b6e36380ba8ffc4c3e611b96dcb64ca6bf5524b4eead4865",
+        "migrations/0008_dedupe.sql": "1402550291da032bd65bf3e631bb1e3690c9d4ea165d43c04f34db78e480d36d",
+        "migrations/0009_preferences.sql": "710ba8d83b0d1bdd7b8f8ab8e487dc60a3f6b36af789e9fc9d609db15b8fc1b6",
+        "migrations/0010_inbox.sql": "bcf97d870be9b60de238a8ea1d9bb5099d7134ac92fb72f75c692fb127dbb9b9",
+        "migrations/0011_delivery_retry_of.sql": "84d2da392073fec7cc775f9228723c7ff0738ca587503515d07029a2a8b2541d",
+        "persistence/config.schema.ts": "d80d8fae628b07904c6a677872dfe8c65c0f12b52d1bc1251e31ffa01a679aee",
+        "persistence/dedupe.schema.ts": "7dc7b65e2b5ee178e90df9ceb49cf8910cf6efb0956f2574f3ca1342e5860783",
+        "persistence/delivery.schema.ts": "528ca9fef993561f112eb6d7df6932a951086926791549db6d2747f24be092ae",
+        "persistence/inbox.schema.ts": "e7a5dbe63c7cad63eff39dc641c4fad9527d040a3e5297fd2ffe97f1507b8238",
+        "persistence/preference.schema.ts": "af2601d4d1bbdb13fcf00d8e880bfd9c40fb4ef95de746113d31af8c94fd412e",
+        "persistence/sql-executor.ts": "dea32d6f4ae7977d0762b58dcee186803033f0da6a5d486538949166171b6ecb",
+        "persistence/sql-helpers.ts": "e4dfef0fb9a352a58f85b072d74e1a53569768a8e3c4e2aae6c0a339f01716b8",
+        "persistence/suppression.schema.ts": "08641f0d696918aa6820806cd8ea99ed550dabeb38d81b3d36bbad6ab0dd661e",
+        "preferences/postgres-notification-preferences.module.ts": "b1f61f2f86c357de1f2a397f85244580372e5d5ece57036bfcc89ddb315b3470",
+        "preferences/postgres-notification-preferences.ts": "9ca8163c2cb9ae463f6ed0de06ff86e25a52c319aebbe6913cbaef943279377e",
+        "retention/postgres-notification-retention.module.ts": "180ab098dd1055eb53b27be57a1e1436de323ac8b6c5294662da32f9645b9d54",
+        "retention/postgres-notification-retention.service.ts": "5bdbdca63094b96be7a14492fadb8ffeca46c36a3c1b12cf7749dde323a82272",
+        "seed/seed-from-static-data.ts": "db5f0d5ae52934c7dbf01c113d6dbb03f389705a08a81cfb7b61a0b21c12ca35",
+        "suppression/postgres-notification-suppression-list.ts": "eda719c6a7ab83f7a0d39d1046950249b5728d7a1fd273cc14087eed713c1e97",
+        "suppression/postgres-notification-suppression.module.ts": "bfbbdc581510354b64bdce7cd73ddc81f094ff7dc22b86fa8a09214091c20a34",
+        "tokens.ts": "a554e56adbbbc477421cadd2138079dde3d53f83a296bd1d7450745ee43b6979"
+      }
+    },
+    "notification/notification.api": {
+      "files": {
+        "README.md": "803027a1c08da8a4d8bfa3643929d1b43392323673c7b03ac5c5971141d9a50c",
+        "config-admin/notification-config-admin-api.service.ts": "595c1eb96e797607c7bcf36a490db9d156fa6f686b97787d1363acbec6a1d6dc",
+        "config-admin/notification-config-admin.controller.ts": "52371bb2eacaa095ea88b3ab0581217b20652aba4dc5058d7b0fc551e4e03b7c",
+        "dto/notification-api.dto.ts": "9605fbc712fb2c5daa9495b649f74d06982d8d96c916a53dacec4db643f89e2e",
+        "inbox/notification-inbox-api.service.ts": "543944388d40a58033898934ba1504fb143f490da6ff9d31e1e4770d5c76309d",
+        "inbox/notification-inbox.controller.ts": "1944d39023f2e6d53e1e551cc04c05050e27f418ac50020fd5975a189e8e77b1",
+        "index.ts": "64285ebab964fc5f5215c3ba81ebc00ed3b177055836e30be95d1eeb102feaac",
+        "notification-api.module.ts": "724be792617a56998c14697a176bf00b0877f80c825a1b87606eea676370351a",
+        "notification-api.options.ts": "01b704a2d9d9a23a78257e9ab80add9c33b052d19c798ba3b9b9834d8f801e4c",
+        "notification-audit.port.ts": "3ea4527f018b3ac8923e99894755477802d38afebae056ce52c97bc9c5cf9a94",
+        "notification-tenant-directory.port.ts": "510e1a45e90ed9958533cba9cd528cdad6023adee0381f6ffa4d44c733d2c77b",
+        "observability/notification-observability-api.service.ts": "02731400170b139fde92ebd865c0e0154c7e5b0b1138786fff9f2449f8802ced",
+        "observability/notification-observability.controller.ts": "d84521c67967ec2cac90511609b4436540b4ab55a6d197aafc3ce03775d6a9ad",
+        "preferences/notification-preferences-api.service.ts": "7cd52f58be665f719486e28354c776401864bf6ee8812bbb38310f1407ef7ee9",
+        "preferences/notification-preferences.controller.ts": "fd8cc666a2146c8cf3f75911666469232626f2e346fa7ed7c76aafc076dc1302",
+        "retry/notification-retry-api.service.ts": "12ba302a475d489d4f9766aa816919cedcb1838b80b548a7531072818a680264",
+        "retry/notification-retry.controller.ts": "3ad2b2f8cee4958986b2e87e24d23440060e7f4cadab488acff7c463931056b3",
+        "shared/params.ts": "c22bcc99cdc47c602e38c5bb10dd4ee9e6630a926f0478f7b27715b40213da25",
+        "suppressions/notification-suppressions-api.service.ts": "5fdd58e4bda89b315fad8290ce59089dc7bd442a3fd03ffa3795e2cff8e95fa7",
+        "suppressions/notification-suppressions.controller.ts": "34adbf6beddbc2cc009f1249aca86d05da1f4c493b25456da358281bf2a88de6",
+        "test-send/notification-test-send-api.service.ts": "216caf14fcadc5067b5bc5457063ed092c7176b396455e3e5a848d428f468093",
+        "test-send/notification-test-send.controller.ts": "191a669855ec01bd5f01b44be5bf65f717610a5f6e19f66c5911e8ffd7893b65",
+        "tokens.ts": "0db6dba644a6722755f9dd035f6eba50827efc07522dc40c0294d3752010f66b",
+        "types/notification-type-catalog.ts": "0203d353cb7c7184896955a48e85ea7a9c8a2ee1c3460fadc7143643466b8984",
+        "types/notification-types-api.service.ts": "6db3e1b531872e95d5060c6dd0aa9b36925750814cd771ba5594903feee1ee30",
+        "types/notification-types.controller.ts": "82a1bfae132bb143dae5fd398decbe5a23c0afd8d7585b33be3fd2a725ebdafb"
+      }
+    },
+    "notification/notification.core.database": {
+      "requiredBy": [
+        "notification/notification.core.database.postgres-drizzle",
+        "notification/notification.api"
+      ],
+      "files": {
+        "README.md": "4c86b2756a83509dd2b6d9a78cf073dcf2c98299c2d3033c123c36bddcd4f2dc",
+        "calendar-days.ts": "993928d1da77b2c5ed3894d8450354ff705542c3e36bae5ab43a202397ca912d",
+        "config-cache.ts": "5343938cf8d815677ed313afe5f495db21154127d2ea0af6f0a1bc015d45c65c",
+        "index.ts": "57f016ced26e9d9d30aae788e4fb69b23e66ae75ffb236bc64a3534ba894b91f",
+        "keyset-cursor.ts": "328e8822f231810636cc0706241403af3e6638c37a88a2e5ee15adb2bbcc1937",
+        "notification-admin.types.ts": "ca45a77c9d83b22631f362f0aa89af6dc0eb16be6d1d6a39ddd8092bce76d671",
+        "notification-config-admin.port.ts": "907d2c5610d4e160168574508bfe31f76d8c7eb6410c2b571b258e291ca8cd58",
+        "notification-inbox-store.port.ts": "2220443535f98fec31e54540895cf4fe2fed846e984fcea80188c7edf79713c2",
+        "notification-observability.port.ts": "1d5099ca6410788a300b6703922db7685591fd2e39bd7e308dff7ce915d1083d",
+        "notification-preference-store.port.ts": "e3d833fd03ae2a2e9e010f020bd56dd94e44df9b3c88c0241d1491d282f7cc1e",
+        "tokens.ts": "5c9175787a38bc2f5a8d5f5443ceafa4a459bce3abd0f2f93cb01e474b8864cb"
+      }
+    },
+    "notification/notification.core": {
+      "requiredBy": [
+        "notification/notification.core.database.postgres-drizzle",
+        "notification/notification.api",
+        "notification/notification.core.database"
+      ],
+      "files": {
+        "README.md": "ea9c14a6f59790c9f4747573660a401485c37c81c87236eecdf8d840ef6da27c",
+        "email-notification-sender.ts": "79e7d2578c94610b63367250ef630a6e3f5e29c8443f88209254aca295a6b8dc",
+        "in-app-notification-sender.ts": "693e942bb401b75047301a612f0e95bef2c2f84833187dfce581798360a67d12",
+        "index.ts": "76e2c175df9b3985a5a2728756764cd37cd96219eff1c4b8a13f7ac9f3c07576",
+        "noop-notification-delivery-recorder.ts": "7f1f019eb92fb49cf85b2fbb964eaf90309aaeac1c0ec0bc0bde3ed91e112756",
+        "notification-config.port.ts": "00ad670126d3852602607e71ba643910bf9ac6f3f670d94aba47167e5112abc1",
+        "notification-deduplicator.port.ts": "a4312a8936666b48337968cd0423902358a21229f11da7556cf9ccfc0b45b70d",
+        "notification-delivery-recorder.port.ts": "74ca8253104c4f593e33a9d14b8e88b9809299a0275e6344d874a5acc373ecc5",
+        "notification-inbox.port.ts": "d61c247d15e86e777cf16ed5e77a3f7fb56e03978f0e8aebc795582fbf4f4268",
+        "notification-preferences.port.ts": "47804ee323b5e7592498899e1cd41153a500a51b61aa9711ea621e46655cd503",
+        "notification-sender.port.ts": "1293b8e6d823a696c44fcee60147b029aed4617f677e1f9a1b73a54663fbda9a",
+        "notification-suppression.port.ts": "4c1ced89da9e9291c214b46d341804288f9797437170cdd60b31ca77e9aa5c92",
+        "notification-template.ts": "82f0c1aec2b5e5ec6d0b6924879e1925f72455a60697bc91b5ab21923a85be28",
+        "notification-type.ts": "7f6d97135a626342b371775170808f049839a1817411e694278ab3dee9a9c8cf",
+        "notification.module.ts": "3fddee7cd30a1d325f1f2523995d3299c502d8f37887e0f118c5f5b3e8cab400",
+        "notification.types.ts": "e331f075931bdfc67cc23f7a7b76e549673481f9db98575d794b11b4323e60bb",
+        "notifier.ts": "fdb09c595d720fe5b16d4ab13b1cdc2a3b0ef98dcc0999110d57fa419b7706be",
+        "recipient-hasher.ts": "e65c9518fac351ec672c259e135c000c635b9a3e1b8e10a601b21cd9ec3afe84",
+        "recipient-ref.ts": "baec35a505d214710dfc4f670814516d9cd58e44c1804f4357ea7c44c6db3d9d",
+        "sms-notification-sender.ts": "f3fc762966dfc87890a7770d5c96f6cb9fa395a32ca16036fc2ea2839168d43a",
+        "stub-log.ts": "130eccf252ef0190efd239c2dcfb1e839c5d337c3aeba1e166fe6f5e6e70d92c",
+        "tokens.ts": "eebb430ffacd92814032b517b43e87b8040786637261704ffe002ca6089480fb",
+        "user-contact-resolver.ts": "8fbb495aa8145f1f8a3670ddbd21d54e7e1cf785a123c4c1c7a2513833ab48f6",
+        "whatsapp-notification-sender.ts": "f6b753aea97a1760a47f049f6bbf6cc564de786739c7dc811a9818fee5ee57e1"
+      }
     }
   },
   "migrations": {
@@ -454,10 +581,54 @@
     "authorization/authorization.core.permission-table.postgres-drizzle/0004_authorization_denial_window_key.sql": {
       "checksum": "970bb618799e0fb70f9f185cc0f0f33e79581aa20185186e438efd5f332c9865",
       "copiedTo": "src/db/migrations/0017_commons_authorization_0004_authorization_denial_window_key.sql"
+    },
+    "notification/notification.core.database.postgres-drizzle/0001_config.sql": {
+      "checksum": "e3ce15a9ef40d226565658be5a16157521c690b96611c301f265c9f44b8a84c9",
+      "copiedTo": "src/db/migrations/0018_commons_notification_0001_config.sql"
+    },
+    "notification/notification.core.database.postgres-drizzle/0002_delivery.sql": {
+      "checksum": "4d49258d3ae667cc53845b8fc80557f765cde8c204afd8dd7ccb9d7bfb97b3f5",
+      "copiedTo": "src/db/migrations/0019_commons_notification_0002_delivery.sql"
+    },
+    "notification/notification.core.database.postgres-drizzle/0003_delivery_test_flag.sql": {
+      "checksum": "3fbafeada9254cdb58428034ddf061028d6e918e398eeb959f8678002113ef81",
+      "copiedTo": "src/db/migrations/0020_commons_notification_0003_delivery_test_flag.sql"
+    },
+    "notification/notification.core.database.postgres-drizzle/0004_platform_credential.sql": {
+      "checksum": "098a25c2151671c37f0c3896f9a468698066755121ef672ed0eee2070ad34cf0",
+      "copiedTo": "src/db/migrations/0021_commons_notification_0004_platform_credential.sql"
+    },
+    "notification/notification.core.database.postgres-drizzle/0005_delivery_read_indexes.sql": {
+      "checksum": "22bbffdd9945cdf40e7a8183af40a48197770e6838bbe86b4887446bd336df2f",
+      "copiedTo": "src/db/migrations/0022_commons_notification_0005_delivery_read_indexes.sql"
+    },
+    "notification/notification.core.database.postgres-drizzle/0006_delivery_recipient_key.sql": {
+      "checksum": "cdc7d17b47aa606a2ace74da863c0eda0cee95e8c2b692772b3247400230fa14",
+      "copiedTo": "src/db/migrations/0023_commons_notification_0006_delivery_recipient_key.sql"
+    },
+    "notification/notification.core.database.postgres-drizzle/0007_suppression.sql": {
+      "checksum": "b322767e5e5c6080b6e36380ba8ffc4c3e611b96dcb64ca6bf5524b4eead4865",
+      "copiedTo": "src/db/migrations/0024_commons_notification_0007_suppression.sql"
+    },
+    "notification/notification.core.database.postgres-drizzle/0008_dedupe.sql": {
+      "checksum": "1402550291da032bd65bf3e631bb1e3690c9d4ea165d43c04f34db78e480d36d",
+      "copiedTo": "src/db/migrations/0025_commons_notification_0008_dedupe.sql"
+    },
+    "notification/notification.core.database.postgres-drizzle/0009_preferences.sql": {
+      "checksum": "710ba8d83b0d1bdd7b8f8ab8e487dc60a3f6b36af789e9fc9d609db15b8fc1b6",
+      "copiedTo": "src/db/migrations/0026_commons_notification_0009_preferences.sql"
+    },
+    "notification/notification.core.database.postgres-drizzle/0010_inbox.sql": {
+      "checksum": "bcf97d870be9b60de238a8ea1d9bb5099d7134ac92fb72f75c692fb127dbb9b9",
+      "copiedTo": "src/db/migrations/0027_commons_notification_0010_inbox.sql"
+    },
+    "notification/notification.core.database.postgres-drizzle/0011_delivery_retry_of.sql": {
+      "checksum": "84d2da392073fec7cc775f9228723c7ff0738ca587503515d07029a2a8b2541d",
+      "copiedTo": "src/db/migrations/0028_commons_notification_0011_delivery_retry_of.sql"
     }
   },
-  "source": "/Users/zakashah/ascendra/ascendra-public/ascendra-commons (local checkout)",
-  "commit": "f676bd3cdb2215ec034d7dee409d41dd8d988a48",
+  "source": "https://github.com/ascendra-dev/ascendra-commons.git",
+  "commit": "d976ae34020d60987bb5d4a29b30992207515ee5",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-23T09:17:27.368Z"
+  "syncedAt": "2026-10-25T20:50:26.930Z"
 }

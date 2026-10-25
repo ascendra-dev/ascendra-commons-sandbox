@@ -21,6 +21,8 @@
     "background-jobs/background-jobs.core.postgres-drizzle",
     "background-jobs/background-jobs.api",
     "authorization/authorization.core.permission-table.postgres-drizzle",
-    "authorization/authorization.api"
+    "authorization/authorization.api",
+    "notification/notification.core.database.postgres-drizzle",
+    "notification/notification.api"
   ]
 }

@@ -127,6 +127,83 @@
       "when": 1792742736374,
       "tag": "0017_commons_authorization_0004_authorization_denial_window_key",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792961415495,
+      "tag": "0018_commons_notification_0001_config",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792961415823,
+      "tag": "0019_commons_notification_0002_delivery",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792961427405,
+      "tag": "0020_commons_notification_0003_delivery_test_flag",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1792961427727,
+      "tag": "0021_commons_notification_0004_platform_credential",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1792961428037,
+      "tag": "0022_commons_notification_0005_delivery_read_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1792961428340,
+      "tag": "0023_commons_notification_0006_delivery_recipient_key",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1792961428648,
+      "tag": "0024_commons_notification_0007_suppression",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1792961428950,
+      "tag": "0025_commons_notification_0008_dedupe",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792961429250,
+      "tag": "0026_commons_notification_0009_preferences",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1792961429544,
+      "tag": "0027_commons_notification_0010_inbox",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1792961429838,
+      "tag": "0028_commons_notification_0011_delivery_retry_of",
+      "breakpoints": true
     }
   ]
 }
