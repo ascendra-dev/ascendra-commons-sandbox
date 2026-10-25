@@ -34,6 +34,9 @@ const MAX_LIMIT = 200;
 
 /** `attempted_at` at the column's own precision (microseconds), for the keyset cursor — a JS `Date` keeps milliseconds. */
 const ATTEMPTED_AT_KEY = sql`to_char(attempted_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') as attempted_at_key`;
+/** The latest retry of row `d` — an index probe per row (`commons_notification_delivery_retry_of_idx`). */
+const RETRIED_BY = sql`(select r.id from commons_notification_delivery r
+  where r.application = d.application and r.retry_of = d.id order by r.id desc limit 1) as retried_by`;
 
 /**
  * `NotificationObservabilityPort` for Postgres/Drizzle — the delivery log
@@ -78,8 +81,8 @@ export class PostgresNotificationObservabilityService implements NotificationObs
       await this.db.execute<DeliveryRow & { attempted_at_key: string }>(sql`
         select id, notification_type, channel, tenant_id, recipient_ref, recipient_key, status, reason,
                provider_message_id, attempted_at, updated_at, correlation_id,
-               (content is not null) as has_content, is_test, retry_of, ${ATTEMPTED_AT_KEY}
-        from commons_notification_delivery
+               (content is not null) as has_content, is_test, retry_of, ${RETRIED_BY}, ${ATTEMPTED_AT_KEY}
+        from commons_notification_delivery d
         where ${sql.join(conds, sql` and `)}
         order by attempted_at desc, id desc
         limit ${limit + 1}
@@ -100,8 +103,8 @@ export class PostgresNotificationObservabilityService implements NotificationObs
     const { rows } = await this.db.execute<DeliveryRow>(sql`
       select id, notification_type, channel, tenant_id, recipient_ref, recipient_key, status, reason,
              provider_message_id, attempted_at, updated_at, correlation_id,
-             (content is not null) as has_content, is_test, retry_of
-      from commons_notification_delivery
+             (content is not null) as has_content, is_test, retry_of, ${RETRIED_BY}
+      from commons_notification_delivery d
       where application = ${this.application} and id = ${id}::bigint
     `);
     const row = rows[0];
@@ -329,6 +332,7 @@ interface DeliveryRow {
   has_content: boolean;
   is_test: boolean;
   retry_of: string | number | null;
+  retried_by: string | number | null;
 }
 
 function mapRow(row: DeliveryRow): DeliveryRecord {
@@ -348,6 +352,7 @@ function mapRow(row: DeliveryRow): DeliveryRecord {
     hasContent: row.has_content === true,
     isTest: row.is_test === true,
     retryOf: row.retry_of == null ? null : String(row.retry_of),
+    retriedBy: row.retried_by == null ? null : String(row.retried_by),
   };
 }
 

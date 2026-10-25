@@ -63,6 +63,9 @@ export const notificationDelivery = pgTable(
       .where(sql`${t.correlationId} is not null`),
     index('commons_notification_delivery_content_idx').on(t.application, t.attemptedAt).where(sql`${t.content} is not null`),
     index('commons_notification_delivery_provider_msg_idx').on(t.providerMessageId),
+    index('commons_notification_delivery_retry_of_idx')
+      .on(t.application, t.retryOf)
+      .where(sql`${t.retryOf} is not null`),
     index('commons_notification_delivery_recipient_key_idx')
       .on(t.application, t.recipientKey, t.attemptedAt.desc(), t.id.desc())
       .where(sql`${t.recipientKey} is not null`),

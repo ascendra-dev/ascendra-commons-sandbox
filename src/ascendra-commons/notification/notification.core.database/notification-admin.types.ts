@@ -29,6 +29,8 @@ export interface DeliveryRecord {
   isTest: boolean;
   /** The delivery this one retries — `null` for a first send. */
   retryOf: string | null;
+  /** The latest delivery that retries this one — `null` when it was never retried. */
+  retriedBy: string | null;
 }
 
 /** One row's stored rendered content — from `getDeliveryContent(id)`, null when not stored. */

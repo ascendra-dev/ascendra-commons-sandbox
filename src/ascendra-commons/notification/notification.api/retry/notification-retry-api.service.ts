@@ -10,7 +10,8 @@ import type { NotificationAuditEmitter } from '../notification-audit.port';
  * `POST /notifications/deliveries/:id/retry` — resend a failed delivery to its real recipient, on its channel only,
  * through Notifier (so preferences and the suppression list still apply). Possible when the row names a user (a
  * guest's address isn't stored) and its variables were stored (`storeContent`). The new rows link back (`retryOf`);
- * the retry is audited. Tenant-scoped like the row.
+ * the retry is audited. Once only — a retried row points at its retry (`retriedBy`), which is retried instead.
+ * Tenant-scoped like the row.
  */
 @Injectable()
 export class NotificationRetryApiService {
@@ -28,6 +29,9 @@ export class NotificationRetryApiService {
     }
     if (delivery.status !== 'failed' && delivery.status !== 'bounced') {
       throw new BadRequestException(`only a failed or bounced delivery can be retried — this one is ${delivery.status}`);
+    }
+    if (delivery.retriedBy) {
+      throw new BadRequestException(`already retried — delivery ${delivery.retriedBy}; retry that one if it failed too`);
     }
     if (delivery.isTest) throw new BadRequestException('a test send is not retried — send another test');
     if (!delivery.recipientRef.startsWith('user:')) {
