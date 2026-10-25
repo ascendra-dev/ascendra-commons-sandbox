@@ -1,0 +1,1 @@
+ALTER TABLE "demo_user" ADD COLUMN "phone" text;

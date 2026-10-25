@@ -10,7 +10,12 @@ export const AUDIT_CATALOG: AuditCatalogEntry[] = [
   { entityType: 'payment', actions: ['captured', 'failed', 'refunded'] },
   { entityType: 'user', actions: ['invited', 'profile_updated', 'role_granted', 'role_revoked'] },
   { entityType: 'attachment', actions: ['uploaded', 'deleted'] },
-  { entityType: 'channel_route', actions: ['route_set'] },
+  // notification — the console's config edits, message reads, retries and suppressions
+  { entityType: 'channel_route', actions: ['route_set', 'set', 'deleted'] },
+  { entityType: 'template', actions: ['set', 'deleted'] },
+  { entityType: 'provider_credential', actions: ['set', 'deleted'] },
+  { entityType: 'delivery', actions: ['viewed', 'retried'] },
+  { entityType: 'suppression', actions: ['removed'] },
   { entityType: 'tenant', actions: ['created', 'plan_changed'] },
   { entityType: 'job', actions: ['triggered'] },
   { entityType: 'user_role', actions: ['assigned', 'revoked'] },

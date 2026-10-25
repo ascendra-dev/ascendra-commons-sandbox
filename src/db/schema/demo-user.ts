@@ -12,6 +12,8 @@ export const demoUser = pgTable(
     id: text('id').primaryKey(),
     name: text('name').notNull(),
     email: text('email').notNull(),
+    /** For SMS and WhatsApp — notification's contact resolver reads it. `null`: no phone on file. */
+    phone: text('phone'),
     /** `null` for platform staff. */
     tenantId: text('tenant_id'),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),

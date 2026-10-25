@@ -29,6 +29,7 @@ import { DOMAIN_EVENT_EMITTER, type DomainEventEmitter } from '../../ascendra-co
 import { DOMAIN_EVENTS_ACTIONS } from '../../ascendra-commons/domain-events/domain-events.api';
 import { IDEMPOTENCY_ACTIONS } from '../../ascendra-commons/idempotency-key/idempotency-key.api';
 import { RATE_LIMIT_ACTIONS } from '../../ascendra-commons/rate-limiting/rate-limiting.api';
+import { NOTIFICATION_ACTIONS } from '../../ascendra-commons/notification/notification.api';
 import { DEV_ACTORS } from '../../auth/dev-actors';
 import { DEMO_ACTIONS, DEMO_ROLES } from '../../demo/demo-access';
 import { DemoUserDirectory, DemoUsersModule } from '../../demo/demo-users';
@@ -45,6 +46,7 @@ export const ALL_ACTIONS: string[] = [
   ...Object.values(DOMAIN_EVENTS_ACTIONS),
   ...Object.values(JOB_ACTIONS),
   ...Object.values(AUTHZ_ACTIONS),
+  ...Object.values(NOTIFICATION_ACTIONS),
   ...Object.values(DEMO_ACTIONS),
 ];
 
@@ -90,6 +92,8 @@ export const PERSONA_ACTIONS: Record<string, string[]> = {
     JOB_ACTIONS.VIEW,
     JOB_ACTIONS.RUN,
     ...Object.values(AUTHZ_ACTIONS),
+    // Every notification action — reading stored messages (personal data) is the platform admin's alone.
+    ...Object.values(NOTIFICATION_ACTIONS),
   ],
   'platform-support': [
     RATE_LIMIT_ACTIONS.VIEW,
@@ -99,6 +103,8 @@ export const PERSONA_ACTIONS: Record<string, string[]> = {
     // Reads every tenant's access (authz.platform) — but assigns nothing: no authz.assign_roles.
     AUTHZ_ACTIONS.VIEW,
     AUTHZ_ACTIONS.PLATFORM,
+    // Reads the delivery log and config — no message content, no edits, no sends.
+    NOTIFICATION_ACTIONS.VIEW,
   ],
   // Holds every product action too — so it can hand out every product role (the role ceiling: only what you hold).
   'tenant-admin': [
@@ -106,6 +112,12 @@ export const PERSONA_ACTIONS: Record<string, string[]> = {
     AUTHZ_ACTIONS.VIEW,
     AUTHZ_ACTIONS.ASSIGN_ROLES,
     AUTHZ_ACTIONS.MANAGE_DELEGATIONS,
+    // Their tenant's notifications: the log, its own routing / templates / credentials, test sends, retries — not
+    // the stored message text (notification.view_content stays the platform's).
+    NOTIFICATION_ACTIONS.VIEW,
+    NOTIFICATION_ACTIONS.MANAGE_CONFIG,
+    NOTIFICATION_ACTIONS.TEST_SEND,
+    NOTIFICATION_ACTIONS.RETRY,
     ...Object.values(DEMO_ACTIONS),
   ],
   member: [AUTHZ_ACTIONS.MANAGE_DELEGATIONS],

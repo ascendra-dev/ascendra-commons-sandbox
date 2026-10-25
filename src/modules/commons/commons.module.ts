@@ -6,6 +6,7 @@ import { AuthzBootstrapModule, authorization, authorizationApi } from './authori
 import { JobSchedulesModule, backgroundJobs, backgroundJobsApi } from './background-jobs';
 import { domainEvents, domainEventsApi } from './domain-events';
 import { idempotency, idempotencyApi } from './idempotency';
+import { notification, notificationApi } from './notification';
 import { rateLimiting, rateLimitingApi, throttler } from './rate-limiting';
 
 /**
@@ -18,10 +19,11 @@ import { rateLimiting, rateLimitingApi, throttler } from './rate-limiting';
     domainEvents, domainEventsApi, authorization, authorizationApi, AuthzBootstrapModule, auditLogging, auditApi,
     throttler, rateLimiting, rateLimitingApi,
     idempotency, idempotencyApi,
+    notification, notificationApi,
     // The retention / cleanup jobs of the modules above run here too — as scheduled jobs (background-jobs.ts).
     backgroundJobs, backgroundJobsApi, JobSchedulesModule,
   ],
-  exports: [domainEvents, authorization, rateLimiting, idempotency, backgroundJobs],
+  exports: [domainEvents, authorization, rateLimiting, idempotency, backgroundJobs, notification],
 })
 export class CommonsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
