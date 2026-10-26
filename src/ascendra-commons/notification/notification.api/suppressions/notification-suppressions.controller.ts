@@ -15,8 +15,14 @@ export class NotificationSuppressionsController {
 
   @Get()
   @RequiresAction(NOTIFICATION_ACTIONS.VIEW)
-  async list(@CurrentActor() actor: Actor, @Query('limit') limit?: string, @Query('cursor') cursor?: string) {
-    const page = await this.service.list(actor, { limit: positiveIntParam('limit', limit), cursor });
+  async list(
+    @CurrentActor() actor: Actor,
+    @Query('recipientKey') recipientKey?: string,
+    @Query('channel') channel?: string,
+    @Query('limit') limit?: string,
+    @Query('cursor') cursor?: string,
+  ) {
+    const page = await this.service.list(actor, { recipientKey, channel, limit: positiveIntParam('limit', limit), cursor });
     return cursorList(page.suppressions, page.nextCursor);
   }
 

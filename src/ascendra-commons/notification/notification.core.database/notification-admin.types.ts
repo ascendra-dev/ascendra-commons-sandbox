@@ -52,6 +52,8 @@ export interface DeliveryHistoryQuery {
   /** `user:<id>` or a hashed address — `notification.api` hashes a searched address into this. */
   recipientKey?: string;
   status?: DeliveryRecord['status'];
+  /** Any of these — `['failed', 'bounced']`, what the overview counts as failed. ANDed with `status` if both are given. */
+  statuses?: DeliveryRecord['status'][];
   /** Join to the same id in audit / job-run history for a cross-module trace. */
   correlationId?: string;
   /**
@@ -204,6 +206,9 @@ export interface SuppressionView {
 }
 
 export interface SuppressionListQuery {
+  /** One recipient's entries — a delivery row's `recipientKey` (a skipped send says why). */
+  recipientKey?: string;
+  channel?: NotificationChannel;
   /** Default 50, capped at 200. */
   limit?: number;
   cursor?: string;

@@ -88,7 +88,7 @@ export class NotificationObservabilityApiService {
         tenantId,
         recipientRef: idParam('recipientRef', query.recipientRef, true),
         recipientKey: this.recipientKeyFilter(query.recipientKey, query.recipientAddress),
-        status: enumParam('status', query.status, STATUSES),
+        ...statusFilter(query.status),
         correlationId: correlationIdParam('correlationId', query.correlationId),
         reason: reasonCodeParam(query.reason),
         test: query.test === undefined || query.test === '' ? undefined : flagParam('test', query.test),
@@ -194,4 +194,12 @@ function reasonCodeParam(value: unknown): string | undefined {
     throw new BadRequestException('"reason" must be a reason code, like template_not_found');
   }
   return value;
+}
+
+/** `status=failed` — one; `status=failed,bounced` — any of them (the overview's "failed" counts both). */
+function statusFilter(value: unknown): { status?: (typeof STATUSES)[number]; statuses?: (typeof STATUSES)[number][] } {
+  if (typeof value !== 'string' || !value.includes(',')) return { status: enumParam('status', value, STATUSES) };
+  const statuses = [...new Set(value.split(',').map((v) => v.trim()))].map((v) => enumParam('status', v, STATUSES));
+  if (statuses.some((v) => v === undefined)) throw new BadRequestException('"status" lists one or more of ' + STATUSES.join(', '));
+  return { statuses: statuses as (typeof STATUSES)[number][] };
 }

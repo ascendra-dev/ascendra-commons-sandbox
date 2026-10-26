@@ -390,8 +390,8 @@
       "files": {
         "README.md": "df79f2bcf1c3faf3f49e6bdce6fe810d3d5bed36552b60c397c53e0485693427",
         "admin/postgres-notification-admin.module.ts": "c26f272d254fa1afce01a5de3260988cad4ff6091ac45bf15e9087bd028e588f",
-        "admin/postgres-notification-config-admin.service.ts": "3a8f31d7955738ab809a87b47021d3c4ec2e89ff7fee87a83f15fc2ea9859f1d",
-        "admin/postgres-notification-observability.service.ts": "f0a68cc66237eeb467c5bd30849689c3c14564a62b7e6811aa9186151331d91f",
+        "admin/postgres-notification-config-admin.service.ts": "38d75880bea45c209c05c49274f70d0fabd75c511fa747c6c5d6477151cfd93b",
+        "admin/postgres-notification-observability.service.ts": "f11a87fed3b3021335c272134598b336dd31e645003525b71b3c222ec95f71e3",
         "config/postgres-notification-config.module.ts": "80072ae5e503a78d622cc5bf1ddbe999e1ce0e23b5135fc77c7473a5b5cb7144",
         "config/postgres-notification-config.ts": "ceb48616d0e5c76e0805e05f641e3c8dca6dd8dc8455c3f35915bc25118a8ea9",
         "dedupe/postgres-notification-dedupe.module.ts": "5bdcb076ac4b43f48edf56e599e6c9fdca9d0421dc3ec72fb20bc49e0875d21f",
@@ -433,7 +433,7 @@
     },
     "notification/notification.api": {
       "files": {
-        "README.md": "f31fc7e3cf7f1f9ff23f6b7968f3b113af89e648eae0f4a2d3db3bb7ad7e66e1",
+        "README.md": "d9a8bcf86355b843485b89103948a20c67adb9ef39f0113448c13af69f32d31c",
         "config-admin/notification-config-admin-api.service.ts": "595c1eb96e797607c7bcf36a490db9d156fa6f686b97787d1363acbec6a1d6dc",
         "config-admin/notification-config-admin.controller.ts": "52371bb2eacaa095ea88b3ab0581217b20652aba4dc5058d7b0fc551e4e03b7c",
         "dto/notification-api.dto.ts": "3a3b4901c063379dfcc615226e25b6333f1c9ba8254d12dc5735273ea2095240",
@@ -444,7 +444,7 @@
         "notification-api.options.ts": "01b704a2d9d9a23a78257e9ab80add9c33b052d19c798ba3b9b9834d8f801e4c",
         "notification-audit.port.ts": "3ea4527f018b3ac8923e99894755477802d38afebae056ce52c97bc9c5cf9a94",
         "notification-tenant-directory.port.ts": "510e1a45e90ed9958533cba9cd528cdad6023adee0381f6ffa4d44c733d2c77b",
-        "observability/notification-observability-api.service.ts": "e4a5a3ac5ea05463b9fb7c9bcb6951060c579739bae44b55b623279a574f2225",
+        "observability/notification-observability-api.service.ts": "8a407f5a0edf685c77ffda8cd0d7243a77d8db73bea8edeed467d21a5de0e814",
         "observability/notification-observability.controller.ts": "a687e4abb16db2ea48351c3ff29fc0dfe72533ae5625320ad4aadc3e0b45e70c",
         "preferences/notification-preferences-api.service.ts": "7cd52f58be665f719486e28354c776401864bf6ee8812bbb38310f1407ef7ee9",
         "preferences/notification-preferences.controller.ts": "fd8cc666a2146c8cf3f75911666469232626f2e346fa7ed7c76aafc076dc1302",
@@ -452,8 +452,8 @@
         "retry/notification-retry.controller.ts": "3ad2b2f8cee4958986b2e87e24d23440060e7f4cadab488acff7c463931056b3",
         "shared/params.ts": "c22bcc99cdc47c602e38c5bb10dd4ee9e6630a926f0478f7b27715b40213da25",
         "shared/recipient-names.ts": "0177f69cfce8eada8d610b4cb107c3c03dc04c1b2287cbb0b7f2d3ccd55adeee",
-        "suppressions/notification-suppressions-api.service.ts": "d7bee84678186ff4c13e09eee4842cae39d21aaa5249cdd82842d66818a6623f",
-        "suppressions/notification-suppressions.controller.ts": "34adbf6beddbc2cc009f1249aca86d05da1f4c493b25456da358281bf2a88de6",
+        "suppressions/notification-suppressions-api.service.ts": "ff52c3fec80b79b47571ba6ee9684a6c0111cb1eab64d9febacf47bb864b54f3",
+        "suppressions/notification-suppressions.controller.ts": "b55ed6412e7a400e84f36b22598b2c9c530b0e2ff815e9aa0e3bc229da0994eb",
         "test-send/notification-test-send-api.service.ts": "7d6e9e2b8dd3412546d0021d3a2263aa13346f3772afb6ad32c174f13a5e62a1",
         "test-send/notification-test-send.controller.ts": "191a669855ec01bd5f01b44be5bf65f717610a5f6e19f66c5911e8ffd7893b65",
         "tokens.ts": "0db6dba644a6722755f9dd035f6eba50827efc07522dc40c0294d3752010f66b",
@@ -473,7 +473,7 @@
         "config-cache.ts": "5343938cf8d815677ed313afe5f495db21154127d2ea0af6f0a1bc015d45c65c",
         "index.ts": "7db3a8336a20bbc587fe0e83ea5d286f1282a24a2531ef8d285bbd0479462f07",
         "keyset-cursor.ts": "328e8822f231810636cc0706241403af3e6638c37a88a2e5ee15adb2bbcc1937",
-        "notification-admin.types.ts": "2393badf772fe344237d2f785ce2e62c3c622fbca4b9d894cb39b0450430ae41",
+        "notification-admin.types.ts": "28127109f0dc611d6d91951f7e0296351446b577f24bf658f4bd12bf4ea6e350",
         "notification-config-admin.port.ts": "4d2adc2408b354257253d5461ccd322dabf68895373d8e49f889b3bd9fc7691a",
         "notification-inbox-store.port.ts": "2220443535f98fec31e54540895cf4fe2fed846e984fcea80188c7edf79713c2",
         "notification-observability.port.ts": "1d5099ca6410788a300b6703922db7685591fd2e39bd7e308dff7ce915d1083d",
@@ -634,7 +634,7 @@
     }
   },
   "source": "https://github.com/ascendra-dev/ascendra-commons.git",
-  "commit": "b217b0625c01d8154099f70bdfe8da13866a8a17",
+  "commit": "80d7002b896b793a914e79f8fe895fab86205599",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-25T23:52:27.871Z"
+  "syncedAt": "2026-10-26T00:37:10.370Z"
 }

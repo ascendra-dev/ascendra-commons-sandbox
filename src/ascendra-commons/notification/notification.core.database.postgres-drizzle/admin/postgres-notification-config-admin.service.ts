@@ -194,6 +194,8 @@ export class PostgresNotificationConfigAdminService implements NotificationConfi
     const limit = Math.min(Math.max(1, query.limit ?? 50), 200);
     const conds = [sql`s.application = ${this.application}`];
     if (scope) conds.push(affects(scope.tenantId));
+    if (query.recipientKey !== undefined) conds.push(sql`s.recipient_key = ${query.recipientKey}`);
+    if (query.channel !== undefined) conds.push(sql`s.channel = ${query.channel}`);
     if (query.cursor) {
       const cursor = decodeKeysetCursor(query.cursor);
       if (!cursor) throw new InvalidDeliveryCursorError(`Unrecognized cursor "${query.cursor}"`);

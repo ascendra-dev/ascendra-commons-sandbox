@@ -9,14 +9,14 @@ tokens.
 
 | Method | Path | Gate | → |
 |---|---|---|---|
-| GET | `/notifications/deliveries` | `notification.view` | `getDeliveryHistory` — filtered (type, channel, tenant, recipient, status, reason code, correlation id, test, range), keyset-paginated, `{ data, meta: { nextCursor } }` |
+| GET | `/notifications/deliveries` | `notification.view` | `getDeliveryHistory` — filtered (type, channel, tenant, recipient, status — one, or several as `failed,bounced` — reason code, correlation id, test, range), keyset-paginated, `{ data, meta: { nextCursor } }` |
 | GET | `/notifications/deliveries/:id` | `notification.view` | one delivery's metadata (404 for another tenant's) |
 | GET | `/notifications/deliveries/:id/content` | `notification.view_content` | the stored rendered message (404 if not stored) — **every read audited** |
 | POST | `/notifications/deliveries/:id/retry` | `notification.retry` | resend a failed / bounced delivery on its channel — a user recipient with stored variables only; linked (`retryOf`), audited |
 | GET | `/notifications/stats` | `notification.view` | counts by channel, type, day (with how many failed) and failure reason over `?window=` — `24h` rolling, `7d` / `30d` whole calendar days in `?tz=`; test sends left out |
 | GET | `/notifications/volume` | `notification.view` + platform admin | per-day rows over 30 days in `?tz=`, the table's size and age, rows still holding content |
 | GET | `/notifications/config/coverage-gaps` | `notification.view` | holes in routing/templates/credentials — a default route is checked for every tenant (`tenantDirectoryToken`, else the tenants the config names) |
-| GET | `/notifications/suppressions` | `notification.view` | recipients a channel stopped sending to (hard bounce, complaint) — an entry applies app-wide; a tenant admin sees every one its sends are affected by, each with `removable`; `{ data, meta }` |
+| GET | `/notifications/suppressions` | `notification.view` | recipients a channel stopped sending to (hard bounce, complaint) — an entry applies app-wide; a tenant admin sees every one its sends are affected by, each with `removable`; `?recipientKey=&channel=` — one recipient's; `{ data, meta }` |
 | DELETE | `/notifications/suppressions/:id` | `notification.manage_config` | send to them again — audited; one another tenant's bounce filed is a 403 for a tenant admin (the platform's to remove) |
 | GET | `/notifications/preferences/me` | signed in | my types, the channels each reaches me on, on or off — `required` ones always on |
 | PUT | `/notifications/preferences/me` | signed in | `{ notificationType, channel, enabled }` (either may be `*`) — my own rule only |

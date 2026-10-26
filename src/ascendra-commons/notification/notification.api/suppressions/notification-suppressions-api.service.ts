@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
-import { USER_CONTACT_RESOLVER, type UserContactResolver } from '../../notification.core';
+import { NOTIFICATION_CHANNELS, USER_CONTACT_RESOLVER, type UserContactResolver } from '../../notification.core';
+import { enumParam, idParam } from '../shared/params';
 import { recipientNames } from '../shared/recipient-names';
 import type { Actor } from '../../../authorization/authorization.core';
 import {
@@ -30,11 +31,16 @@ export class NotificationSuppressionsApiService {
     @Optional() @Inject(USER_CONTACT_RESOLVER) private readonly users: UserContactResolver | null = null,
   ) {}
 
-  async list(actor: Actor, query: { limit?: number; cursor?: string }): Promise<{ suppressions: SuppressionEntry[]; nextCursor?: string }> {
+  async list(
+    actor: Actor,
+    query: { recipientKey?: string; channel?: string; limit?: number; cursor?: string },
+  ): Promise<{ suppressions: SuppressionEntry[]; nextCursor?: string }> {
     const platform = await this.options.isPlatformAdmin(actor);
     const scope = platform ? undefined : { tenantId: actor.tenantId ?? '' };
+    const recipientKey = idParam('recipientKey', query.recipientKey, true);
+    const channel = enumParam('channel', query.channel, NOTIFICATION_CHANNELS);
     try {
-      const page = await this.port.listSuppressions({ limit: query.limit, cursor: query.cursor || undefined }, scope);
+      const page = await this.port.listSuppressions({ recipientKey, channel, limit: query.limit, cursor: query.cursor || undefined }, scope);
       const names = await recipientNames(this.users, page.suppressions.map((s) => s.recipientKey));
       return {
         suppressions: page.suppressions.map((s) => ({

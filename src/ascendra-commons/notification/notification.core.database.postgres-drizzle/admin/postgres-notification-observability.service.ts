@@ -62,6 +62,7 @@ export class PostgresNotificationObservabilityService implements NotificationObs
     if (query.recipientRef !== undefined) conds.push(sql`recipient_ref = ${query.recipientRef}`);
     if (query.recipientKey !== undefined) conds.push(sql`recipient_key = ${query.recipientKey}`);
     if (query.status !== undefined) conds.push(sql`status = ${query.status}`);
+    if (query.statuses?.length) conds.push(sql`status in (${sql.join(query.statuses.map((s) => sql`${s}`), sql`, `)})`);
     if (query.correlationId !== undefined) conds.push(sql`correlation_id = ${query.correlationId}`);
     if (query.reason !== undefined) conds.push(sql`(reason = ${query.reason} or starts_with(reason, ${`${query.reason}:`}))`);
     if (query.test !== undefined) conds.push(sql`is_test = ${query.test}`);
