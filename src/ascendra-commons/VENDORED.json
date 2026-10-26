@@ -491,7 +491,7 @@
         "README.md": "ea9c14a6f59790c9f4747573660a401485c37c81c87236eecdf8d840ef6da27c",
         "email-notification-sender.ts": "79e7d2578c94610b63367250ef630a6e3f5e29c8443f88209254aca295a6b8dc",
         "in-app-notification-sender.ts": "693e942bb401b75047301a612f0e95bef2c2f84833187dfce581798360a67d12",
-        "index.ts": "6f001f55e704df83feb25fc90ba38ad178ca614621ca026866bf00e6d1b6c1b7",
+        "index.ts": "78857d0a4d8c74e51a1948417922b7f44da2168c89cdd528b3be5a937bf2688b",
         "noop-notification-delivery-recorder.ts": "7f1f019eb92fb49cf85b2fbb964eaf90309aaeac1c0ec0bc0bde3ed91e112756",
         "notification-config.port.ts": "00ad670126d3852602607e71ba643910bf9ac6f3f670d94aba47167e5112abc1",
         "notification-deduplicator.port.ts": "a4312a8936666b48337968cd0423902358a21229f11da7556cf9ccfc0b45b70d",
@@ -500,7 +500,7 @@
         "notification-preferences.port.ts": "47804ee323b5e7592498899e1cd41153a500a51b61aa9711ea621e46655cd503",
         "notification-sender.port.ts": "1293b8e6d823a696c44fcee60147b029aed4617f677e1f9a1b73a54663fbda9a",
         "notification-suppression.port.ts": "4c1ced89da9e9291c214b46d341804288f9797437170cdd60b31ca77e9aa5c92",
-        "notification-template.ts": "82f0c1aec2b5e5ec6d0b6924879e1925f72455a60697bc91b5ab21923a85be28",
+        "notification-template.ts": "7cc32f90e33c6ac60db8bb6e835cbae7f8da28b9e2cd01838522bfd70cf33347",
         "notification-type.ts": "7f6d97135a626342b371775170808f049839a1817411e694278ab3dee9a9c8cf",
         "notification.module.ts": "3fddee7cd30a1d325f1f2523995d3299c502d8f37887e0f118c5f5b3e8cab400",
         "notification.types.ts": "e331f075931bdfc67cc23f7a7b76e549673481f9db98575d794b11b4323e60bb",
@@ -634,7 +634,7 @@
     }
   },
   "source": "https://github.com/ascendra-dev/ascendra-commons.git",
-  "commit": "80d7002b896b793a914e79f8fe895fab86205599",
+  "commit": "8e38ce0d543c83b619bfdf9e16947e5241d80c76",
   "uncommittedChanges": false,
-  "syncedAt": "2026-10-26T00:37:10.370Z"
+  "syncedAt": "2026-10-26T00:43:20.539Z"
 }

@@ -10,7 +10,7 @@ export type {
 export type { NotificationConfig, NotificationConfigData, ProviderConfig } from './notification-config.port';
 
 export type { NotificationTemplate } from './notification-template';
-export { renderTemplate } from './notification-template';
+export { escapeHtml, renderTemplate } from './notification-template';
 export type { NotificationTypeDefinition, NotificationVariableDefinition } from './notification-type';
 export { sampleVariables, templateVariables } from './notification-type';
 export { NOTIFICATION_CHANNELS } from './notification.types';
